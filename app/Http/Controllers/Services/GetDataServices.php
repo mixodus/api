@@ -1,0 +1,605 @@
+<?php
+
+namespace App\Http\Controllers\Services;
+
+use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+use App\Models\TransactionsPoints;
+use App\Models\ResetPasswordModel;
+use App\Models\ActivitiesPointModel;
+use App\Models\UserModels;
+use App\Models\NotifModel;
+use App\Models\LevelModel;
+use App\Models\AwardModel;
+use App\Models\EmployeeWorkExperienceModel;
+use App\Models\EmployeeQualificationModel;
+use App\Models\EmployeeCertification;
+use App\Models\EmployeeProjectExperienceModel;
+use App\Models\EmployeeFriendshipModel;
+use App\Models\EventModel;
+use App\Models\ChallengeModel;
+use App\Models\ChallengeParticipants;
+use App\Models\ChallengeQuiz;
+use App\Models\NewsModel;
+use App\Models\JobsModel;
+use App\Models\JobsApplicationModel;
+use App\Models\SettingModel;
+use App\Models\BannerModel;
+use App\Models\BannerEventModel;
+use App\Models\CountryModel;
+use App\Models\ReferralModel;
+use Firebase\JWT\JWT;
+use DateTime;
+
+class GetDataServices extends BaseController
+{
+	public function __construct(){}
+	// =========================================GENERAL SETTING MODULE ===============================================================
+	function getSettingApp($id){
+		return SettingModel::select('*')->where('setting_id',$id)->first();
+	}
+	function convertDateToSetting($date){
+		$system_setting = $this->getSettingApp(1);
+		return $d_format;
+	}
+	function getCountryList(){
+		return CountryModel::select('*')->get();
+	}
+	// =========================================USER MODULE ===============================================================
+	function userData($id){
+		$data = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')->where('user_id',$id)->first();
+
+		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_picture'];
+
+		return $data;
+	}
+	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null){
+		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text');
+		if($array != null){
+			$query->whereIn('user_id',$array);
+		}
+		if($keyword != null){
+			$query->where('fullname','LIKE','%'.$keyword.'%');
+		}
+		if($offset != null && $limit != nul){
+			$query->offset($offset)->limit($limit);
+		}
+		$data = $query->get();
+		$data  = $data->map(function($key) use($array){
+			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			$key['pic']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			$key['mutual_friends']  = $this->getMutualFriend($key['user_id'],$array);
+			return $key;
+		});
+		return $data;
+	}
+	public function getMutualFriend($friend_id,$user_id){
+		$list2 = ($this->userDatainArray($friend_id))['data'];
+		$list2 = $this->remove_element($user_id, $list2);
+
+		$data = array();
+		$data['count'] = sizeof($list2);
+		$data['data'] = $list2;
+		return $data;
+	}
+	public function getUserbyToken(Request $request){
+		$token = $request->header('X-Token');
+
+		$credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
+		$checkAuth = UserModels::select('*')->where('user_id',$credentials->data->id)->first();
+		return $checkAuth;
+	}
+	public function userDetail($id){
+		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')->with('work_experience','certification')->where('user_id',$id)->first();
+		
+		//point
+		$point = $this->totalTrxPointbyUserId($id);
+		$profile->points = isset($point)?$point:0;
+		//friend
+		$profile->friendship_status = 0;
+		$profile->mutual_friends = [
+			'count' => 0,
+			'data' => array(),
+		];
+		//level
+		$level = LevelModel::select('*')->where('level_min_point','<=',$profile->points)->where('level_max_point','>=',$profile->points)->first();
+		$profile->level_icon_url = url('/')."/uploads/level/".$level->level_icon;
+		$profile->level_name = $level->level_name;
+
+		$profile->total_achievement =  $this->totalAwardsbyUserId($id);
+		$profile->qualification  =  $this->employeeQualification($id);
+		$profile->history = array([
+								'event_done' =>$this->getEvent(1,$id),
+								'bootcamp_done' =>$this->getEvent(2,$id),
+								'challenge_done' =>$this->getChallengebyUser($id,"count")
+							]);
+		$profile->project = $this->getWorkExperience($id);
+		//certification
+		$collect = collect($profile->certifications);
+		$profile->certification  = $collect->map(function($key) use($collect){
+			$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
+			return $key;
+		});
+
+		return $profile;
+	}
+	// =========================================POINT MODULE ===============================================================
+	public function totalTrxPointbyUserId($user_id){
+		return TransactionsPoints::select('*')->where('employee_id',$user_id)->where('status',1)->sum('point');
+	}
+	// =========================================EMPLOYEE DETAILS MODULE ==============================================================
+	public function employeeExperiences($user_id){
+		return EmployeeWorkExperienceModel::select('*')->where('employee_id',$user_id)->get();
+	}
+	public function employeeQualification($user_id){
+		return EmployeeQualificationModel::select('xin_employee_qualification.*','xin_qualification_education_level.name as education_level_name')->LeftJoin('xin_qualification_education_level', 'xin_qualification_education_level.education_level_id', '=', 'xin_employee_qualification.education_level_id')->where('xin_employee_qualification.employee_id',$user_id)->get();
+	}
+	public function getWorkExperience($user_id){
+		return EmployeeProjectExperienceModel::select('xin_employee_project_experiences.*','xin_employee_work_experience.company_name')->LeftJoin('xin_employee_work_experience', 'xin_employee_work_experience.work_experience_id', '=', 'xin_employee_project_experiences.work_experience_id')
+					->where('xin_employee_project_experiences.employee_id',$user_id)->get();
+	}
+	public function getCertification($user_id,$id=null){
+		$query = EmployeeCertification::select('*')->where('employee_id',$user_id);
+		if($id != null && $id !=""){
+			$query->where('certification_id',$id);
+		}
+		$collect = $query->get();
+		$collect = $collect->map(function($key) use($collect){
+			$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
+			return $key;
+		});
+		return $collect;
+	}
+	// =========================================NEWS MODULE ==============================================================
+	public function getNews($id=null,$limit=null){
+		$query = NewsModel::select('xin_news.*','xin_news_type.news_type_name as news_type','xin_news_type.news_colour')
+				->LeftJoin('xin_news_type', 'xin_news_type.news_type_id', '=', 'xin_news.news_type_id');
+				
+		if($limit != null){
+			$query->limit($limit);
+		}else{
+			$query->limit(25);
+		}
+		$data = $query->orderBy('news_id','DESC')->get();
+		if(!empty($id)){
+			$data = NewsModel::select('xin_news.*','xin_news_type.news_type_name as news_type','xin_news_type.news_colour')
+					->LeftJoin('xin_news_type', 'xin_news_type.news_type_id', '=', 'xin_news.news_type_id')
+					->where('xin_news.news_id',$id)
+					->get();
+		}
+		$data = $data->map(function($key) use($data){
+			$key['news_photo_url']  = url('/')."/uploads/news/".$key['news_photo'];
+			return $key;
+		});
+		return $data;
+	}
+		// =========================================Jobs MODULE ==============================================================
+	public function getJobs($id=null,$user_id=null,$keyword=null,$limit=null){
+		if(!empty($id)){
+			$data = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name')
+					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
+					->LeftJoin('xin_designations', 'xin_designations.designation_id', '=', 'xin_jobs.designation_id')
+					->LeftJoin('xin_job_type', 'xin_job_type.job_type_id', '=', 'xin_jobs.job_type')
+					->where('xin_jobs.job_id',$id)
+					->with(["applications" => function($q) use($user_id){
+						$q->where('xin_job_applications.user_id', '=', $user_id);
+					}])->first();
+			$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
+			$data->is_applied = false;
+			if($data->applications != null){
+				$data->is_applied = true;
+			}
+			$system_setting = $this->getSettingApp(1);
+			$dateClose = new DateTime($data->date_of_closing);
+			$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
+		}else{
+			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo')
+					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
+					->where('xin_jobs.date_of_closing','>=',date('Y-m-d'));
+			if($keyword != null){
+				$query->where('xin_jobs.job_title','LIKE','%'.$keyword.'%');
+			}
+			if($limit != null){
+				$query->limit($limit);
+			}else{
+				$query->limit(100);
+			}
+			$data = $query->orderBy('job_id','DESC')->get();
+			$data = $data->map(function($key) use($data){
+				$key['company_logo_url']  = url('/')."/uploads/company/".$key['company_logo'];
+				return $key;
+			});
+		}
+		return $data;
+	}
+	public function userJobsApplication($user_id,$job_id=null){
+		$query = JobsApplicationModel::select('xin_job_applications.*','xin_jobs.job_title','xin_jobs.province','xin_jobs.country','xin_jobs.company_id','xin_jobs.designation_id','xin_companies.name as company_name','xin_companies.logo as company_logo')
+					->LeftJoin('xin_jobs', 'xin_jobs.job_id', '=', 'xin_job_applications.job_id')			
+					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
+					->where('xin_job_applications.user_id',$user_id);
+		if($job_id != null || $job_id != ""){
+			$query->where('xin_job_applications.job_id',$job_id);
+		}
+		$data = $query->limit(100)->orderBy('job_id','DESC')->get();
+
+		$data = $data->map(function($key) use($data){
+			$key['company_logo_url']  = url('/')."/uploads/company/".$key['company_logo'];
+			return $key;
+		});
+		return $data;
+	}
+	// =========================================EVENT MODULE ==============================================================
+	public function homeEvent($user_id,$event_id=null){
+		$data = null;
+		$query = EventModel::select('*')->with(["participants" => function($q) use($user_id){
+						$q->where('employee_id', '=', $user_id);
+					}])
+					->where('xin_events.event_date','>=',date('Y-m-d'));
+		if($event_id!=null){
+			$query->where('xin_events.event_id',$event_id);
+		}
+		$data =$query->orderBy('xin_events.event_id','DESC')->limit(2)->get();
+
+		$data = $data->map(function($key) use($data){
+			$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner'];
+			$key->event_join_status ="Open";
+			$key->event_is_join = false;
+			if(count($key['participants'])>0 && $key['participants']!=null){
+				$key->event_join_status = $key['participants'][0]->status;
+				$key->event_is_join = true;
+			}
+			return $key;
+		});
+		return $data;
+				
+	}
+	public function getBannerEvent($limit)
+	{
+		$query = BannerEventModel::select('*');
+		if($limit != null){
+			$query->limit($limit);
+		}
+		$data = $query->get();
+		$data = $data->map(function($key) use($data){
+			$key->banners_type = null;
+			$key->banners_photo_url = null;
+			if($key->banners_type_id == 1 ){
+				$key->banners_type = "event";
+				$key->banners_photo_url = url('/')."/uploads/event/".$key->banners_photo;
+
+			}elseif($key->banners_type_id == 2 ){
+				$key->banners_type = "news";
+				$key->banners_photo_url =url('/')."/uploads/news/".$key->banners_photo;
+			}elseif($key->banners_type_id == 3){
+				$key->banners_type = "challenge";
+				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->banners_photo;
+
+			}
+			return $key;
+		});
+		return $data;
+	}
+	public function getEvent($type,$user_id){
+		return EventModel::select('*')->LeftJoin('xin_events_participant', 'xin_events_participant.event_id', '=', 'xin_events.event_id')
+					->where('xin_events_participant.employee_id',$user_id)
+					->where('xin_events.event_date','<',date('Y-m-d'))
+					->where('xin_events.event_type_id',$type)
+					->where('xin_events_participant.status','!=' ,"Waiting Approval" )
+					->count();
+	}
+	public function getEventDetail($user_id, $id){
+		$data = EventModel::select('*')->with(["participants" => function($q) use($user_id){
+						$q->where('employee_id', '=', $user_id);
+					}])
+					->where('xin_events.event_id',$id)
+					->get();
+			$data = $data->map(function($key) use($data){
+						$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner_url'];
+						$key['event_registered'] = false;
+						if(count($key['participants'])>0){
+							$key['event_registered'] = true;
+							$key->status = true;
+							if($key['participants'][0]['status']=="Waiting Approval"){
+								$key->status = false;
+							}
+						}
+					   	return $key;
+				   	});
+		return $data;
+	}
+	public function getEventList(){
+		$data = EventModel::select('*')
+					->where('xin_events.event_date','>=',date('Y-m-d'))
+					->orderBy('xin_events.event_date','asc')
+					->limit(25)
+					->get();
+		$data = $data->map(function($key) use($data){
+			$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner_url'];
+				if($key['event_type_id']== 1){
+					$key['event_category'] = "Event";
+				}else if($key['event_type_id']== 2){
+					$key['event_category'] = "Bootcamp";
+				}
+				$today = date('Y-m-d');
+				$timeToday = date('H:i');
+				if($key->event_date > $today){
+					$key->event_ongoing = false;
+					$key->event_joinable = true;
+
+				}else if($key->event_date == $today){
+					$time = strtotime($key->event_time) - 60*60;
+					$getTime = date('H:i',$time);
+					$key->event_ongoing = true;
+					$key->event_joinable = true;
+					if($timeToday > $getTime){
+						$key->event_joinable = false;
+					}
+				}
+			return $key;
+		});
+		return $data;
+	}
+	// =========================================BANNER MODULE ==============================================================
+	public function getHomeBanner($limit=null){
+		$query = BannerModel::select('*');
+		if($limit != null){
+			$query->limit($limit);
+		}
+		$data = $query->get();
+		$data = $data->map(function($key) use($data){
+			$key->banners_type = null;
+			$key->banners_photo_url = null;
+			if($key->banners_type_id == 1 ){
+				$key->banners_type = "event";
+				$key->banners_photo_url = url('/')."/uploads/event/".$key->banners_photo;
+
+			}elseif($key->banners_type_id == 2 ){
+				$key->banners_type = "news";
+				$key->banners_photo_url =url('/')."/uploads/news/".$key->banners_photo;
+			}elseif($key->banners_type_id == 3){
+				$key->banners_type = "challenge";
+				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->banners_photo;
+
+			}
+			return $key;
+		});
+		return $data;
+	}
+	
+	// =========================================FRIEND MODULE ==============================================================
+	public function get_all_friends_complete($user_id){
+		$data = EmployeeFriendshipModel::select('xin_friendship.uid2','xin_friendship.uid1')
+					->LeftJoin('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
+					->where('xin_friendship.uid1',$user_id)
+					->groupBy('xin_friendship.uid2')
+					->get();
+		$friendIdList = array();
+		$friendList = array();
+
+		foreach ($data as $row){
+			$friendIdList[] = $row['uid2'];
+		}	
+		$friendList = $this->userDatainArray($friendIdList);
+		return $friendList;
+	}
+	// =========================================CHALLENGE MODULE ==============================================================
+	public function getChallengebyUser($user_id,$type=null){
+		$query = ChallengeModel::select('*')->LeftJoin('xin_challenge_participant', 'xin_challenge_participant.challenge_id', '=', 'xin_challenge.challenge_id')
+					->where('xin_challenge_participant.employee_id',$user_id)
+					->where('xin_challenge_participant.total_current_point','!=' ,0)
+					->orderBy('xin_challenge.challenge_expired_date','ASC');
+		if($type=="count"){
+			$data = $query->count();
+		}if($type ==null){
+			$data = $query->get();
+			
+			$data = $data->map(function($key) use($data){
+				$key['challenge_icon_trophy']  = url('/')."/uploads/challenge/".$key['challenge_icon_trophy'];
+				$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
+				$key->status_challenge ="";
+				if($key->total_current_point != 0){
+					$key->status_challenge ="Done";
+				}
+				return $key;
+			});
+		}
+		return $data;
+					
+	}
+
+	public function getChallenge($type, $id=null,$user_id = null,$quiz_id=null){
+		$query = ChallengeModel::select('*');
+		if($type =="active"){
+			$query->where('xin_challenge.challenge_expired_date','>=',date('Y-m-d'));
+		}elseif($type =="detail"){
+			$query->where('xin_challenge.challenge_id',$id);
+			$query->with(['me' => function($q) use($user_id){
+				$q->where('employee_id', '=', $user_id)->limit(1);
+			},'top_participant'=> function($user){
+				$user->select('xin_challenge_participant.*','xin_employees.fullname','xin_employees.profile_picture AS profile_picture_url')
+				->LeftJoin('xin_employees', 'xin_employees.user_id', '=', 'xin_challenge_participant.employee_id')->orderBy('total_current_point','DESC')->limit(10);
+			}]);
+		}elseif($type =="quiz"){
+			return $query->with(['me' => function($q) use($user_id){
+						$q->where('employee_id', '=', $user_id);
+					},'quiz'=> function($quiz) use($quiz_id){
+						$quiz->where('xin_challenge_quiz.id',$quiz_id);
+					}])->join('xin_challenge_quiz', 'xin_challenge_quiz.challenge_id', '=', 'xin_challenge.challenge_id')
+					->where('xin_challenge_quiz.id',$quiz_id)->first();
+			
+		}
+		$data = $query->orderBy('xin_challenge.challenge_expired_date','ASC')->get();
+		$data = $data->map(function($key) use($data){
+			$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
+			$key->event_category = 'Challenge';
+			$key->challenge_ongoing = false;
+			if($key->challenge_expired_date == date('Y-m-d')){
+				$key->challenge_ongoing = true;
+			}
+			if(!empty($key->top_participant)){
+				$participants = collect($key->top_participant);
+				$user = $participants->map(function($raw) use($participants){
+					$raw['profile_picture_url']  = url('/')."/uploads/profile/".$raw['profile_picture_url'];
+					return $raw;
+				});
+			}
+			return $key;
+		});
+		return $data;
+	}
+	public function checkChallengeJoin($challenge_id,$user_id){
+		return ChallengeParticipants::select('*')->where('challenge_id',$challenge_id)->where('employee_id',$user_id)->first();
+	}
+	public function getChallengeRaw($challenge_id){
+		return ChallengeModel::select('*')->where('challenge_id',$challenge_id)->first();
+	}
+	public function getChallengeOngoing($start=0,$end=25){
+		$data = ChallengeModel::select('*')->where('challenge_expired_date','>=',date('Y-m-d'))->orderBy('challenge_expired_date', 'ASC')->get();
+		$data = $data->map(function($key) use($data){
+			$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
+			$key->event_category = 'Challenge';
+			$key->challenge_ongoing = false;
+			$key->challenge_ongoing = false;
+			if($key->challenge_expired_date == date('Y-m-d')){
+				$date1 = str_replace('-', '/', $key->challenge_expired_date);
+				$key->challenge_ongoing = true;
+				$key->challenge_expired_date = date('Y-m-d',strtotime($date1 . "-1 days"));
+			}
+			return $key;
+		});
+		return $data;
+	}
+	public function getChallengeQuiz($challenge_id){
+		return ChallengeQuiz::select('id','challenge_id','question','a','b','c')->where('challenge_id',$challenge_id)->get();
+	}
+	//awards
+	public function getAwardsbyUserId($user_id,$offset=null,$limit=null){
+		$query = AwardModel::select('xin_awards.*','xin_award_type.award_type as award_name','xin_companies.name as company_name')
+				->LeftJoin('xin_award_type', 'xin_award_type.award_type_id', '=', 'xin_awards.award_type_id')
+				->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_awards.company_id')
+				->where('xin_awards.employee_id',$user_id);
+		if($offset != null && $limit !=null){
+			$query->offset($offset)->limit($limit);
+		}
+		$data = $query->get();
+
+		$data = $data->map(function($raw) use($data){
+			$raw['award_photo']  = url('/')."/uploads/award/".$raw['award_photo'];
+			return $raw;
+		});
+		return $data;
+	}
+	public function totalAwardsbyUserId($user_id){
+		return AwardModel::select('*')->where('employee_id',$user_id)->count();
+	}
+	//Referral
+	public function getReferralMember($user_id,$offset =0,$limit=25){
+		return ReferralModel::select('*')->where('referral_employee_id',$user_id)->offset($offset)->limit($limit)->orderBy('referral_id', 'DESC')->get();
+	}
+	public function ValidateReferralPoints($user_id=null,$email=null){
+		$query = ReferralModel::select('referral_id','withdraw_reward','referral_name as name','referral_status as status','added_to_transaction_point as added_yet');
+				
+		if($user_id != null && $user_id !=""){
+			$query->where('referral_employee_id',$user_id)->where('referral_status', 'Successful');
+		}elseif($email != null && $email !=""){
+			$query->where('referral_email',$email);
+		}else{
+			$query->where('added_to_transaction_point',0)->where('referral_status', 'Successful');
+		}
+		return $query->get();
+	
+	}
+	//point
+	public function getActivityPoint($type){
+		return ActivitiesPointModel::select('*')->where('activity_point_code',$type)->first();
+	}
+	//notif
+	public function getNotif($user_id,$id=null,$nonread=null){
+		$query = NotifModel::select('xin_notif.*','xin_notif_type.image_icon')
+			->LeftJoin('xin_notif_type', 'xin_notif_type.notif_type_id', '=', 'xin_notif.notif_type_id')
+			->where('xin_notif.user_id',$user_id);
+		if($id !=null && $id !=""){
+			$query->where('xin_notif.notif_id',$id);
+		}
+		if($nonread !=null && $nonread !=""){
+			$query->where('xin_notif.is_new',FALSE);
+		}
+		$data = $query->orderBy('xin_notif.created_at','DESC')->get();
+
+		$data = $data->map(function($raw) use($data){
+			$raw['image_icon']  = url('/')."/uploads/notif/".$raw['image_icon'];
+			$raw['is_new'] = FALSE;
+			if($raw['is_new'] == 1)
+				$raw['is_new'] = TRUE;
+			$date = $raw->created_at;
+			$date_only = substr($date, 0,10 );
+			$raw->date_past = $date;
+			$raw->date_convert = TRUE;
+
+			if($date_only == date('Y-m-d'))
+				$date_past = $this->time_elapsed_string($date);
+				$minute = date('H:i:s');
+				$raw->date_past = $this->time_elapsed_string($date);
+				$raw->date_convert = FALSE;
+			
+			return $raw;
+		});
+		return $data;
+	}
+
+	//level
+	public function getLevel(){
+		$data = LevelModel::select('*')->orderBy('level_max_point','DESC')->get();
+		$data = $data->map(function($raw) use($data){
+			$raw['level_icon_url']  = url('/')."/uploads/level/".$raw['level_icon'];
+			return $raw;
+		});
+		return $data;
+	}
+	public function time_elapsed_string($datetime, $full = false) {
+		$now = new DateTime;
+		$ago = new DateTime($datetime);
+		$diff = $now->diff($ago);
+	
+		$diff->w = floor($diff->d / 7);
+		$diff->d -= $diff->w * 7;
+	
+		$string = array(
+			'y' => 'year',
+			'm' => 'month',
+			'w' => 'week',
+			'd' => 'day',
+			'h' => 'hour',
+			'i' => 'minute',
+			's' => 'second',
+		);
+		foreach ($string as $k => &$v) {
+			if ($diff->$k) {
+				$v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+			} else {
+				unset($string[$k]);
+			}
+		}
+	
+		if (!$full) $string = array_slice($string, 0, 1);
+		return $string ? implode(', ', $string) . ' ago' : 'just now';
+	}
+	private function remove_element($element, $theList){
+		$result = [];
+
+		if (sizeof($theList) == 0){
+			$result = [];
+		}
+		else {
+			$result = $theList;
+			if (($key = array_search($element, $result)) !== false) {
+				unset($result[$key]);
+			}
+		}
+		return $result;
+	}
+
+}
