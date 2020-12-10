@@ -64,6 +64,29 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::get('/referral/success', 'API\ReferralController@getReferralMemberSuccess');
 	Route::post('/referral', 'API\ReferralController@AssignMember');
 
+	//Admin
+	Route::get('/admin', 'API\Dashboard\AuthUser\AdminController@index');
+
+	//Menu
+	Route::get('/menu', 'API\Dashboard\UserManagement\MenuController@index');
+	Route::get('/menu-show', 'API\Dashboard\UserManagement\MenuController@show');
+	Route::post('/menu-create', 'API\Dashboard\UserManagement\MenuController@store');
+	Route::put('/menu-update/{id}', 'API\Dashboard\UserManagement\MenuController@update');
+
+	//Access Role
+	Route::get('/settings/roles', 'API\Dashboard\UserManagement\RolesController@index');
+	Route::get('/settings/roles-show', 'API\Dashboard\UserManagement\RolesController@show');
+	Route::get('/settings/roles-edit', 'API\Dashboard\UserManagement\RolesController@edit');
+	Route::post('/settings/roles-create', 'API\Dashboard\UserManagement\RolesController@store');
+	Route::put('/settings/roles-update/{id}', 'API\Dashboard\UserManagement\RolesController@update');
+	Route::delete('/settings/roles-delete/{id}', 'API\Dashboard\UserManagement\RolesController@destroy');
+
+	//Permission
+	Route::get('/settings/permissions', 'API\Dashboard\UserManagement\PermissionController@index');
+	Route::get('/settings/permissions-show', 'API\Dashboard\UserManagement\PermissionController@show');
+	Route::post('/settings/permissions-create', 'API\Dashboard\UserManagement\PermissionController@store');
+	Route::put('/settings/permissions-update/{id}', 'API\Dashboard\UserManagement\PermissionController@update');
+	Route::delete('/settings/permissions-delete/{id}', 'API\Dashboard\UserManagement\PermissionController@destroy');
 	//Notif
 	Route::get('/notif', 'API\NotifController@index');
 	Route::get('/notif/detail_by/{id}', 'API\NotifController@detail');

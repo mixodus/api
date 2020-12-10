@@ -23,6 +23,13 @@ Route::group(['middleware' => 'app.token'], function ($router) {
 	});
 	//Jobs
 	Route::get('/search/jobs', 'API\JobsController@index');
+
+	Route::group(['prefix' => 'admin'], function () {
+		Route::post('/login', 'API\Dashboard\AuthUser\AdminController@login');
+		Route::post('/register', 'API\Dashboard\AuthUser\AdminController@register');
+		Route::post('/reset_password', 'API\Dashboard\AuthUser\AdminController@resetPassword');
+		Route::post('/reset_password_action', 'API\Dashboard\AuthUser\AdminController@resetPasswordAction');
+	});
 });
 Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::get('/friend/list', 'API\FriendController@index'); // PENDING GA JELAS ALURNYA;

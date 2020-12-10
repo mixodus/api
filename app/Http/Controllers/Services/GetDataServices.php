@@ -9,6 +9,7 @@ use App\Models\TransactionsPoints;
 use App\Models\ResetPasswordModel;
 use App\Models\ActivitiesPointModel;
 use App\Models\UserModels;
+use App\Models\Dashboard\AdminModel;
 use App\Models\NotifModel;
 use App\Models\LevelModel;
 use App\Models\AwardModel;
@@ -601,6 +602,14 @@ class GetDataServices extends BaseController
 			}
 		}
 		return $result;
+	}
+//================================Dashboard=======================================//
+	public function getAdminbyToken(Request $request){
+		$token = $request->header('X-Token');
+
+		$credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
+		$checkAuth = AdminModel::select('*')->where('user_id',$credentials->data->id)->first();
+		return $checkAuth;
 	}
 
 }
