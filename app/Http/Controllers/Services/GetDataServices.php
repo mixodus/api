@@ -611,5 +611,4 @@ class GetDataServices extends BaseController
 		$checkAuth = AdminModel::select('*')->where('user_id',$credentials->data->id)->first();
 		return $checkAuth;
 	}
-
 }
