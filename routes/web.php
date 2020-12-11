@@ -35,3 +35,4 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::get('/friend/list', 'API\FriendController@index'); // PENDING GA JELAS ALURNYA;
 	Route::post('/upload/upload/{id}', 'API\CertificationController@upload');
 });
+
