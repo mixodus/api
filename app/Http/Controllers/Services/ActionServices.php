@@ -16,6 +16,7 @@ use App\Models\EventModel;
 use App\Models\EmployeeWorkExperienceModel;
 use App\Models\EmployeeQualificationModel;
 use App\Models\EmployeeProjectExperienceModel;
+use App\Models\EmployeeCertification;
 use App\Models\ChallengeParticipants;
 use App\Models\JobsApplicationModel;
 use App\Models\WithdrawRewardModel;
@@ -167,35 +168,87 @@ class ActionServices extends BaseController
 		return EmployeeProjectExperienceModel::where('id',$id)->delete();
 	}
 	
-public function saveEducation($data,$user_id){
-	$postParam = array(
-		'name' => $data['name'],
-		'education_level_id' => $data['education_level_id'],
-		'start_period' => $data['start_period_year'] . '-' . $data['start_period_month'] .'-'.'01',
-		'end_period' => $data['end_period_year'] . '-' . $data['end_period_month'] .'-'.'01',
-		'gpa' => $data['gpa'],
-		'description' => $data['description'],
-		'employee_id' => $user_id,
-		'field_of_study' =>$data['field_of_study']
-	);	
-	return EmployeeQualificationModel::create($postParam);
-}
-public function updateEducation($data,$user_id){
-	$postParam = array(
-		'name' => $data['name'],
-		'education_level_id' => $data['education_level_id'],
-		'start_period' => $data['start_period_year'] . '-' . $data['start_period_month'] .'-'.'01',
-		'end_period' => $data['end_period_year'] . '-' . $data['end_period_month'] .'-'.'01',
-		'gpa' => $data['gpa'],
-		'description' => $data['description'],
-		'employee_id' => $user_id,
-		'field_of_study' =>$data['field_of_study']
-	);
-	return EmployeeQualificationModel::where('qualification_id',$data['id'])->update($postParam);
-}
-public function deleteEmployeeEducation($id){
-	return EmployeeQualificationModel::where('qualification_id',$id)->delete();
-}
+	public function saveEducation($data,$user_id){
+		$postParam = array(
+			'name' => $data['name'],
+			'education_level_id' => $data['education_level_id'],
+			'start_period' => $data['start_period_year'] . '-' . $data['start_period_month'] .'-'.'01',
+			'end_period' => $data['end_period_year'] . '-' . $data['end_period_month'] .'-'.'01',
+			'gpa' => $data['gpa'],
+			'description' => $data['description'],
+			'employee_id' => $user_id,
+			'field_of_study' =>$data['field_of_study']
+		);	
+		return EmployeeQualificationModel::create($postParam);
+	}
+	public function updateEducation($data,$user_id){
+		$postParam = array(
+			'name' => $data['name'],
+			'education_level_id' => $data['education_level_id'],
+			'start_period' => $data['start_period_year'] . '-' . $data['start_period_month'] .'-'.'01',
+			'end_period' => $data['end_period_year'] . '-' . $data['end_period_month'] .'-'.'01',
+			'gpa' => $data['gpa'],
+			'description' => $data['description'],
+			'employee_id' => $user_id,
+			'field_of_study' =>$data['field_of_study']
+		);
+		return EmployeeCertification::where('certification_id',$data['id'])->update($postParam);
+	}
+	public function deleteEmployeeEducation($id){
+		return EmployeeQualificationModel::where('qualification_id',$id)->delete();
+	}
+	public function saveCertification($data,$user_id){
+		$postParam = array(
+			'employee_id' => $user_id,
+			'certification_date' => $data['certification_date'],
+			'title' => $data['title'],
+			'description' => $data['description'],
+			'created_at' => date('Y-m-d H:i:s')
+		);	
+		return EmployeeCertification::create($postParam);
+	}
+	public function updateCertification($data,$user_id){
+		$postParam = array(
+			'employee_id' => $user_id,
+			'certification_date' => $data['certification_date'],
+			'title' => $data['title'],
+			'description' => $data['description']
+		);	
+		return EmployeeCertification::where('certification_id',$data['id'])->update($postParam);
+	}
+	public function updateCertificationfile($data){
+		$postParam['certification_file'] = $data['certification_file'];
+		return EmployeeCertification::where('certification_id',$data['id'])->update($postParam);
+	}
+	public function deleteEmployeeCertification($id){
+		return EmployeeCertification::where('certification_id',$id)->delete();
+	}
+	public function saveEmployeeWorkExperience($data,$user_id){
+		$postParam = array(
+			'company_name' => $data['company_name'],
+			'start_period' => $data['start_period_year'] . '-' . $data['start_period_month'] .'-'.'01',
+			'end_period' => $data['end_period_year'] . '-' . $data['end_period_month'] .'-'.'01',
+			'post' => $data['post'],
+			'description' => $data['description'],
+			'employee_id' => $user_id,
+			'created_at' => date('Y-m-d h:i:s')
+		);	
+		return EmployeeWorkExperienceModel::create($postParam);
+	}
+	public function updateEmployeeWorkExperience($data,$user_id){
+		$postParam = array(
+			'company_name' => $data['company_name'],
+			'start_period' => $data['start_period_year'] . '-' . $data['start_period_month'] .'-'.'01',
+			'end_period' => $data['end_period_year'] . '-' . $data['end_period_month'] .'-'.'01',
+			'post' => $data['post'],
+			'description' => $data['description'],
+			'employee_id' => $user_id
+		);	
+		return EmployeeWorkExperienceModel::where('work_experience_id',$data['id'])->update($postParam);
+	}
+	public function deleteEmployeeWorkExperience($id){
+		return EmployeeWorkExperienceModel::where('work_experience_id',$id)->delete();
+	}
 
 	
 

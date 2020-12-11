@@ -42,7 +42,7 @@ class GeneralServices extends BaseController
 		$token['exp'] = $date->getTimestamp() + 7200;
 		
 		$data['token'] = JWT::encode($token, $key);
-		$data['expiration'] =  ["second"=>$exp,'hours' => $exp / (60 * 60 * 1)];
+		$data['expiration'] =  ["second"=>$exp,'hours' => $exp / (60 * 60 * 7)];
 		return $data;
 
 	}

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\RolesModel;
 
 class UserModels extends Model
 {
@@ -123,5 +124,11 @@ class UserModels extends Model
 	public function payslip() {
 		return $this->hasMany('App\Models\PayslipSalaryModel', 'employee_id','user_id');
 	}
+	public function role()
+    {
+        return $this->hasOne(RolesModel::class, 'user_id', 'role_id')
+            ->select('access_role');
+	}
+	
 		
 }

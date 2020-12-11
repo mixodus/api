@@ -9,6 +9,7 @@ use App\Models\TransactionsPoints;
 use App\Models\ResetPasswordModel;
 use App\Models\ActivitiesPointModel;
 use App\Models\UserModels;
+use App\Models\Dashboard\AdminModel;
 use App\Models\NotifModel;
 use App\Models\LevelModel;
 use App\Models\AwardModel;
@@ -64,7 +65,7 @@ class GetDataServices extends BaseController
 		if($keyword != null){
 			$query->where('fullname','LIKE','%'.$keyword.'%');
 		}
-		if($offset != null && $limit != nul){
+		if($offset != null && $limit != null){
 			$query->offset($offset)->limit($limit);
 		}
 		$data = $query->get();
@@ -148,6 +149,7 @@ class GetDataServices extends BaseController
 		}
 		$collect = $query->get();
 		$collect = $collect->map(function($key) use($collect){
+			$key['certification_name']  = $key['certification_file'];
 			$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
 			return $key;
 		});
@@ -601,5 +603,12 @@ class GetDataServices extends BaseController
 		}
 		return $result;
 	}
+//================================Dashboard=======================================//
+	public function getAdminbyToken(Request $request){
+		$token = $request->header('X-Token');
 
+		$credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
+		$checkAuth = AdminModel::select('*')->where('user_id',$credentials->data->id)->first();
+		return $checkAuth;
+	}
 }

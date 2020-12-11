@@ -162,17 +162,6 @@ class ChallengeController extends Controller
 	}
 
 	public function achievement(Request $request){
-		$action = ['19-view', '20-view', '20-add', '20-edit', '20-delete', '21-view'];
-		$valn = [];
-		foreach($action as $a)
-		{
-			$tes= explode("-", $a);
-			$permission= ['menu_id' => $tes[0], 'action' =>$tes[1]]; 
-			array_push($valn, $permission);
-		}
-		$data['permission'] = $valn;
-		return $data;
-		
 		$rules = [
 			'start' => "nullable|integer",
 			'length' => "nullable|integer"
