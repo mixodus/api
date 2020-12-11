@@ -23,6 +23,9 @@ Route::group(['middleware' => 'app.token'], function ($router) {
 	});
 	//Jobs
 	Route::get('/search/jobs', 'API\JobsController@index');
+});
+Route::group(['middleware' => 'user.token'], function ($router) {
+	Route::get('/friend/list', 'API\FriendController@index'); // PENDING GA JELAS ALURNYA
 
 	Route::group(['prefix' => 'admin'], function () {
 		Route::post('/login', 'API\Dashboard\AuthUser\AdminController@login');
