@@ -21,8 +21,6 @@ Route::group(['middleware' => 'app.token'], function ($router) {
 		Route::post('/reset_password', 'API\UserController@resetPassword');
 		Route::post('/reset_password_action', 'API\UserController@resetPasswordAction');
 	});
-	//Jobs
-	Route::get('/search/jobs', 'API\JobsController@index');
 });
 Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::get('/friend/list', 'API\FriendController@index'); // PENDING GA JELAS ALURNYA
@@ -34,8 +32,20 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 		Route::post('/reset_password_action', 'API\Dashboard\AuthUser\AdminController@resetPasswordAction');
 	});
 });
-Route::group(['middleware' => 'user.token'], function ($router) {
-	Route::get('/friend/list', 'API\FriendController@index'); // PENDING GA JELAS ALURNYA;
-	Route::post('/upload/upload/{id}', 'API\CertificationController@upload');
-});
+
+
+//API
+	//Jobs search
+	Route::get('/search/jobs', 'API\JobsController@index');
+	//search
+	Route::get('/search/generalsearch', 'API\GeneralController@generalSearch');
+	Route::get('/search/reference', 'API\GeneralController@referenceSeacrh'); 
+
+	Route::group(['middleware' => 'user.token'], function ($router) {
+		Route::get('/friend/list', 'API\FriendController@index'); // PENDING GA JELAS ALURNYA;
+		Route::post('/upload/upload/{id}', 'API\CertificationController@upload');
+	});
+	
+	Route::post('/upload', 'General\UploadController@index'); // belum tau fungsinya untuk dimana
+	Route::post('/upload/do_upload', 'General\UploadController@upload'); // belum tau fungsinya untuk dimana
 
