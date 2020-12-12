@@ -32,6 +32,7 @@ use App\Models\CountryModel;
 use App\Models\ReferralModel;
 use Firebase\JWT\JWT;
 use DateTime;
+use DB;
 
 class GetDataServices extends BaseController
 {
@@ -72,7 +73,7 @@ class GetDataServices extends BaseController
 		$data  = $data->map(function($key) use($array){
 			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
 			$key['pic']  = url('/')."/uploads/profile/".$key['profile_picture'];
-			$key['mutual_friends']  = $this->getMutualFriend($key['user_id'],$array);
+			// $key['mutual_friends']  = $this->getMutualFriend($key['user_id'],$array);
 			return $key;
 		});
 		return $data;
@@ -131,6 +132,33 @@ class GetDataServices extends BaseController
 	public function totalTrxPointbyUserId($user_id){
 		return TransactionsPoints::select('*')->where('employee_id',$user_id)->where('status',1)->sum('point');
 	}
+	public function getleaderboardMonth(){
+		$data =  TransactionsPoints::select(DB::raw('SUM(point) AS total_point'),'xin_transaction_point.created_at','xin_transaction_point.employee_id', 'fullname' , 'profile_picture')
+		->LeftJoin('xin_employees', 'xin_employees.user_id', '=', 'xin_transaction_point.employee_id')
+		->where('xin_transaction_point.status',1)
+		->whereYear('xin_transaction_point.created_at', date('Y'))
+		->whereMonth('xin_transaction_point.created_at', date('m'))
+		->groupBy('xin_transaction_point.employee_id')
+		->orderBy('total_point','Desc')
+		->limit(10)->get();
+		$data = $data->map(function($key) use($data){
+			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			$key['month']  = $key->created_at->format('Y-m');
+			return $key;
+		});
+
+		return $data;
+		
+
+		// $sql = 'SELECT sum(point) as total_point, substring(xin_transaction_point.created_at,1,7) as month , 
+		// xin_transaction_point.employee_id, fullname , profile_picture, IF(profile_picture IS NULL OR profile_picture=\'\',\'\',CONCAT("'.$url_image.'",profile_picture)) as profile_picture_url   FROM `xin_transaction_point` 
+		// LEFT JOIN xin_employees on (xin_transaction_point.employee_id = xin_employees.user_id) 
+		// WHERE xin_transaction_point.status=1  AND substring(xin_transaction_point.created_at,1,7) = ?
+		// GROUP BY employee_id , month order by total_point DESC limit 10';
+
+		
+	}
+
 	// =========================================EMPLOYEE DETAILS MODULE ==============================================================
 	public function employeeExperiences($user_id){
 		return EmployeeWorkExperienceModel::select('*')->where('employee_id',$user_id)->get();

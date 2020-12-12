@@ -121,6 +121,12 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::put('/work_experience', 'API\WorkExperienceController@update');
 	Route::delete('/work_experience', 'API\WorkExperienceController@delete');
 
+	//point
+	Route::get('/point', 'API\PointController@index');
+	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth'); 
+	// Route::get('/point/leaderboard_challenge', 'API\PointController@leaderboardChallenge');//invalid old code
+
+
 
 	
 
