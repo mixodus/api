@@ -94,14 +94,12 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
-	public function getMutualFriend($friend_id,$user_id){
-		$list2 = ($this->userDatainArray($friend_id))['data'];
-		$list2 = $this->remove_element($user_id, $list2);
-
-		$data = array();
-		$data['count'] = sizeof($list2);
-		$data['data'] = $list2;
-		return $data;
+	function userIDinArray($array=null){
+		$query = UserModels::select('user_id');
+		if($array != null){
+			$query->whereIn('user_id',$array);
+		}
+		return $query->get();
 	}
 	public function getUserbyToken(Request $request){
 		$token = $request->header('X-Token');
@@ -418,7 +416,7 @@ class GetDataServices extends BaseController
 	// =========================================FRIEND MODULE ==============================================================
 	public function get_all_friends_complete($user_id){
 		$data = EmployeeFriendshipModel::select('xin_friendship.uid2','xin_friendship.uid1')
-					->LeftJoin('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
+					->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
 					->where('xin_friendship.uid1',$user_id)
 					->groupBy('xin_friendship.uid2')
 					->get();
@@ -430,6 +428,30 @@ class GetDataServices extends BaseController
 		}	
 		$friendList = $this->userDatainArray($friendIdList);
 		return $friendList;
+	}
+	
+	public function getMutualFriend($friend_id,$user_id){
+		$list2 = ($this->userDatainArray($friend_id))['data'];
+		$list2 = $this->remove_element($user_id, $list2);
+
+		$data = array();
+		$data['count'] = sizeof($list2);
+		$data['data'] = $list2;
+		return $data;
+	}
+
+	
+	public function checkFriendStatus($friend_id,$user_id){
+		return FriendModel::select('*')->where('uid1',$friend_id)->where('uid2',$user_id)->get();
+	}
+
+	public function friendRequestList($user_id){
+		return  DB::select('SELECT t1.uid1,xin_employees.user_id, xin_employees.fullname, xin_employees.profile_picture,  
+		CONCAT("'.url('/').'/uploads/profile/'.'" ,xin_employees.profile_picture) AS profile_picture_url
+							FROM xin_friendship t1 
+							LEFT JOIN xin_employees ON t1.uid1 = xin_employees.user_id WHERE t1.uid2 = 9106');
+	
+		
 	}
 	// =========================================CHALLENGE MODULE ==============================================================
 	public function getChallengebyUser($user_id,$type=null){
@@ -604,10 +626,6 @@ class GetDataServices extends BaseController
 			return $raw;
 		});
 		return $data;
-	}
-	//Friend
-	public function checkFriendStatus($friend_id,$user_id){
-		return FriendModel::select('*')->where('uid1',$friend_id)->where('uid2',$user_id)->get();
 	}
 	//bank account
 	public function getUserBankAccount($user_id){
