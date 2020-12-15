@@ -42,10 +42,35 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::get('/search/reference', 'API\GeneralController@referenceSeacrh'); 
 
 	Route::group(['middleware' => 'user.token'], function ($router) {
+		//friend
 		Route::get('/friend/list', 'API\FriendController@index'); // PENDING GA JELAS ALURNYA;
+		Route::get('/friend/mutual_friends', 'API\FriendController@mutual'); // PENDING 
+		Route::get('/friend/mutual_friends_id_only', 'API\FriendController@mutualDetail'); // PENDING 
+		Route::get('/friend/list_id_only', 'API\FriendController@listingId'); // PENDING 
+		Route::get('/friend/list_friend_request', 'API\FriendController@friendRequest'); // PENDING 
+		Route::get('/friend/list_friend_request_id', 'API\FriendController@friendRequestId');// PENDING 
+		Route::post('/friend/add_friend', 'API\FriendController@add');
+		Route::post('/friend/approve', 'API\FriendController@approve');
+		Route::post('/friend/unfriend', 'API\FriendController@unfriend');
+		Route::post('/friend/reject', 'API\FriendController@reject');
+
+		//bank account
+		Route::get('/accounts/list', 'API\UserBankAccountController@index');
+		Route::post('/accounts/add', 'API\UserBankAccountController@add');
+		Route::put('/accounts/edit', 'API\UserBankAccountController@update');
+		Route::delete('/accounts', 'API\UserBankAccountController@delete');
+
+		//withdraw
+		Route::get('/withdraw', 'API\UserWithdrawController@index');
+		Route::get('/withdraw/results', 'API\UserWithdrawController@index');
+		Route::get('/withdraw/history', 'API\UserWithdrawController@history');
+		Route::post('/withdraw/check', 'API\UserWithdrawController@check');
+
 		Route::post('/upload/upload/{id}', 'API\CertificationController@upload');
 	});
 	
 	Route::post('/upload', 'General\UploadController@index'); // belum tau fungsinya untuk dimana
 	Route::post('/upload/do_upload', 'General\UploadController@upload'); // belum tau fungsinya untuk dimana
+
+	
 

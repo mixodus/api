@@ -30,6 +30,10 @@ use App\Models\BannerModel;
 use App\Models\BannerEventModel;
 use App\Models\CountryModel;
 use App\Models\ReferralModel;
+use App\Models\FriendModel;
+use App\Models\UserBankModel;
+use App\Models\UserWithdrawModel;
+use App\Models\UserWithdrawHistoryModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -55,6 +59,18 @@ class GetDataServices extends BaseController
 
 		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_picture'];
 
+		return $data;
+	}
+	function searchuserData($user_id,$keyword){
+		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')
+		->where('user_id','!=',$user_id)->where('fullname','LIKE','%'.$keyword.'%');
+
+		$data = $query->get();
+		$data = $data->map(function($key) use($data){
+			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			return $key;
+		});
 		return $data;
 	}
 	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null){
@@ -589,6 +605,43 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
+	//Friend
+	public function checkFriendStatus($friend_id,$user_id){
+		return FriendModel::select('*')->where('uid1',$friend_id)->where('uid2',$user_id)->get();
+	}
+	//bank account
+	public function getUserBankAccount($user_id){
+		$data = UserBankModel::select('*')->where('employee_id',$user_id)->get();
+		$data = $data->map(function($raw) use($data){
+			$raw['user_id'] = $raw->employee_id;
+			$raw['primary_account'] = "No";
+			if($raw->isPrimary = 1)
+				$raw['primary_account'] = "Yes";
+			
+			return $raw;
+		});
+		return $data;
+	}
+	//withdraw
+	public function getWithdrawInfo($user_id){
+		// $data = DB::select('SELECT SUM(withdraw_reward) FROM xin_referral WHERE user_id = '.$user_id.' AND added_to_transaction_point IS NOT NULL');
+		// return $data;
+		// $postParam = array(
+		//     'total_amount' => $data
+		// );
+		// UserWithdrawModel::where('user_id',$user_id)->update($postParam);
+
+		// DB::update('UPDATE xin_withdraw SET total_amount = (SELECT SUM(withdraw_reward) FROM xin_referral WHERE user_id = ? AND added_to_transaction_point IS NOT NULL', [$user_id]);
+		return UserWithdrawModel::select('*')->where('user_id',$user_id)->get();
+	}
+	public function getWithdrawCurrentValue($user_id){
+		return UserWithdrawModel::select(DB::raw('SUM(current_amount) as current_amounts'))->where('user_id',$user_id)
+		->get();
+	}
+	public function getWithdrawHistory($user_id){
+		$id = 6;
+		return DB::select('SELECT *,withdraw_history_id as id from xin_withdraw_history JOIN xin_employee_bank_account ON xin_withdraw_history.account_list_id = xin_employee_bank_account.account_list_id WHERE xin_employee_bank_account.account_list_id = '.$id);
+	}
 	public function time_elapsed_string($datetime, $full = false) {
 		$now = new DateTime;
 		$ago = new DateTime($datetime);
@@ -631,6 +684,7 @@ class GetDataServices extends BaseController
 		}
 		return $result;
 	}
+	
 //================================Dashboard=======================================//
 	public function getAdminbyToken(Request $request){
 		$token = $request->header('X-Token');

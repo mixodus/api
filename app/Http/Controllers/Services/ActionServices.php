@@ -21,6 +21,10 @@ use App\Models\ChallengeParticipants;
 use App\Models\JobsApplicationModel;
 use App\Models\WithdrawRewardModel;
 use App\Models\ReferralModel;
+use App\Models\FriendModel;
+use App\Models\UserBankModel;
+use App\Models\UserWithdrawModel;
+use App\Models\UserWithdrawHistoryModel;
 use Firebase\JWT\JWT;
 
 class ActionServices extends BaseController
@@ -248,6 +252,70 @@ class ActionServices extends BaseController
 	}
 	public function deleteEmployeeWorkExperience($id){
 		return EmployeeWorkExperienceModel::where('work_experience_id',$id)->delete();
+	}
+
+	//friend
+	public function addFriend($friend_id,$user_id){
+		$postParam = array(
+			'uid1' => $user_id,
+			'uid2' => $friend_id
+		);	
+		return FriendModel::create($postParam);
+	}
+	public function approve($friend_id,$user_id){
+		$postParam = array(
+			'uid1' => $user_id,
+			'uid2' => $friend_id
+		);	
+		return FriendModel::create($postParam);
+	}
+	public function unFriend($friend_id,$user_id){
+		FriendModel::where('uid2',$friend_id)->where('uid1',$user_id)->delete();
+		return FriendModel::where('uid1',$friend_id)->where('uid2',$user_id)->delete();
+	}
+	public function reject($user_id,$friend_id){
+		return FriendModel::where('uid1',$friend_id)->where('uid2',$user_id)->delete();
+	}
+	//bank account
+	public function saveUserBankAccount($data_input,$user_id){
+		$postParam = array(
+			'employee_id' => $user_id,
+			'account_name' => $data_input['account_name'],
+			'account_number' => $data_input['account_number'],
+			'is_primary' => $data_input['is_primary'],
+			'bank_id' => $data_input['bank_id']
+		);	
+		return UserBankModel::create($postParam);
+	}
+	public function updateUserBankAccount($data_input,$user_id){
+		$postParam = array(
+			'employee_id' => $user_id,
+			'account_name' => $data_input['account_name'],
+			'account_number' => $data_input['account_number'],
+			'is_primary' => $data_input['is_primary'],
+			'bank_id' => $data_input['bank_id']
+		);
+		return UserBankModel::where('account_list_id',$data_input['account_list_id'])->update($postParam);
+	}
+	public function deleteUserBankAccount($id){
+		return UserBankModel::where('account_list_id',$id)->delete();
+	}
+	//withdraw
+	public function saveHistoryWithdraw($data_input){
+		$postParam = array(
+			'money_withdrawal' => intval($data_input['money_withdrawal']),
+			'transaction_date' =>  date("Y-m-d H:i:s"),
+			'transaction_status' => 'Issued',
+			'transaction_note' => " ",
+			'account_list_id' => $data_input['account_list_id'],
+		);	
+		return UserWithdrawHistoryModel::create($postParam);
+	}
+	public function updateWithdraw($current,$planned,$user_id){
+		$postParam = array(
+			'current_amount' => $current-$planned
+		);
+		return UserBankModel::where('user_id',$user_id)->update($postParam);
 	}
 
 	
