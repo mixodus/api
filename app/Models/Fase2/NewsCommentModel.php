@@ -17,12 +17,11 @@ class NewsCommentModel extends Model
 		'desc',
 		'attachment'
 	];
-	protected $hidden = ['created_at', 'modified_at','updated_at'];
+	protected $hidden = ['created_at', 'deleted_at','updated_at','status'];
 	
-	public function replies() {
+	public function comment_replies() {
 		return $this->hasMany('App\Models\Fase2\NewsCommentReplyModel', 'comment_id','comment_id');
 	}
-
 	public function user() {
 		return $this->belongsTo('App\Models\UserModels', 'user_id','user_id');
   	}

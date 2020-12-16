@@ -37,6 +37,10 @@ use App\Models\UserWithdrawHistoryModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
+//Fase 2
+use App\Models\Fase2\NewsCommentModel;
+use App\Models\Fase2\NewsCommentReplyModel;
+use App\Models\Fase2\JobTypeModel;
 
 class GetDataServices extends BaseController
 {
@@ -207,12 +211,12 @@ class GetDataServices extends BaseController
 		}else{
 			$query->limit(25);
 		}
-		$data = $query->orderBy('news_id','DESC')->get();
+		$data = $query->withCount('comments')->orderBy('news_id','DESC')->get();
 		if(!empty($id)){
 			$data = NewsModel::select('xin_news.*','xin_news_type.news_type_name as news_type','xin_news_type.news_colour')
 					->LeftJoin('xin_news_type', 'xin_news_type.news_type_id', '=', 'xin_news.news_type_id')
-					->where('xin_news.news_id',$id)
-					->get();
+					->where('xin_news.news_id',$id['id'])->with('comments')
+					->offset($id['start'])->limit($id['length'])->get(); 
 		}
 		$data = $data->map(function($key) use($data){
 			$key['news_photo_url']  = url('/')."/uploads/news/".$key['news_photo'];
@@ -220,7 +224,18 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
-		// =========================================Jobs MODULE ==============================================================
+
+	//====NEWS FASE 2
+	public function getNewsComment($data){
+		return NewsCommentModel::where('news_id',$data['news_id'])->with(['comment_replies','user'=>function($query){
+			$query->select('user_id','fullname');
+		}])->get(); 
+	}
+	public function getNewsCommentDetail($id){
+		return NewsCommentModel::where('comment_id',$id)->first(); 
+	}
+	
+	// =========================================Jobs MODULE ==============================================================
 	public function getJobs($id=null,$user_id=null,$keyword=null,$limit=null){
 		if(!empty($id)){
 			$data = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name')
