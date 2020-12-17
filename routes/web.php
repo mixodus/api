@@ -42,25 +42,25 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::get('/search/reference', 'API\GeneralController@referenceSeacrh'); 
 
 	Route::group(['middleware' => 'user.token'], function ($router) {
-		//friend
-		Route::get('/friend/list', 'API\FriendController@index'); // PENDING GA JELAS ALURNYA;
-		Route::get('/friend/mutual_friends', 'API\FriendController@mutual'); // PENDING 
-		Route::get('/friend/mutual_friends_id_only', 'API\FriendController@mutualDetail'); // PENDING 
-		Route::get('/friend/list_id_only', 'API\FriendController@listingId'); // PENDING 
-		Route::get('/friend/list_friend_request', 'API\FriendController@friendRequest'); // PENDING 
-		Route::get('/friend/list_friend_request_id', 'API\FriendController@friendRequestId');// PENDING 
+		//friend --API di hide di existing mobile (production)
+		Route::get('/friend/list', 'API\FriendController@index'); 
+		Route::get('/friend/list_id_only', 'API\FriendController@listingId'); 
+		Route::get('/friend/mutual_friends', 'API\FriendController@mutual'); 
+		Route::get('/friend/mutual_friends_id_only', 'API\FriendController@mutualId'); 
+		Route::get('/friend/list_friend_request', 'API\FriendController@friendRequestList');  
+		Route::get('/friend/list_friend_request_id', 'API\FriendController@friendRequestId'); 
 		Route::post('/friend/add_friend', 'API\FriendController@add');
 		Route::post('/friend/approve', 'API\FriendController@approve');
 		Route::post('/friend/unfriend', 'API\FriendController@unfriend');
 		Route::post('/friend/reject', 'API\FriendController@reject');
 
-		//bank account
+		//bank account --API tidak ada record di existing mobile (production)
 		Route::get('/accounts/list', 'API\UserBankAccountController@index');
 		Route::post('/accounts/add', 'API\UserBankAccountController@add');
 		Route::put('/accounts/edit', 'API\UserBankAccountController@update');
 		Route::delete('/accounts', 'API\UserBankAccountController@delete');
 
-		//withdraw
+		//withdraw --API tidak ada record di existing mobile (production)
 		Route::get('/withdraw', 'API\UserWithdrawController@index');
 		Route::get('/withdraw/results', 'API\UserWithdrawController@index');
 		Route::get('/withdraw/history', 'API\UserWithdrawController@history');

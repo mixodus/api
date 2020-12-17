@@ -125,9 +125,15 @@ class UserModels extends Model
 		return $this->hasMany('App\Models\PayslipSalaryModel', 'employee_id','user_id');
 	}
 	public function role()
-    {
-        return $this->hasOne(RolesModel::class, 'user_id', 'role_id')
-            ->select('access_role');
+	{
+		return $this->hasOne(RolesModel::class, 'user_id', 'role_id')
+			->select('access_role');
+	}
+	public function comment() {
+		return $this->hasMany('App\Models\Fase2\NewsCommentModel', 'user_id','user_id');
+	}
+	public function comment_replies() {
+		return $this->hasMany('App\Models\Fase2\NewsCommentReplyModel', 'reply_by','user_id');
 	}
 	
 		

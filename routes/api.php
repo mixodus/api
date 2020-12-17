@@ -125,12 +125,10 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::get('/point', 'API\PointController@index');
 	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth'); 
 	// Route::get('/point/leaderboard_challenge', 'API\PointController@leaderboardChallenge');//invalid old code
-
-
-
 	
+	//FASE 2
 
-
+    require 'fase2/api.php';
 
 
 });
