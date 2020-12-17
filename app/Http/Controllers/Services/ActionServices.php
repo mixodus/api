@@ -26,6 +26,10 @@ use App\Models\UserBankModel;
 use App\Models\UserWithdrawModel;
 use App\Models\UserWithdrawHistoryModel;
 use Firebase\JWT\JWT;
+//fase2
+use App\Models\Fase2\NewsCommentModel;
+use App\Models\Fase2\NewsCommentReplyModel;
+use App\Models\Fase2\JobTypeModel;
 
 class ActionServices extends BaseController
 {
@@ -316,6 +320,31 @@ class ActionServices extends BaseController
 			'current_amount' => $current-$planned
 		);
 		return UserBankModel::where('user_id',$user_id)->update($postParam);
+	}
+
+	//============================== Fase 2 ==============================
+	public function postComment($data,$user_id){
+		$postParam = array(
+			'news_id' => $data['news_id'],
+			'user_id' =>  $user_id,
+			'comment' => $data['comment'],
+		);
+		return NewsCommentModel::create($postParam);
+	}
+	public function postReplyComment($data,$user_id){
+		$postParam = array(
+			'comment_id' => $data['comment_id'],
+			'comment_by' =>  $data['user_id'],
+			'reply_by' =>  $user_id,
+			'comment' => $data['comment']
+		);		
+		if(!empty($data['attachment'])){
+			$postParam['attachment'] =  $data['attachment'];
+		}
+		if(!empty($data['desc'])){
+			$postParam['desc'] =  $data['desc'];
+		}
+		return NewsCommentReplyModel::create($postParam);
 	}
 
 	
