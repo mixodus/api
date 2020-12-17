@@ -14,21 +14,15 @@
 Route::get('/', function () {
 	return view('welcome');
 });
-Route::group(['middleware' => ['app.token', 'cors']], function ($router) {
-	Route::group([  'prefix' => 'user'], function () {
+Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {
+	Route::group(['prefix' => 'user'], function () {
 		Route::post('/login', 'API\UserController@login');
 		Route::post('/register', 'API\UserController@register');
 		Route::post('/reset_password', 'API\UserController@resetPassword');
 		Route::post('/reset_password_action', 'API\UserController@resetPasswordAction');
-		//API
-		//Jobs search
-		Route::get('/search/jobs', 'API\JobsController@index');
-		//search
-		Route::get('/search/generalsearch', 'API\GeneralController@generalSearch');
-		Route::get('/search/reference', 'API\GeneralController@referenceSeacrh'); 
 	});
 });
-Route::group(['middleware' => ['user.token','cors']], function ($router) {
+Route::group(['middleware' => ['user.token','cors','log.route']], function ($router) {
 	//friend --API di hide di existing mobile (production)
 	Route::get('/friend/list', 'API\FriendController@index'); 
 	Route::get('/friend/list_id_only', 'API\FriendController@listingId'); 
@@ -65,6 +59,13 @@ Route::group(['middleware' => ['user.token','cors']], function ($router) {
 
 	Route::post('/upload', 'General\UploadController@index'); // belum tau fungsinya untuk dimana
 	Route::post('/upload/do_upload', 'General\UploadController@upload'); // belum tau fungsinya untuk dimana
+	
+	//API
+	//Jobs search
+	Route::get('/search/jobs', 'API\JobsController@index');
+	//search
+	Route::get('/search/generalsearch', 'API\GeneralController@generalSearch');
+	Route::get('/search/reference', 'API\GeneralController@referenceSeacrh'); 
 
 	
 
