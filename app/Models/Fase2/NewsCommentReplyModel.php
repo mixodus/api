@@ -24,6 +24,6 @@ class NewsCommentReplyModel extends Model
 		return $this->belongsTo('App\Models\Fase2\NewsCommentModel', 'comment_id','comment_id');
 	}
 	public function user() {
-		return $this->belongsTo('App\Models\UserModels', 'user_id','reply_by');
+		return $this->belongsTo('App\Models\UserModels', 'reply_by','user_id');
   	}
 }

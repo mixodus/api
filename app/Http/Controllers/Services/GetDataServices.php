@@ -34,6 +34,7 @@ use App\Models\FriendModel;
 use App\Models\UserBankModel;
 use App\Models\UserWithdrawModel;
 use App\Models\UserWithdrawHistoryModel;
+use App\Models\BannerNewsModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -227,12 +228,27 @@ class GetDataServices extends BaseController
 
 	//====NEWS FASE 2
 	public function getNewsComment($data){
-		return NewsCommentModel::where('news_id',$data['news_id'])->with(['comment_replies','user'=>function($query){
+		return NewsCommentModel::where('news_id',$data['news_id'])->with(['user'=>function($query){
+			$query->select('user_id','fullname');
+		},'comment_replies'=>function($query){
+			$query->with(['user'=>function($query){
+				$query->select('user_id','fullname');
+			}]);
+		}])->get(); 
+	}
+	public function getNewsReplyComment($data){
+		return NewsCommentReplyModel::where('comment_id',$data['comment_id'])->with(['user'=>function($query){
 			$query->select('user_id','fullname');
 		}])->get(); 
 	}
 	public function getNewsCommentDetail($id){
-		return NewsCommentModel::where('comment_id',$id)->first(); 
+		return NewsCommentModel::where('comment_id',$id)->with(['user'=>function($query){
+			$query->select('user_id','fullname');
+		},'comment_replies'=>function($query){
+			$query->with(['user'=>function($query){
+				$query->select('user_id','fullname');
+			}]);
+		}])->first(); 
 	}
 	
 	// =========================================Jobs MODULE ==============================================================
@@ -290,6 +306,11 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
+	///====Jobs Fase 2
+	
+	public function getJobTypeList(){
+		return JobTypeModel::select('job_type_id','type')->get(); 
+	}
 	// =========================================EVENT MODULE ==============================================================
 	public function homeEvent($user_id,$event_id=null){
 		$data = null;
@@ -336,6 +357,30 @@ class GetDataServices extends BaseController
 				$key->banners_type = "challenge";
 				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->banners_photo;
 
+			}
+			return $key;
+		});
+		return $data;
+	}
+	public function getBannerNews($limit)
+	{
+		$query = BannerNewsModel::select('xin_banners_news.*','xin_news.news_url as banner_url')->LeftJoin('xin_news', 'xin_banners_news.news_detail_id', '=', 'xin_news.news_id');
+		if($limit != null){
+			$query->limit($limit);
+		}
+		$data = $query->get();
+		$data = $data->map(function($key) use($data){
+			$key->banners_type = null;
+			$key->banners_photo_url = null;
+			if($key->banners_type_id == 1 ){
+				$key->banners_type = "event";
+				$key->banners_photo_url = url('/')."/uploads/event/".$key->banners_photo;
+			}elseif($key->banners_type_id == 2 ){
+				$key->banners_type = "news";
+				$key->banners_photo_url =url('/')."/uploads/news/".$key->banners_photo;
+			}elseif($key->banners_type_id == 3){
+				$key->banners_type = "challenge";
+				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->banners_photo;
 			}
 			return $key;
 		});

@@ -64,6 +64,7 @@ class Kernel extends HttpKernel
 		'user.token' => \App\Http\Middleware\UserToken::class,
 		'permission' => \App\Http\Middleware\Permission::class,
 		'cors' => \App\Http\Middleware\Cors::class,
+		'log.route' => \App\Http\Middleware\LogRoute::class
 	];
 
 	/**

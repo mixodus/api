@@ -21,7 +21,13 @@ class JobsController extends Controller
 	public function index(Request $request){
 		$rules = [
 			'start' => "nullable|integer",
-			'length' => "nullable|integer"
+			'length' => "nullable|integer",
+			'name' => "nullable|string",
+			'range_salary_start' => "nullable|integer",
+			'range_salary_end' => "nullable|integer",
+			'country_id' => "nullable|integer",
+			'province_id' => "nullable|integer",
+			'city_id' => "nullable|integer",
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
@@ -86,5 +92,14 @@ class JobsController extends Controller
 		$saveJobs = $this->actionServices->applyJob($request->job_id,$checkUser->user_id,$request->email,$request->contact_no);
 		$save_notif = $this->actionServices->postNotif(4,$request->job_id,$checkUser->user_id,'You are successfully apply to ' .$getData->job_title. ' job');
 		return $this->services->response(200,"You are successfully apply this job!", array());        
+	}
+	//================Jobs Type
+	public function getJobTypeList(Request $request){
+		$getData = $this->getDataServices->getJobTypeList();	
+		if ($getData) {
+			return $this->services->response(200,"Job Type",$getData);
+		}else{
+			return $this->services->response(200,"Job Type doesn't exist!",array());
+		}
 	}
 }

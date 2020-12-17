@@ -92,6 +92,22 @@ class NewsController extends Controller
 			return $this->services->response(200,"Komentar tidak ditemukan!");
 		}
 	}
+	public function getCommentDetail(Request $request){
+		$rules = [
+			'comment_id' => "required|integer"
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate))
+			return $checkValidate;
+		
+		$data = $this->getDataServices->getNewsCommentDetail($request->comment_id);	
+		if ($data) {
+			return $this->services->response(200,"Komentar Berita atau Artikel",$data);
+		}else{
+			return $this->services->response(200,"Komentar tidak ditemukan!");
+		}
+	}
 	public function getReplyComment(Request $request){
 		$rules = [
 			'comment_id' => "required|integer",
@@ -142,21 +158,17 @@ class NewsController extends Controller
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
 			'type' => "required|in:comment,reply_comment",
-			'comment_id' => "nullable|string",
-			'reply_id' => "nullable|string"
+			'comment_id' => "required_if:type,==,comment",
+			'reply_id' => "required_if:type,==,reply_comment"
 		];
 		if($request->type =="comment"){
 			$save = $this->actionServices->deleteComment($request->comment_id);
 		}else{
-			$save = $this->actionServices->deleteReplyComment($request->comment_id);
+			$save = $this->actionServices->deleteReplyComment($request->reply_id);
 		}
 		if(!$save)
 			return $this->services->response(503,"Server Error!");
 		 
-		$getPoint = $this->activity_point->where('activity_point_code', 'add_news_comment')->first();
-		if($getPoint) {
-			$save_trx_point = $this->actionServices->postTrxPoints("add_news_comment",$getPoint->activity_point_point,$checkUser->user_id,0,1);
-		}
-		return $this->services->response(200,"Komentar berhasil ditambahkan.",$request->all());
+		return $this->services->response(200,"Komentar berhasil dihapus.",$request->all());
 	}
 }

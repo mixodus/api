@@ -346,6 +346,14 @@ class ActionServices extends BaseController
 		}
 		return NewsCommentReplyModel::create($postParam);
 	}
+	
+	public function deleteComment($id){
+		return NewsCommentModel::where('comment_id',$id)->delete();
+	}
+
+	public function deleteReplyComment($id){
+		return NewsCommentReplyModel::where('reply_id',$id)->delete();
+	}
 
 	
 
