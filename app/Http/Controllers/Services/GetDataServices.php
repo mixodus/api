@@ -37,6 +37,10 @@ use App\Models\UserWithdrawHistoryModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
+//Fase 2
+use App\Models\Fase2\NewsCommentModel;
+use App\Models\Fase2\NewsCommentReplyModel;
+use App\Models\Fase2\JobTypeModel;
 
 class GetDataServices extends BaseController
 {
@@ -94,14 +98,12 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
-	public function getMutualFriend($friend_id,$user_id){
-		$list2 = ($this->userDatainArray($friend_id))['data'];
-		$list2 = $this->remove_element($user_id, $list2);
-
-		$data = array();
-		$data['count'] = sizeof($list2);
-		$data['data'] = $list2;
-		return $data;
+	function userIDinArray($array=null){
+		$query = UserModels::select('user_id');
+		if($array != null){
+			$query->whereIn('user_id',$array);
+		}
+		return $query->get();
 	}
 	public function getUserbyToken(Request $request){
 		$token = $request->header('X-Token');
@@ -209,12 +211,12 @@ class GetDataServices extends BaseController
 		}else{
 			$query->limit(25);
 		}
-		$data = $query->orderBy('news_id','DESC')->get();
+		$data = $query->withCount('comments')->orderBy('news_id','DESC')->get();
 		if(!empty($id)){
 			$data = NewsModel::select('xin_news.*','xin_news_type.news_type_name as news_type','xin_news_type.news_colour')
 					->LeftJoin('xin_news_type', 'xin_news_type.news_type_id', '=', 'xin_news.news_type_id')
-					->where('xin_news.news_id',$id)
-					->get();
+					->where('xin_news.news_id',$id['id'])->with('comments')
+					->offset($id['start'])->limit($id['length'])->get(); 
 		}
 		$data = $data->map(function($key) use($data){
 			$key['news_photo_url']  = url('/')."/uploads/news/".$key['news_photo'];
@@ -222,7 +224,18 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
-		// =========================================Jobs MODULE ==============================================================
+
+	//====NEWS FASE 2
+	public function getNewsComment($data){
+		return NewsCommentModel::where('news_id',$data['news_id'])->with(['comment_replies','user'=>function($query){
+			$query->select('user_id','fullname');
+		}])->get(); 
+	}
+	public function getNewsCommentDetail($id){
+		return NewsCommentModel::where('comment_id',$id)->first(); 
+	}
+	
+	// =========================================Jobs MODULE ==============================================================
 	public function getJobs($id=null,$user_id=null,$keyword=null,$limit=null){
 		if(!empty($id)){
 			$data = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name')
@@ -418,7 +431,7 @@ class GetDataServices extends BaseController
 	// =========================================FRIEND MODULE ==============================================================
 	public function get_all_friends_complete($user_id){
 		$data = EmployeeFriendshipModel::select('xin_friendship.uid2','xin_friendship.uid1')
-					->LeftJoin('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
+					->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
 					->where('xin_friendship.uid1',$user_id)
 					->groupBy('xin_friendship.uid2')
 					->get();
@@ -430,6 +443,30 @@ class GetDataServices extends BaseController
 		}	
 		$friendList = $this->userDatainArray($friendIdList);
 		return $friendList;
+	}
+	
+	public function getMutualFriend($friend_id,$user_id){
+		$list2 = ($this->userDatainArray($friend_id))['data'];
+		$list2 = $this->remove_element($user_id, $list2);
+
+		$data = array();
+		$data['count'] = sizeof($list2);
+		$data['data'] = $list2;
+		return $data;
+	}
+
+	
+	public function checkFriendStatus($friend_id,$user_id){
+		return FriendModel::select('*')->where('uid1',$friend_id)->where('uid2',$user_id)->get();
+	}
+
+	public function friendRequestList($user_id){
+		return  DB::select('SELECT t1.uid1,xin_employees.user_id, xin_employees.fullname, xin_employees.profile_picture,  
+		CONCAT("'.url('/').'/uploads/profile/'.'" ,xin_employees.profile_picture) AS profile_picture_url
+							FROM xin_friendship t1 
+							LEFT JOIN xin_employees ON t1.uid1 = xin_employees.user_id WHERE t1.uid2 = 9106');
+	
+		
 	}
 	// =========================================CHALLENGE MODULE ==============================================================
 	public function getChallengebyUser($user_id,$type=null){
@@ -604,10 +641,6 @@ class GetDataServices extends BaseController
 			return $raw;
 		});
 		return $data;
-	}
-	//Friend
-	public function checkFriendStatus($friend_id,$user_id){
-		return FriendModel::select('*')->where('uid1',$friend_id)->where('uid2',$user_id)->get();
 	}
 	//bank account
 	public function getUserBankAccount($user_id){

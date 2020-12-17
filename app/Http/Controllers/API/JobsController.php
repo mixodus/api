@@ -66,9 +66,9 @@ class JobsController extends Controller
 	   
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
-			'job_id' => "required",
-			'email' => "nullable",
-			'contact_no' => "nullable"
+			'job_id' => "required|integer",
+			'email' => "nullable|string",
+			'contact_no' => "nullable|max:13"
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 

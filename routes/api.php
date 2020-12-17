@@ -16,7 +16,7 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
 	return $request->user();
 });
-Route::group(['middleware' => 'user.token'], function ($router) {
+Route::group(['middleware' => ['user.token', 'cors']], function ($router) {
 	//Home
 	Route::get('/home', 'API\MainController@index');
 	Route::get('/level', 'API\MainController@Level');  
@@ -125,12 +125,10 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::get('/point', 'API\PointController@index');
 	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth'); 
 	// Route::get('/point/leaderboard_challenge', 'API\PointController@leaderboardChallenge');//invalid old code
-
-
-
 	
+	//FASE 2
 
-
+	require 'fase2/api.php';
 
 
 });
