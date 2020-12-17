@@ -16,12 +16,13 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
 	return $request->user();
 });
-Route::group(['middleware' => 'user.token'], function ($router) {
+Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 	//Home
 	Route::get('/home', 'API\MainController@index');
 	Route::get('/level', 'API\MainController@Level');  
 	Route::get('/event/all_ongoing', 'API\MainController@allOngoing');
 	Route::get('/home_event', 'API\MainController@homeEvent'); 
+	Route::get('/home_news', 'API\MainController@homeNews'); 
 
 	//User
 	Route::get('/profile', 'API\UserController@getProfile'); 
@@ -121,10 +122,14 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::put('/work_experience', 'API\WorkExperienceController@update');
 	Route::delete('/work_experience', 'API\WorkExperienceController@delete');
 
-
+	//point
+	Route::get('/point', 'API\PointController@index');
+	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth'); 
+	// Route::get('/point/leaderboard_challenge', 'API\PointController@leaderboardChallenge');//invalid old code
 	
+	//FASE 2
 
-
+	require 'fase2/api.php';
 
 
 });

@@ -21,7 +21,15 @@ use App\Models\ChallengeParticipants;
 use App\Models\JobsApplicationModel;
 use App\Models\WithdrawRewardModel;
 use App\Models\ReferralModel;
+use App\Models\FriendModel;
+use App\Models\UserBankModel;
+use App\Models\UserWithdrawModel;
+use App\Models\UserWithdrawHistoryModel;
 use Firebase\JWT\JWT;
+//fase2
+use App\Models\Fase2\NewsCommentModel;
+use App\Models\Fase2\NewsCommentReplyModel;
+use App\Models\Fase2\JobTypeModel;
 
 class ActionServices extends BaseController
 {
@@ -248,6 +256,103 @@ class ActionServices extends BaseController
 	}
 	public function deleteEmployeeWorkExperience($id){
 		return EmployeeWorkExperienceModel::where('work_experience_id',$id)->delete();
+	}
+
+	//friend
+	public function addFriend($friend_id,$user_id){
+		$postParam = array(
+			'uid1' => $user_id,
+			'uid2' => $friend_id
+		);	
+		return FriendModel::create($postParam);
+	}
+	public function approve($friend_id,$user_id){
+		$postParam = array(
+			'uid1' => $user_id,
+			'uid2' => $friend_id
+		);	
+		return FriendModel::create($postParam);
+	}
+	public function unFriend($friend_id,$user_id){
+		FriendModel::where('uid2',$friend_id)->where('uid1',$user_id)->delete();
+		return FriendModel::where('uid1',$friend_id)->where('uid2',$user_id)->delete();
+	}
+	public function reject($user_id,$friend_id){
+		return FriendModel::where('uid1',$friend_id)->where('uid2',$user_id)->delete();
+	}
+	//bank account
+	public function saveUserBankAccount($data_input,$user_id){
+		$postParam = array(
+			'employee_id' => $user_id,
+			'account_name' => $data_input['account_name'],
+			'account_number' => $data_input['account_number'],
+			'is_primary' => $data_input['is_primary'],
+			'bank_id' => $data_input['bank_id']
+		);	
+		return UserBankModel::create($postParam);
+	}
+	public function updateUserBankAccount($data_input,$user_id){
+		$postParam = array(
+			'employee_id' => $user_id,
+			'account_name' => $data_input['account_name'],
+			'account_number' => $data_input['account_number'],
+			'is_primary' => $data_input['is_primary'],
+			'bank_id' => $data_input['bank_id']
+		);
+		return UserBankModel::where('account_list_id',$data_input['account_list_id'])->update($postParam);
+	}
+	public function deleteUserBankAccount($id){
+		return UserBankModel::where('account_list_id',$id)->delete();
+	}
+	//withdraw
+	public function saveHistoryWithdraw($data_input){
+		$postParam = array(
+			'money_withdrawal' => intval($data_input['money_withdrawal']),
+			'transaction_date' =>  date("Y-m-d H:i:s"),
+			'transaction_status' => 'Issued',
+			'transaction_note' => " ",
+			'account_list_id' => $data_input['account_list_id'],
+		);	
+		return UserWithdrawHistoryModel::create($postParam);
+	}
+	public function updateWithdraw($current,$planned,$user_id){
+		$postParam = array(
+			'current_amount' => $current-$planned
+		);
+		return UserBankModel::where('user_id',$user_id)->update($postParam);
+	}
+
+	//============================== Fase 2 ==============================
+	public function postComment($data,$user_id){
+		$postParam = array(
+			'news_id' => $data['news_id'],
+			'user_id' =>  $user_id,
+			'comment' => $data['comment'],
+		);
+		return NewsCommentModel::create($postParam);
+	}
+	public function postReplyComment($data,$user_id){
+		$postParam = array(
+			'comment_id' => $data['comment_id'],
+			'comment_by' =>  $data['user_id'],
+			'reply_by' =>  $user_id,
+			'comment' => $data['comment']
+		);		
+		if(!empty($data['attachment'])){
+			$postParam['attachment'] =  $data['attachment'];
+		}
+		if(!empty($data['desc'])){
+			$postParam['desc'] =  $data['desc'];
+		}
+		return NewsCommentReplyModel::create($postParam);
+	}
+	
+	public function deleteComment($id){
+		return NewsCommentModel::where('comment_id',$id)->delete();
+	}
+
+	public function deleteReplyComment($id){
+		return NewsCommentReplyModel::where('reply_id',$id)->delete();
 	}
 
 	
