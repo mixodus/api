@@ -69,23 +69,23 @@ class UserController extends BaseController
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-        $PostRequest = array(
+		$PostRequest = array(
 			'user_id' => $this->services->randomid(4),
-            'fullname' => $this->services->clean_post($request['fullname']),
-            'username' => $this->services->clean_post($request['email']),
-            'email' => $this->services->clean_post($request['email']),
-            'password' => $this->services->password_generate($request->confirm_password),
-            'contact_no' => $this->services->clean_post($request['contact_no']),
-            'first_name' => '',
-            'last_name' => '',
-            'is_active' => 1,
-            'created_at' => date('Y-m-d h:i:s')
-        );
+			'fullname' => $this->services->clean_post($request['fullname']),
+			'username' => $this->services->clean_post($request['email']),
+			'email' => $this->services->clean_post($request['email']),
+			'password' => $this->services->password_generate($request->confirm_password),
+			'contact_no' => $this->services->clean_post($request['contact_no']),
+			'first_name' => '',
+			'last_name' => '',
+			'is_active' => 1,
+			'created_at' => date('Y-m-d h:i:s')
+		);
 		$saved = UserModels::create($PostRequest);
 
-        if(!$saved){
+		if(!$saved){
 			return $this->services->response(503,"Server Error!");
-        }
+		}
 		$getPoint = $this->activity_point->where('activity_point_code', 'registration')->first();
 		if($getPoint) {
 			$save_trx_point = $this->actionServices->postTrxPoints("registration",$getPoint->activity_point_point,$saved->user_id,0,1);
@@ -93,7 +93,7 @@ class UserController extends BaseController
 		return $this->services->response(200,"You have been successfully registered",$saved);
 	}
 	public function resetPassword(Request $request){
-        $rules = [
+		$rules = [
 			'email' => "required|string"
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
@@ -103,14 +103,14 @@ class UserController extends BaseController
 		}
 
 		$email = $this->services->clean_post($request['email']);
-        
-        // cek email available or not on xin_employee 
+		
+		// cek email available or not on xin_employee 
 		$checkUser = $this->users->where('username', $email)->first();
 		if (!$checkUser)
 			return $this->services->response(404,"User doesnt exist!");
 
 		// generate reset password on table 
-        $code = substr(md5(uniqid(mt_rand(), true)) , 0, 20);
+		$code = substr(md5(uniqid(mt_rand(), true)) , 0, 20);
 		$save_resetPassword = $this->actionServices->postResetPassword($email,$code);
 		
 		$data['link'] = env('URL_RESET').'/'.$code;
@@ -135,19 +135,19 @@ class UserController extends BaseController
 		if (!$checkCode)
 			return $this->services->response(400,"Error : Wrong verification code",null,1);
 		$today = date("Y-m-d H:i:s");
-        if($today > $checkCode->expired_at) 
+		if($today > $checkCode->expired_at) 
 			return $this->services->response(400,"Error : Your verification code have been expired",null,1);
-        
-        if($checkCode->is_used) 
+		
+		if($checkCode->is_used) 
 			return $this->services->response(400,"Error : Your verification code have been used",null,1);
-        
+		
 		
 		$checkUser = $this->users->where('email', $checkCode->email)->first();
 
 		$postUpdate['password'] = $this->services->password_generate($request->newpassword);
 		$updatePassword = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate);
 
-        // update reset password data 
+		// update reset password data 
 		$postUpdateReset['is_used'] = true;
 		$updatePassword = $this->reset_password->where('id', $checkCode->id)->update($postUpdateReset);
 
@@ -170,16 +170,16 @@ class UserController extends BaseController
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-        $checkUser = $this->getDataServices->getUserbyToken($request);
+		$checkUser = $this->getDataServices->getUserbyToken($request);
 
-        $postUpdate = array(
-            'country' => $request['country'],
-            'job_title' =>$request['job_title'],
-            'province' => $request['province'],
-            'expected_salary' => $request['expected_salary'],
-            'summary' => $request['summary'],
-            'currency_salary' => $request['currency_salary'],
-            'start_work_year' => $request['start_work_year']
+		$postUpdate = array(
+			'country' => $request['country'],
+			'job_title' =>$request['job_title'],
+			'province' => $request['province'],
+			'expected_salary' => $request['expected_salary'],
+			'summary' => $request['summary'],
+			'currency_salary' => $request['currency_salary'],
+			'start_work_year' => $request['start_work_year']
 		); 
 		
 		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
@@ -188,7 +188,7 @@ class UserController extends BaseController
 
 		if(!$updateProfile){
 			return $this->services->response(400,"Server Error!");
-        }
+		}
 		return $this->services->response(200,"Your profile has been updated!", $request->all());
 	}
 	
@@ -203,9 +203,9 @@ class UserController extends BaseController
 			return $checkValidate;
 		}
 
-        $checkUser = $this->getDataServices->getUserbyToken($request);
+		$checkUser = $this->getDataServices->getUserbyToken($request);
 
-        $postUpdate['skill_text']= $request->skill;
+		$postUpdate['skill_text']= $request->skill;
 		$updateSkill = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
 
 		//notif
@@ -217,7 +217,7 @@ class UserController extends BaseController
 		$save_trx_point = $this->actionServices->postTrxPoints("add_skill",$getPoint->activity_point_point,$checkUser->user_id,0,1);
 		if(!$updateSkill){
 			return $this->services->response(400,"Server Error!");
-        }
+		}
 		return $this->services->response(200,"Your skills has been updated!", $request->all());
 	}
 	public function changePassword(Request $request){
@@ -260,7 +260,7 @@ class UserController extends BaseController
 	}
 
 	public function updateProfile(Request $request){
-        $checkUser = $this->getDataServices->getUserbyToken($request);
+		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
 			'fullname' => "required|string",
 			'contact_no' => "required|string",
@@ -268,7 +268,7 @@ class UserController extends BaseController
 			'province' => "required|string",
 			'date_of_birth' => "required|string",
 			'marital_status' => "required|string",
-			'gender' => "required|string",
+			'gender' => "required|string|in:male,female,Male,Female",
 			'job_title' => "nullable|string",
 			'zip_code' => "nullable|string",
 			'summary' => "nullable|string",
@@ -295,12 +295,12 @@ class UserController extends BaseController
 
 		if(!$updateProfile){
 			return $this->services->response(400,"Server Error!");
-        }
+		}
 		return $this->services->response(200,"Your profile has been updated!", $request->all());
 	}
 	
 	public function uploadPicture(Request $request){
-        $checkUser = $this->getDataServices->getUserbyToken($request);
+		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
 			'photo' => "required"
 		];
@@ -311,9 +311,9 @@ class UserController extends BaseController
 		}
 
 		$image = $request->file('photo');
-        $imgname = time().'.'.$image->getClientOriginalExtension();
-        $destinationPath = public_path('/uploads/profile/');
-        $image->move($destinationPath, $imgname);
+		$imgname = time().'.'.$image->getClientOriginalExtension();
+		$destinationPath = public_path('/uploads/profile/');
+		$image->move($destinationPath, $imgname);
 		
 		$postUpdate['profile_picture'] = $imgname;
 
@@ -324,8 +324,8 @@ class UserController extends BaseController
 
 		if(!$updateProfile){
 			return $this->services->response(400,"Server Error!");
-        }
+		}
 		return $this->services->response(200,"Your profile has been updated!", array());
-            
-    }
+			
+	}
 }
