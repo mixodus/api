@@ -183,11 +183,22 @@ class GetDataServices extends BaseController
 		return EmployeeWorkExperienceModel::select('*')->where('employee_id',$user_id)->get();
 	}
 	public function employeeQualification($user_id){
-		return EmployeeQualificationModel::select('xin_employee_qualification.*','xin_qualification_education_level.name as education_level_name')->LeftJoin('xin_qualification_education_level', 'xin_qualification_education_level.education_level_id', '=', 'xin_employee_qualification.education_level_id')->where('xin_employee_qualification.employee_id',$user_id)->get();
+		$data = EmployeeQualificationModel::select('xin_employee_qualification.*','xin_qualification_education_level.name as education_level_name')->LeftJoin('xin_qualification_education_level', 'xin_qualification_education_level.education_level_id', '=', 'xin_employee_qualification.education_level_id')->where('xin_employee_qualification.employee_id',$user_id)->get();
+		
+		$data = $data->map(function($key){
+			$key['education_level_id']  = strval($key['education_level_id']); 
+			return $key;
+		});
+		return $data;
 	}
 	public function getWorkExperience($user_id){
-		return EmployeeProjectExperienceModel::select('xin_employee_project_experiences.*','xin_employee_work_experience.company_name')->LeftJoin('xin_employee_work_experience', 'xin_employee_work_experience.work_experience_id', '=', 'xin_employee_project_experiences.work_experience_id')
+		$data = EmployeeProjectExperienceModel::select('xin_employee_project_experiences.*','xin_employee_work_experience.company_name')->LeftJoin('xin_employee_work_experience', 'xin_employee_work_experience.work_experience_id', '=', 'xin_employee_project_experiences.work_experience_id')
 					->where('xin_employee_project_experiences.employee_id',$user_id)->get();
+		$data = $data->map(function($key){
+			$key['work_experience_id']  = strval($key['work_experience_id']); 
+			return $key;
+		});
+		return $data;
 	}
 	public function getCertification($user_id,$id=null){
 		$query = EmployeeCertification::select('*')->where('employee_id',$user_id);
