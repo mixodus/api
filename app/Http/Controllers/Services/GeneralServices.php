@@ -22,7 +22,7 @@ class GeneralServices extends BaseController
 				'status' => false,
 				'message' => $validator->messages()
 			];
-			return $response;
+			return response()->json($response, 406);
 		}
 	}
 	public function generateToken($dataUser,$key = false)
@@ -53,10 +53,11 @@ class GeneralServices extends BaseController
 			'message' => $msg,
 			'data' => $data,
 		];
-		if ($statusCode != 200) {
+		if ($statusCode != 200 && $data == array()) {
 			$response = [
 				'status' => false,
-				'message' => $msg
+				'message' => $msg,
+				'data' => $data
 			];
 		}
 		if ($with_alert != null && $statusCode != 200) {
