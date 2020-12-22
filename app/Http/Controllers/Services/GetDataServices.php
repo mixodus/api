@@ -34,6 +34,7 @@ use App\Models\FriendModel;
 use App\Models\UserBankModel;
 use App\Models\UserWithdrawModel;
 use App\Models\UserWithdrawHistoryModel;
+use App\Models\BannerNewsModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -261,14 +262,16 @@ class GetDataServices extends BaseController
 					->with(["applications" => function($q) use($user_id){
 						$q->where('xin_job_applications.user_id', '=', $user_id);
 					}])->first();
-			$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
-			$data->is_applied = false;
-			if($data->applications != null){
-				$data->is_applied = true;
+			if(!empty($data)){
+				$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
+				$data->is_applied = false;
+				if($data->applications != null){
+					$data->is_applied = true;
+				}
+				$system_setting = $this->getSettingApp(1);
+				$dateClose = new DateTime($data->date_of_closing);
+				$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
 			}
-			$system_setting = $this->getSettingApp(1);
-			$dateClose = new DateTime($data->date_of_closing);
-			$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
 		}else{
 			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo')
 					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
@@ -370,16 +373,16 @@ class GetDataServices extends BaseController
 		$data = $query->get();
 		$data = $data->map(function($key) use($data){
 			$key->banners_type = null;
-			$key->banners_photo_url = null;
+			$key->banners_photo_url = url('/')."/uploads/news/".$key->news_photo;
 			if($key->banners_type_id == 1 ){
 				$key->banners_type = "event";
-				$key->banners_photo_url = url('/')."/uploads/event/".$key->banners_photo;
+				$key->banners_photo_url = url('/')."/uploads/event/".$key->news_photo;
 			}elseif($key->banners_type_id == 2 ){
 				$key->banners_type = "news";
-				$key->banners_photo_url =url('/')."/uploads/news/".$key->banners_photo;
+				$key->banners_photo_url =url('/')."/uploads/news/".$key->news_photo;
 			}elseif($key->banners_type_id == 3){
 				$key->banners_type = "challenge";
-				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->banners_photo;
+				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->news_photo;
 			}
 			return $key;
 		});

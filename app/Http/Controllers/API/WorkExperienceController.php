@@ -39,10 +39,10 @@ class WorkExperienceController extends Controller
         $checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
 			'company_name' => "required|string",
-			'start_period_month' => "required|string",
-			'start_period_year' => "required|string",
-			'end_period_month' => "required|string",
-			'end_period_year' => "required|string",
+			'start_period_month' => "required|integer",
+			'start_period_year' => "required|integer",
+			'end_period_month' => "required|integer",
+			'end_period_year' => "required|integer",
 			'post' => "required|string",
 			'description' => "nullable|string"
 		];
@@ -67,10 +67,10 @@ class WorkExperienceController extends Controller
 		$rules = [
             'id' => "required",
 			'company_name' => "required",
-			'start_period_month' => "required|string",
-			'start_period_year' => "required|string",
-			'end_period_month' => "required|string",
-			'end_period_year' => "required|string",
+			'start_period_month' => "required|integer",
+			'start_period_year' => "required|integer",
+			'end_period_month' => "required|integer",
+			'end_period_year' => "required|integer",
 			'post' => "required|string",
 			'description' => "nullable|string"
         ];
@@ -81,7 +81,7 @@ class WorkExperienceController extends Controller
         }
 		$save = $this->actionServices->updateEmployeeWorkExperience($request->all(),$checkUser->user_id);
 		if(!$save){
-			return $this->services->response(503,"Server Error!");
+			return $this->services->response(406,"Server Error!");
         } 
         $save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Project experiences successfully updated');
         
@@ -97,7 +97,7 @@ class WorkExperienceController extends Controller
         }
 		$save = $this->actionServices->deleteEmployeeWorkExperience($request->id);
 		if(!$save){
-			return $this->services->response(503,"Server Error!");
+			return $this->services->response(406,"Server Error!");
         } 
         $save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Work Experience successfully deleted');
 

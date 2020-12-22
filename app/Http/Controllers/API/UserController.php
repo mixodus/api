@@ -49,10 +49,10 @@ class UserController extends BaseController
 
 				return $this->services->response(200,"login success",$data);
 			}else{
-				return $this->services->response(401,"Username and Password doesn't Match. Please Try Again !");
+				return $this->services->response(406,"Username and Password doesn't Match. Please Try Again !");
 			}
 		}else{
-			return $this->services->response(404,"User doesnt exist!");
+			return $this->services->response(406,"User doesnt exist!");
 		}
 	}
 
@@ -84,7 +84,7 @@ class UserController extends BaseController
 		$saved = UserModels::create($PostRequest);
 
 		if(!$saved){
-			return $this->services->response(503,"Server Error!");
+			return $this->services->response(406,"Server Error!");
 		}
 		$getPoint = $this->activity_point->where('activity_point_code', 'registration')->first();
 		if($getPoint) {
@@ -187,7 +187,7 @@ class UserController extends BaseController
 		$save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Your profile has been updated');
 
 		if(!$updateProfile){
-			return $this->services->response(400,"Server Error!");
+			return $this->services->response(406,"Server Error!");
 		}
 		return $this->services->response(200,"Your profile has been updated!", $request->all());
 	}
@@ -216,7 +216,7 @@ class UserController extends BaseController
 
 		$save_trx_point = $this->actionServices->postTrxPoints("add_skill",$getPoint->activity_point_point,$checkUser->user_id,0,1);
 		if(!$updateSkill){
-			return $this->services->response(400,"Server Error!");
+			return $this->services->response(406,"Server Error!");
 		}
 		return $this->services->response(200,"Your skills has been updated!", $request->all());
 	}
@@ -240,11 +240,11 @@ class UserController extends BaseController
 			$postUpdate['password'] = $this->services->password_generate($request->newpassword);
 			$updatePassword = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate);
 			if(!$updatePassword){
-				return $this->services->response(400,"Server Error!");
+				return $this->services->response(406,"Server Error!");
 			}
 			return $this->services->response(200,"You have been successfully change password.", $request->all());
 		}else{
-			return $this->services->response(401,"Invalid Current Password!");
+			return $this->services->response(406,"Invalid Current Password!");
 		}
 
 	}
@@ -252,7 +252,7 @@ class UserController extends BaseController
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 
 		if (!$checkUser)
-			return $this->services->response(404,"User doesnt exist!");
+			return $this->services->response(406,"User doesnt exist!");
 
 		$profile = $this->getDataServices->userDetail($checkUser->user_id);
 		
@@ -294,7 +294,7 @@ class UserController extends BaseController
 		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
 
 		if(!$updateProfile){
-			return $this->services->response(400,"Server Error!");
+			return $this->services->response(406,"Server Error!");
 		}
 		return $this->services->response(200,"Your profile has been updated!", $request->all());
 	}
@@ -323,7 +323,7 @@ class UserController extends BaseController
 		$save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Your photo successfully uploaded');
 
 		if(!$updateProfile){
-			return $this->services->response(400,"Server Error!");
+			return $this->services->response(406,"Server Error!");
 		}
 		return $this->services->response(200,"Your profile has been updated!", array());
 			

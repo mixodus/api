@@ -27,11 +27,11 @@ class CertificationController extends Controller
 	public function detail(Request $request,$id){
         $checkUser = $this->getDataServices->getUserbyToken($request);
 		$getCeriticationUser = $this->getDataServices->getCertification($checkUser->user_id,$id);
-        if (!$getCeriticationUser->isEmpty()) {
+        // if (!$getCeriticationUser->isEmpty()) { Menyesuaikan code dengan existing production
 			return $this->services->response(200,"Certification Detail",$getCeriticationUser);
-		}else{
-			return $this->services->response(404,"Certification not found!");
-		}
+		// }else{
+		// 	return $this->services->response(406,"Certification not found!");
+		// }
     }
     public function postData(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
@@ -48,7 +48,7 @@ class CertificationController extends Controller
 		if(empty($request['id']) AND $request['id'] == null){
 			$save = $this->actionServices->saveCertification($request->all(),$checkUser->user_id);
 			if(!$save){
-				return $this->services->response(503,"Terjadi Kesalahan Jaringan!");
+				return $this->services->response(406,"Terjadi Kesalahan Jaringan!");
 			} 
 			$save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Sertifikasi berhasil ditambahkan');
 			$getPoint = $this->activity_point->where('activity_point_code', 'add_certification')->first();
@@ -59,7 +59,7 @@ class CertificationController extends Controller
 		}else{
 			$save = $this->actionServices->updateCertification($request->all(),$checkUser->user_id);
 			if(!$save){
-				return $this->services->response(503,"Terjadi Kesalahan Jaringan!");
+				return $this->services->response(406,"Terjadi Kesalahan Jaringan!");
 			} 
 			return $this->services->response(200,"Sertifikasi berhasil diperbarui",$request->all());
 		}

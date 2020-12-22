@@ -23,6 +23,7 @@ class JobsController extends Controller
 			'start' => "nullable|integer",
 			'length' => "nullable|integer",
 			'name' => "nullable|string",
+			'q' => "nullable|string",
 			'range_salary_start' => "nullable|integer",
 			'range_salary_end' => "nullable|integer",
 			'country_id' => "nullable|integer",
@@ -40,21 +41,17 @@ class JobsController extends Controller
 		}else{
 			$getData = $this->getDataServices->getJobs();
 		}
-		
-		if (!$getData->isEmpty()) {
-			return $this->services->response(200,"Job Posting",$getData);
-		}else{
-			return $this->services->response(200,"Jobs not found!");
-		}
+	
+		return $this->services->response(200,"Job Posting",$getData);
 	}
 	public function detail(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$getData = $this->getDataServices->getJobs($request->id,$checkUser->user_id);	
-		$getData->makeHidden('applications');
 		if ($getData) {
+			$getData->makeHidden('applications');
 			return $this->services->response(200,"Job Posting",$getData);
 		}else{
-			return $this->services->response(200,"Job doesn't exist!");
+			return $this->services->response(404,"Job doesn't exist!");
 		}
 	}
 
@@ -62,10 +59,10 @@ class JobsController extends Controller
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$getData = $this->getDataServices->userJobsApplication($checkUser->user_id);	
 	   
-		if ($getData) {
+		if(count($getData)>0){
 			return $this->services->response(200,"Job application",$getData);
 		}else{
-			return $this->services->response(200,"Job application not found");
+			return $this->services->response(404,"Job application not found",array());
 		}
 	}
 	public function applyJobsApplication(Request $request){
