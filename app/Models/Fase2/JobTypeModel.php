@@ -18,4 +18,8 @@ class JobTypeModel extends Model
 	];
 	protected $hidden = ['created_at'];
 
+	public function jobtypeList() {
+		return $this->hasMany('App\Models\Fase2\JobTypeListModel', 'type_id','job_type_id');
+	}
+
 }

@@ -49,7 +49,7 @@ class NewsController extends Controller
 		if (!$getNews->isEmpty()) {
 			return $this->services->response(200,"List News",$getNews);
 		}else{
-			return $this->services->response(200,"News doesnt exist!");
+			return $this->services->response(200,"News doesnt exist!",array());
 		}
 	}
 	public function detail(Request $request){

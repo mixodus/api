@@ -27,8 +27,8 @@ use App\Models\JobsModel;
 use App\Models\JobsApplicationModel;
 use App\Models\SettingModel;
 use App\Models\BannerModel;
-use App\Models\BannerEventModel;
 use App\Models\CountryModel;
+use App\Models\BannerNewsModel;
 use App\Models\ReferralModel;
 use App\Models\FriendModel;
 use App\Models\UserBankModel;
@@ -251,16 +251,24 @@ class GetDataServices extends BaseController
 	}
 	
 	// =========================================Jobs MODULE ==============================================================
-	public function getJobs($id=null,$user_id=null,$keyword=null,$limit=null){
+	public function getJobs($id=null,$user_id=null,$filtering=null){
 		if(!empty($id)){
-			$data = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name')
+			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name',
+					'provinsi.nama as province','kabupaten.nama as city_name','kecamatan.nama as districts_name','kelurahan.nama as sub_districts_name')
 					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
 					->LeftJoin('xin_designations', 'xin_designations.designation_id', '=', 'xin_jobs.designation_id')
 					->LeftJoin('xin_job_type', 'xin_job_type.job_type_id', '=', 'xin_jobs.job_type')
-					->where('xin_jobs.job_id',$id)
-					->with(["applications" => function($q) use($user_id){
-						$q->where('xin_job_applications.user_id', '=', $user_id);
-					}])->first();
+					->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
+					->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
+					->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
+					->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
+					->where('xin_jobs.job_id',$id);
+			if($user_id != null && $user_id !=""){
+				$query->with(["applications" => function($q) use($user_id){
+					$q->where('xin_job_applications.user_id', '=', $user_id);
+				},'job_types']);
+			}
+			$data = $query->first();
 			$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
 			$data->is_applied = false;
 			if($data->applications != null){
@@ -270,16 +278,37 @@ class GetDataServices extends BaseController
 			$dateClose = new DateTime($data->date_of_closing);
 			$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
 		}else{
-			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo')
+			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo',
+					'provinsi.nama as province','kabupaten.nama as city_name','kecamatan.nama as districts_name','kelurahan.nama as sub_districts_name')
+					->with('job_types')
 					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
+					->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
+					->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
+					->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
+					->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
 					->where('xin_jobs.date_of_closing','>=',date('Y-m-d'));
-			if($keyword != null){
-				$query->where('xin_jobs.job_title','LIKE','%'.$keyword.'%');
-			}
-			if($limit != null){
-				$query->limit($limit);
-			}else{
-				$query->limit(100);
+			if($filtering != null){
+				if($filtering['start'] != null && $filtering['length'] !=null ){
+					$query->offset($start)->limit($length); 
+				}
+				if($filtering['name'] != null && $filtering['name'] !="" ){
+					$query->where('xin_jobs.job_title','LIKE','%'.$filtering['name'].'%');
+				}
+				if($filtering['range_salary_start'] != null && $filtering['range_salary_start'] !="" ){
+					$query->where('xin_jobs.salary_start','>=',$filtering['range_salary_start']);
+				}
+				if($filtering['range_salary_end'] != null && $filtering['range_salary_end'] !="" ){
+					$query->where('xin_jobs.salary_end','<=',$filtering['range_salary_end']);
+				}
+				if($filtering['country_id'] != null && $filtering['country_id'] !="" ){
+					$query->where('xin_jobs.country_id',$filtering['country_id']);
+				}
+				if($filtering['province'] != null && $filtering['province'] !="" ){
+					$query->where('xin_jobs.province',$filtering['province']);
+				}
+				if($filtering['city_id'] != null && $filtering['city_id'] !="" ){
+					$query->where('xin_jobs.city_id',$filtering['city_id']);
+				}
 			}
 			$data = $query->orderBy('job_id','DESC')->get();
 			$data = $data->map(function($key) use($data){
@@ -370,16 +399,16 @@ class GetDataServices extends BaseController
 		$data = $query->get();
 		$data = $data->map(function($key) use($data){
 			$key->banners_type = null;
-			$key->banners_photo_url = null;
+			$key->banners_photo_url = url('/')."/uploads/news/".$key->news_photo;
 			if($key->banners_type_id == 1 ){
 				$key->banners_type = "event";
-				$key->banners_photo_url = url('/')."/uploads/event/".$key->banners_photo;
+				$key->banners_photo_url = url('/')."/uploads/event/".$key->news_photo;
 			}elseif($key->banners_type_id == 2 ){
 				$key->banners_type = "news";
-				$key->banners_photo_url =url('/')."/uploads/news/".$key->banners_photo;
+				$key->banners_photo_url =url('/')."/uploads/news/".$key->news_photo;
 			}elseif($key->banners_type_id == 3){
 				$key->banners_type = "challenge";
-				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->banners_photo;
+				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->news_photo;
 			}
 			return $key;
 		});

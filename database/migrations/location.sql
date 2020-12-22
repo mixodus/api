@@ -1,20 +1,4 @@
-<?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
-
-class Fase2Locationtable extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
-    {
-        DB::unprepared("
-			
         DROP TABLE IF EXISTS jenis;
             CREATE TABLE IF NOT EXISTS jenis (
             id_jenis int(11) NOT NULL,
@@ -90284,16 +90268,3 @@ INSERT INTO kelurahan (id_kel, id_kec, nama, id_jenis) VALUES
 ('9271101002', '927110', 'Tampa Garam', 3),
 ('9271101003', '927110', 'Saoka', 3),
 ('9271101004', '927110', 'Tanjung Kasuari', 3);
-		");
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        //
-    }
-}
