@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Firebase\JWT\JWT;
 use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
 
 class UserToken
 {
@@ -23,7 +24,7 @@ class UserToken
                 'status' 	=> false,
                 'message' 	=> 'Unauthorized Access, invalid api key'
 			];
-            return response()->json($response, 401);
+            return response()->json($response, 406);
         }
 
         $token = $request->header('X-Token');
@@ -32,16 +33,26 @@ class UserToken
             return response()->json([
                 'status' => false,
                 'message' => 'X-Token not provided.'
-            ], 401);
+            ], 406);
         }
         try {
             $credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
             
-        } catch(ExpiredException $e) {
+        }catch(SignatureInvalidException $e) {
+            $data["classname"]= "Firebase\\JWT\\SignatureInvalidException";
             return response()->json([
-                'status' => 402,
-                'message' => 'Provided token is expired.'
-            ], 402);
+                'status' => false,
+                'message' => 'Provided Token is Expired',
+                'error'=> $data
+            ], 406);
+        } 
+        catch(ExpiredException $e) {
+            $data["classname"]= "Firebase\\JWT\\SignatureInvalidException";
+            return response()->json([
+                'status' => false,
+                'message' => 'Signature verification failed',
+                'error'=> $data
+            ], 406);
         } catch(Exception $e) {
             return response()->json([
                 'status' => (method_exists($e, 'getStatusCode')) ? $e->getStatusCode() : 500,

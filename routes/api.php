@@ -18,6 +18,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 	//Home
+	Route::get('/home/check_session', 'API\MainController@checkSession');
 	Route::get('/home', 'API\MainController@index');
 	Route::get('/level', 'API\MainController@Level');  
 	Route::get('/event/all_ongoing', 'API\MainController@allOngoing');

@@ -33,7 +33,11 @@ class WorkExperienceController extends Controller
         $checkUser = $this->getDataServices->getUserbyToken($request);
 		$getData = $this->getDataServices->employeeExperiences($checkUser->user_id);
 		
-		return $this->services->response(200,"Work Experience",$getData);
+		if (!$getData->isEmpty()) {
+			return $this->services->response(200,"Work Experience",$getData);
+		}else{
+			return $this->services->response(200,"Work Experience",array());
+		}
 	}
     public function create(Request $request){
         $checkUser = $this->getDataServices->getUserbyToken($request);
