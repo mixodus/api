@@ -182,11 +182,22 @@ class GetDataServices extends BaseController
 		return EmployeeWorkExperienceModel::select('*')->where('employee_id',$user_id)->get();
 	}
 	public function employeeQualification($user_id){
-		return EmployeeQualificationModel::select('xin_employee_qualification.*','xin_qualification_education_level.name as education_level_name')->LeftJoin('xin_qualification_education_level', 'xin_qualification_education_level.education_level_id', '=', 'xin_employee_qualification.education_level_id')->where('xin_employee_qualification.employee_id',$user_id)->get();
+		$data = EmployeeQualificationModel::select('xin_employee_qualification.*','xin_qualification_education_level.name as education_level_name')->LeftJoin('xin_qualification_education_level', 'xin_qualification_education_level.education_level_id', '=', 'xin_employee_qualification.education_level_id')->where('xin_employee_qualification.employee_id',$user_id)->get();
+		
+		$data = $data->map(function($key){
+			$key['education_level_id']  = strval($key['education_level_id']); 
+			return $key;
+		});
+		return $data;
 	}
 	public function getWorkExperience($user_id){
-		return EmployeeProjectExperienceModel::select('xin_employee_project_experiences.*','xin_employee_work_experience.company_name')->LeftJoin('xin_employee_work_experience', 'xin_employee_work_experience.work_experience_id', '=', 'xin_employee_project_experiences.work_experience_id')
+		$data = EmployeeProjectExperienceModel::select('xin_employee_project_experiences.*','xin_employee_work_experience.company_name')->LeftJoin('xin_employee_work_experience', 'xin_employee_work_experience.work_experience_id', '=', 'xin_employee_project_experiences.work_experience_id')
 					->where('xin_employee_project_experiences.employee_id',$user_id)->get();
+		$data = $data->map(function($key){
+			$key['work_experience_id']  = strval($key['work_experience_id']); 
+			return $key;
+		});
+		return $data;
 	}
 	public function getCertification($user_id,$id=null){
 		$query = EmployeeCertification::select('*')->where('employee_id',$user_id);
@@ -269,14 +280,17 @@ class GetDataServices extends BaseController
 				},'job_types']);
 			}
 			$data = $query->first();
-			$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
-			$data->is_applied = false;
-			if($data->applications != null){
-				$data->is_applied = true;
+
+			if(!empty($data)){
+				$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
+				$data->is_applied = false;
+				if($data->applications != null){
+					$data->is_applied = true;
+				}
+				$system_setting = $this->getSettingApp(1);
+				$dateClose = new DateTime($data->date_of_closing);
+				$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
 			}
-			$system_setting = $this->getSettingApp(1);
-			$dateClose = new DateTime($data->date_of_closing);
-			$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
 		}else{
 			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo',
 					'provinsi.nama as province','kabupaten.nama as city_name','kecamatan.nama as districts_name','kelurahan.nama as sub_districts_name')
@@ -288,27 +302,27 @@ class GetDataServices extends BaseController
 					->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
 					->where('xin_jobs.date_of_closing','>=',date('Y-m-d'));
 			if($filtering != null){
-				if($filtering['start'] != null && $filtering['length'] !=null ){
-					$query->offset($start)->limit($length); 
+				// if($filtering['start'] != null && $filtering['length'] !=null ){
+				// 	$query->offset($start)->limit($length); 
+				// }
+				if($filtering['q'] != null && $filtering['q'] !="" ){
+					$query->where('xin_jobs.job_title','LIKE','%'.$filtering['q'].'%');
 				}
-				if($filtering['name'] != null && $filtering['name'] !="" ){
-					$query->where('xin_jobs.job_title','LIKE','%'.$filtering['name'].'%');
-				}
-				if($filtering['range_salary_start'] != null && $filtering['range_salary_start'] !="" ){
-					$query->where('xin_jobs.salary_start','>=',$filtering['range_salary_start']);
-				}
-				if($filtering['range_salary_end'] != null && $filtering['range_salary_end'] !="" ){
-					$query->where('xin_jobs.salary_end','<=',$filtering['range_salary_end']);
-				}
-				if($filtering['country_id'] != null && $filtering['country_id'] !="" ){
-					$query->where('xin_jobs.country_id',$filtering['country_id']);
-				}
-				if($filtering['province'] != null && $filtering['province'] !="" ){
-					$query->where('xin_jobs.province',$filtering['province']);
-				}
-				if($filtering['city_id'] != null && $filtering['city_id'] !="" ){
-					$query->where('xin_jobs.city_id',$filtering['city_id']);
-				}
+				// if($filtering['range_salary_start'] != null && $filtering['range_salary_start'] !="" ){
+				// 	$query->where('xin_jobs.salary_start','>=',$filtering['range_salary_start']);
+				// }
+				// if($filtering['range_salary_end'] != null && $filtering['range_salary_end'] !="" ){
+				// 	$query->where('xin_jobs.salary_end','<=',$filtering['range_salary_end']);
+				// }
+				// if($filtering['country_id'] != null && $filtering['country_id'] !="" ){
+				// 	$query->where('xin_jobs.country_id',$filtering['country_id']);
+				// }
+				// if($filtering['province'] != null && $filtering['province'] !="" ){
+				// 	$query->where('xin_jobs.province',$filtering['province']);
+				// }
+				// if($filtering['city_id'] != null && $filtering['city_id'] !="" ){
+				// 	$query->where('xin_jobs.city_id',$filtering['city_id']);
+				// }
 			}
 			$data = $query->orderBy('job_id','DESC')->get();
 			$data = $data->map(function($key) use($data){

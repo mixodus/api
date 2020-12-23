@@ -22,4 +22,8 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	//Job filter
 	Route::get('/job/type-list', 'API\JobsController@getJobTypeList');
 	Route::get('/job', 'API\JobsController@index');
+
+	//mail verified
+	Route::get('/user/check-email', 'API\UserController@checkmailVerified');
+	Route::get('/user/verify-email', 'API\UserController@VerifyMail');
 });

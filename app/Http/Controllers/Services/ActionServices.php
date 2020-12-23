@@ -200,7 +200,7 @@ class ActionServices extends BaseController
 			'employee_id' => $user_id,
 			'field_of_study' =>$data['field_of_study']
 		);
-		return EmployeeCertification::where('certification_id',$data['id'])->update($postParam);
+		return EmployeeQualificationModel::where('qualification_id',$data['id'])->update($postParam);
 	}
 	public function deleteEmployeeEducation($id){
 		return EmployeeQualificationModel::where('qualification_id',$id)->delete();

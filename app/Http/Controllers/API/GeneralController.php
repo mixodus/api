@@ -55,4 +55,8 @@ class GeneralController extends Controller
 		$searchResult = ReferenceModel::select('*')->where('name','LIKE','%'.$request->q.'%')->where('category','LIKE','%'.$request->cat.'%')->get();
 		return $this->services->response(200,"Hasil Pencarian Referensi",$searchResult);
 	}
+	public function site(){
+        $data['title'] = "One Talent";
+        return view('general.sites', $data);
+    }
 }
