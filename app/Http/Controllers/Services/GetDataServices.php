@@ -59,7 +59,7 @@ class GetDataServices extends BaseController
 	// =========================================USER MODULE ===============================================================
 	function userData($id){
 		$data = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
-		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')->where('user_id',$id)->first();
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')->where('user_id',$id)->first();
 
 		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_picture'];
 
@@ -67,7 +67,7 @@ class GetDataServices extends BaseController
 	}
 	function searchuserData($user_id,$keyword){
 		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
-		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')
 		->where('user_id','!=',$user_id)->where('fullname','LIKE','%'.$keyword.'%');
 
 		$data = $query->get();
@@ -79,7 +79,7 @@ class GetDataServices extends BaseController
 	}
 	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null){
 		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
-		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text');
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp');
 		if($array != null){
 			$query->whereIn('user_id',$array);
 		}
@@ -113,7 +113,7 @@ class GetDataServices extends BaseController
 		return $checkAuth;
 	}
 	public function userDetail($id){
-		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')->with('work_experience','certification')->where('user_id',$id)->first();
+		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')->with('work_experience','certification')->where('user_id',$id)->first();
 		
 		//point
 		$point = $this->totalTrxPointbyUserId($id);

@@ -16,15 +16,16 @@ Route::get('/', function () {
 });
 
 //verify mail
+Route::get('/site/check-reset', 'API\UserController@checkResetPassword');
 Route::get('/sites', 'API\GeneralController@site');
 Route::get('/site/user/check-verify', 'API\UserController@checkmailVerify');
 Route::get('/sites/page-verify', 'API\UserController@PageVerify');
+Route::post('/site/reset_password_action', 'API\UserController@resetPasswordAction');
 Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {
 	Route::group(['prefix' => 'user'], function () {
 		Route::post('/login', 'API\UserController@login');
 		Route::post('/register', 'API\UserController@register');
 		Route::post('/reset_password', 'API\UserController@resetPassword');
-		Route::post('/reset_password_action', 'API\UserController@resetPasswordAction');
 	});
 });
 Route::group(['middleware' => ['user.token','cors','log.route']], function ($router) {

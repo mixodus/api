@@ -36,6 +36,8 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::post('/profile/skill', 'API\UserController@updateSkill'); 
 	Route::post('/profile/change_password', 'API\UserController@changePassword'); 
 	Route::post('/profile/photo', 'API\UserController@uploadPicture'); 
+	Route::get('/profile/check-npwp', 'API\UserController@checkNpwp'); 
+	Route::post('/profile/npwp', 'API\UserController@updateNpwp'); 
 
 	//News
 	Route::get('/news', 'API\NewsController@index'); 
