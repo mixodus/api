@@ -51,7 +51,7 @@ class JobsController extends Controller
 			$getData->makeHidden('applications');
 			return $this->services->response(200,"Job Posting",$getData);
 		}else{
-			return $this->services->response(404,"Job doesn't exist!");
+			return $this->services->response(404,"Job doesn't exist!",array());
 		}
 	}
 

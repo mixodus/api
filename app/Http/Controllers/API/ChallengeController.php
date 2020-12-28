@@ -32,7 +32,7 @@ class ChallengeController extends Controller
 		if (!$getData->isEmpty()) {
 			return $this->services->response(200,"Challenge List",$getData);
 		}else{
-			return $this->services->response(200,"Challenge not found!");
+			return $this->services->response(200,"Challenge not found!",array());
 		}
 	}
 	public function detail(Request $request,$id){
@@ -42,7 +42,7 @@ class ChallengeController extends Controller
 		if (!$getData->isEmpty()) {
 			return $this->services->response(200,"Challenge Detail",$getData[0]);
 		}else{
-			return $this->services->response(200,"Challenge not found!");
+			return $this->services->response(200,"Challenge not found!",(object) array());
 		}
 	}
 	public function history(Request $request){
@@ -62,7 +62,7 @@ class ChallengeController extends Controller
 		if (!$getData->isEmpty()) {
 			return $this->services->response(200,"Challenge List",$getData);
 		}else{
-			return $this->services->response(200,"Challenge not found!");
+			return $this->services->response(200,"Challenge not found!",array());
 		}
 	}
 	public function join(Request $request){
@@ -76,7 +76,6 @@ class ChallengeController extends Controller
 		}
 	   	
 		$checkUser = $this->getDataServices->getUserbyToken($request);
-	
 		$checkChallenge = $this->getDataServices->checkChallengeJoin($request->challenge_id,$checkUser->user_id);
 		if(!empty($checkChallenge)){
 			return $this->services->response(401,"Sorry, You are already registered this challenge");
@@ -95,11 +94,10 @@ class ChallengeController extends Controller
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-	   	
+
 		$checkUser = $this->getDataServices->getUserbyToken($request);
-	
 		$checkJoin = $this->getDataServices->getChallenge("detail",$request->challenge_id,$checkUser->user_id);
-		if(count($checkJoin[0]['me'])==0){
+		if(!empty($checkJoin['me'])){
 			return $this->services->response(401,"You have not join this challenge");
 		}
 		$getQuiz = array();
@@ -107,15 +105,14 @@ class ChallengeController extends Controller
 			$str_list_quiz = str_replace('##',",",$checkJoin[0]['me']['list_quiz_id']);
 			$str_list_quiz = str_replace("#","",$str_list_quiz);
 			$arr_id_quiz = explode(",",$str_list_quiz);
-		
-			$getQuiz = $this->getDataServices->getChallengeQuiz($arr_id_quiz);
+			$getQuiz = $this->getDataServices->getChallengeQuizNotIn($request->challenge_id,$arr_id_quiz);
 		}else{
 			$getQuiz = $this->getDataServices->getChallengeQuiz($request->challenge_id);
 		}
 		if (count($getQuiz)>0) {
 			return $this->services->response(200,"Quiz List",$getQuiz);
 		}else{
-			return $this->services->response(200,"Quiz not found!");
+			return $this->services->response(200,"Quiz not found!",array());
 		}
 	}
 	public function answer(Request $request){

@@ -33,7 +33,7 @@ class MainController extends Controller
 		if ($checkUser) {
 			return $this->services->response(200,"Data",$data);
 		}else{
-			return $this->services->response(200,"Data doesn't exist!");
+			return $this->services->response(200,"Data doesn't exist!",array());
 		}
 
 	}

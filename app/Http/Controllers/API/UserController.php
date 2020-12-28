@@ -259,6 +259,12 @@ class UserController extends BaseController
 		return response()->json($profile, 200);
 	}
 
+	public function friendProfile($id){
+		$profile = $this->getDataServices->userDetail($id);
+		
+		return response()->json($profile, 200);
+	}
+
 	public function updateProfile(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [

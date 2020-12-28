@@ -49,7 +49,7 @@ class NewsController extends Controller
 		if (!$getNews->isEmpty()) {
 			return $this->services->response(200,"List News",$getNews);
 		}else{
-			return $this->services->response(200,"News doesnt exist!");
+			return $this->services->response(200,"News doesnt exist!",array());
 		}
 	}
 	public function detail(Request $request){
@@ -68,7 +68,7 @@ class NewsController extends Controller
 		if (!$getNews->isEmpty()) {
 			return $this->services->response(200,"List News",$getNews);
 		}else{
-			return $this->services->response(200,"News doesnt exist!");
+			return $this->services->response(200,"News doesnt exist!",array());
 		}
 	}
 
@@ -89,7 +89,7 @@ class NewsController extends Controller
 		if (!$data->isEmpty()) {
 			return $this->services->response(200,"Komentar Berita atau Artikel",$data);
 		}else{
-			return $this->services->response(200,"Komentar tidak ditemukan!");
+			return $this->services->response(200,"Komentar tidak ditemukan!",array());
 		}
 	}
 	public function getCommentDetail(Request $request){
@@ -105,7 +105,7 @@ class NewsController extends Controller
 		if ($data) {
 			return $this->services->response(200,"Komentar Berita atau Artikel",$data);
 		}else{
-			return $this->services->response(200,"Komentar tidak ditemukan!");
+			return $this->services->response(200,"Komentar tidak ditemukan!",array());
 		}
 	}
 	public function getReplyComment(Request $request){
@@ -124,7 +124,7 @@ class NewsController extends Controller
 		if (!$data->isEmpty()) {
 			return $this->services->response(200,"Balasan Komentar",$data);
 		}else{
-			return $this->services->response(200,"Balasan komentar tidak ditemukan!");
+			return $this->services->response(200,"Balasan komentar tidak ditemukan!",array());
 		}
 	}
 	public function addComment(Request $request){
