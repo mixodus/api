@@ -90,7 +90,9 @@ class UserController extends BaseController
 		if($getPoint) {
 			$save_trx_point = $this->actionServices->postTrxPoints("registration",$getPoint->activity_point_point,$saved->user_id,0,1);
 		}
-		return $this->services->response(200,"You have been successfully registered",$saved);
+		
+		$email = $this->SendMailVerify($saved);
+		return $this->services->response(200,"You have been successfully registered, Please check your email to verify your email",$saved);
 	}
 	public function resetPassword(Request $request){
 		$rules = [
@@ -113,7 +115,7 @@ class UserController extends BaseController
 		$code = substr(md5(uniqid(mt_rand(), true)) , 0, 20);
 		$save_resetPassword = $this->actionServices->postResetPassword($email,$code);
 		
-		$data['link'] = env('URL_RESET').'/'.$code;
+		$data['link'] = env('URL_RESET').'?code='.$code.'&email='.$email;
 		$sendEmail = $this->services->sendmail('Reset Password | One Talents', $checkUser, 'reset_password', $data);
 	
 		return $this->services->response(200,"A confirmation email has been send to your email address ".$email,$sendEmail);
@@ -136,10 +138,12 @@ class UserController extends BaseController
 			return $this->services->response(400,"Error : Wrong verification code",null,1);
 		$today = date("Y-m-d H:i:s");
 		if($today > $checkCode->expired_at) 
-			return $this->services->response(400,"Error : Your verification code have been expired",null,1);
+			return redirect('sites')->with('alert-error','Error : Your verification code have been expired');
+			// return $this->services->response(400,"Error : Your verification code have been expired",null,1);
 		
 		if($checkCode->is_used) 
-			return $this->services->response(400,"Error : Your verification code have been used",null,1);
+			// return $this->services->response(400,"Error : Your verification code have been used",null,1);
+			return redirect('sites')->with('alert-error','Error : Your verification code have been used');
 		
 		
 		$checkUser = $this->users->where('email', $checkCode->email)->first();
@@ -151,7 +155,9 @@ class UserController extends BaseController
 		$postUpdateReset['is_used'] = true;
 		$updatePassword = $this->reset_password->where('id', $checkCode->id)->update($postUpdateReset);
 
-		return $this->services->response(200,"You have been successfully to reset password.",null,1);
+		// return $this->services->response(200,"You have been successfully to reset password.",null,1);
+		
+		return redirect('sites')->with('alert-success','Password berhasil diubah!');
 
 	}
 	
@@ -191,7 +197,6 @@ class UserController extends BaseController
 		}
 		return $this->services->response(200,"Your profile has been updated!", $request->all());
 	}
-	
 	public function updateSkill(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
@@ -258,7 +263,6 @@ class UserController extends BaseController
 		
 		return response()->json($profile, 200);
 	}
-
 	public function updateProfile(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
@@ -274,6 +278,7 @@ class UserController extends BaseController
 			'summary' => "nullable|string",
 			'address' => "nullable|string",
 			'profile_picture' => "nullable|string",
+			'npwp' => "nullable|string",
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
@@ -327,5 +332,103 @@ class UserController extends BaseController
 		}
 		return $this->services->response(200,"Your profile has been updated!", array());
 			
+	}
+	public function checkmailVerified(Request $request){
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+
+		if ($checkUser)
+			$data['is_mail_verified'] = $checkUser['is_mail_verified'];
+			$data['status'] = boolval($checkUser['is_mail_verified']);
+
+		return $this->services->response(200,"Status Email", $data);
+	}
+	public function checkmailVerify(Request $request){
+		$rules = [
+			'email' => "required|string",
+			'code' => "required|string",
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return redirect('sites')->with('alert-error','Invalid Parameters');
+		}
+		$checkVerif = $this->users->where('email',$request['email'])->where('email_verification_code',$request['code'])->first();
+		if(!empty($checkVerif)){
+			$postUpdate['email_verification_code'] = "";
+			$postUpdate['is_mail_verified'] = 1;
+			$update = UserModels::where('user_id', $checkVerif->user_id)->update($postUpdate);
+			
+			return redirect('sites')->with('alert-success','Email berhasil di verifikasi!');
+		}else{
+			return redirect('sites')->with('alert-error','Emailmu telah terverifikasi atau Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+		}
+	}
+	public function VerifyMail(Request $request){
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+		
+		if (!$checkUser)
+			return $this->services->response(404,"User doesnt exist!");
+		// send mail
+		return $this->SendMailVerify($checkUser);
+	}
+	public function SendMailVerify($userData){
+		$code = $userData->user_id.'000'.substr(md5(uniqid(mt_rand(), true)) , 0, 15);
+		$postUpdate['email_verification_code']  = $code;
+		$updateCodeVerif = $this->users->where('user_id', $userData->user_id)->update($postUpdate);
+		
+		$data['link'] = env('URL_VERIFY').'?code='.$code.'&email='.$userData->email;
+		$sendEmail = $this->services->sendmail('Verifikasi Email | One Talent', $userData, 'verify_email', $data);
+	
+		return $this->services->response(200,"Email Verifikasi telah dikirim ke email anda ".$userData->email,$sendEmail);
+	}
+	public function checkResetPassword(Request $request){
+		$rules = [
+			'email' => "required|string",
+			'code' => "required|string",
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return redirect('sites')->with('alert-error','Invalid Parameters');
+		}$checkVerif = $this->reset_password->where('code', $request['code'])->first();
+		if(!empty($checkVerif)){
+			$data['email'] = $request->email;
+			$data['code'] = $request->code;
+			$data['title'] = "One Talent";
+			return view('general.site_reset_password', $data);
+		}else{
+			return redirect('sites')->with('alert-error','Emailmu telah terverifikasi atau Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+		}
+		
+	}
+	public function checkNpwp(Request $request){
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+
+		if ($checkUser)
+			$data['npwp'] =$checkUser['npwp'];
+			$data['status_npwp'] = false;
+			if($checkUser['npwp'] != null && $checkUser['npwp'] != "")
+				$data['status_npwp'] = true;
+
+		return $this->services->response(200,"Status Email", $data);
+	}
+	
+	public function updateNpwp(Request $request){
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+		$rules = [
+			'npwp' => "required|string"
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+		}
+		$postUpdate = $request->all();
+		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
+
+		if(!$updateProfile){
+			return $this->services->response(406,"Server Error!");
+		}
+		return $this->services->response(200,"NPWP telah ditambahkan!", $request->all());
 	}
 }

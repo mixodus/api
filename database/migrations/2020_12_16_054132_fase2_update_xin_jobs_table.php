@@ -19,6 +19,7 @@ class Fase2UpdateXinJobsTable extends Migration
 			INSERT INTO `xin_currencies` (`currency_id`, `company_id`, `name`, `code`, `symbol`) VALUES
 			(2, NULL, 'Rupiah', 'Rp', NULL);
 		");
+		
 		Schema::table('xin_jobs', function($table) {
 			$table->integer('currency_id')->after('country')->default(2);
 			$table->integer('salary_start')->nullable();

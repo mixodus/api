@@ -19,4 +19,7 @@ class JobTypeListModel extends Model
 	public function job() {
 		return $this->belongsTo('App\Models\JobsModel', 'job_id','job_id');
 	}
+	public function jobtype() {
+		return $this->belongsTo('App\Models\Fase2\JobTypeModel', 'type_id','job_type_id');
+	}
 }

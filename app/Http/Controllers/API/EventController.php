@@ -32,11 +32,8 @@ class EventController extends Controller
 		}
 		$getEvent = $this->getDataServices->getEventList();	
 
-		if (!$getEvent->isEmpty()) {
-			return $this->services->response(200,"List Event",array('ongoing'=>$getEvent));
-		}else{
-			return $this->services->response(200,"Event doesnt exist!");
-        }
+		
+		return $this->services->response(200,"List Event",array('ongoing'=>$getEvent));
     }
     public function EventType($id) {
 		$getEvent = EventModel::where('event_type_id', $id)->get();

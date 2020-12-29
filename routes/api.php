@@ -16,6 +16,10 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
 	return $request->user();
 });
+
+//FASE 2
+
+require 'fase2/api.php';
 Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 	//Home
 	Route::get('/home/check_session', 'API\MainController@checkSession');
@@ -32,6 +36,8 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::post('/profile/skill', 'API\UserController@updateSkill'); 
 	Route::post('/profile/change_password', 'API\UserController@changePassword'); 
 	Route::post('/profile/photo', 'API\UserController@uploadPicture'); 
+	Route::get('/profile/check-npwp', 'API\UserController@checkNpwp'); 
+	Route::post('/profile/npwp', 'API\UserController@updateNpwp'); 
 
 	//News
 	Route::get('/news', 'API\NewsController@index'); 
@@ -128,9 +134,6 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth'); 
 	// Route::get('/point/leaderboard_challenge', 'API\PointController@leaderboardChallenge');//invalid old code
 	
-	//FASE 2
-
-	require 'fase2/api.php';
 
 
 });

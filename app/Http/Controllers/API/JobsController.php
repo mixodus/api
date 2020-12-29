@@ -22,12 +22,13 @@ class JobsController extends Controller
 		$rules = [
 			'start' => "nullable|integer",
 			'length' => "nullable|integer",
+			'q' => "nullable|string",
 			'name' => "nullable|string",
 			'q' => "nullable|string",
 			'range_salary_start' => "nullable|integer",
 			'range_salary_end' => "nullable|integer",
 			'country_id' => "nullable|integer",
-			'province_id' => "nullable|integer",
+			'province' => "nullable|integer",
 			'city_id' => "nullable|integer",
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
@@ -37,7 +38,7 @@ class JobsController extends Controller
 		}
 	   	
 		if($request['q'] != null || $request['q'] !=""){
-			$getData = $this->getDataServices->getJobs(null,null,$request['q']);	
+			$getData = $this->getDataServices->getJobs(null,null,$request->all());	
 		}else{
 			$getData = $this->getDataServices->getJobs();
 		}

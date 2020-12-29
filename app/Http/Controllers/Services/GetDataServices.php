@@ -27,14 +27,13 @@ use App\Models\JobsModel;
 use App\Models\JobsApplicationModel;
 use App\Models\SettingModel;
 use App\Models\BannerModel;
-use App\Models\BannerEventModel;
 use App\Models\CountryModel;
+use App\Models\BannerNewsModel;
 use App\Models\ReferralModel;
 use App\Models\FriendModel;
 use App\Models\UserBankModel;
 use App\Models\UserWithdrawModel;
 use App\Models\UserWithdrawHistoryModel;
-use App\Models\BannerNewsModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -60,7 +59,7 @@ class GetDataServices extends BaseController
 	// =========================================USER MODULE ===============================================================
 	function userData($id){
 		$data = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
-		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')->where('user_id',$id)->first();
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')->where('user_id',$id)->first();
 
 		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_picture'];
 
@@ -68,7 +67,7 @@ class GetDataServices extends BaseController
 	}
 	function searchuserData($user_id,$keyword){
 		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
-		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')
 		->where('user_id','!=',$user_id)->where('fullname','LIKE','%'.$keyword.'%');
 
 		$data = $query->get();
@@ -80,7 +79,7 @@ class GetDataServices extends BaseController
 	}
 	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null){
 		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
-		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text');
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp');
 		if($array != null){
 			$query->whereIn('user_id',$array);
 		}
@@ -114,7 +113,7 @@ class GetDataServices extends BaseController
 		return $checkAuth;
 	}
 	public function userDetail($id){
-		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')->with('work_experience','certification')->where('user_id',$id)->first();
+		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')->with('work_experience','certification')->where('user_id',$id)->first();
 		
 		//point
 		$point = $this->totalTrxPointbyUserId($id);
@@ -263,16 +262,25 @@ class GetDataServices extends BaseController
 	}
 	
 	// =========================================Jobs MODULE ==============================================================
-	public function getJobs($id=null,$user_id=null,$keyword=null,$limit=null){
+	public function getJobs($id=null,$user_id=null,$filtering=null){
 		if(!empty($id)){
-			$data = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name')
+			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name',
+					'provinsi.nama as province','kabupaten.nama as city_name','kecamatan.nama as districts_name','kelurahan.nama as sub_districts_name')
 					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
 					->LeftJoin('xin_designations', 'xin_designations.designation_id', '=', 'xin_jobs.designation_id')
 					->LeftJoin('xin_job_type', 'xin_job_type.job_type_id', '=', 'xin_jobs.job_type')
-					->where('xin_jobs.job_id',$id)
-					->with(["applications" => function($q) use($user_id){
-						$q->where('xin_job_applications.user_id', '=', $user_id);
-					}])->first();
+					->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
+					->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
+					->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
+					->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
+					->where('xin_jobs.job_id',$id);
+			if($user_id != null && $user_id !=""){
+				$query->with(["applications" => function($q) use($user_id){
+					$q->where('xin_job_applications.user_id', '=', $user_id);
+				},'job_types']);
+			}
+			$data = $query->first();
+
 			if(!empty($data)){
 				$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
 				$data->is_applied = false;
@@ -284,16 +292,37 @@ class GetDataServices extends BaseController
 				$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
 			}
 		}else{
-			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo')
+			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo',
+					'provinsi.nama as province','kabupaten.nama as city_name','kecamatan.nama as districts_name','kelurahan.nama as sub_districts_name')
+					->with('job_types')
 					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
+					->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
+					->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
+					->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
+					->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
 					->where('xin_jobs.date_of_closing','>=',date('Y-m-d'));
-			if($keyword != null){
-				$query->where('xin_jobs.job_title','LIKE','%'.$keyword.'%');
-			}
-			if($limit != null){
-				$query->limit($limit);
-			}else{
-				$query->limit(100);
+			if($filtering != null){
+				// if($filtering['start'] != null && $filtering['length'] !=null ){
+				// 	$query->offset($start)->limit($length); 
+				// }
+				if($filtering['q'] != null && $filtering['q'] !="" ){
+					$query->where('xin_jobs.job_title','LIKE','%'.$filtering['q'].'%');
+				}
+				// if($filtering['range_salary_start'] != null && $filtering['range_salary_start'] !="" ){
+				// 	$query->where('xin_jobs.salary_start','>=',$filtering['range_salary_start']);
+				// }
+				// if($filtering['range_salary_end'] != null && $filtering['range_salary_end'] !="" ){
+				// 	$query->where('xin_jobs.salary_end','<=',$filtering['range_salary_end']);
+				// }
+				// if($filtering['country_id'] != null && $filtering['country_id'] !="" ){
+				// 	$query->where('xin_jobs.country_id',$filtering['country_id']);
+				// }
+				// if($filtering['province'] != null && $filtering['province'] !="" ){
+				// 	$query->where('xin_jobs.province',$filtering['province']);
+				// }
+				// if($filtering['city_id'] != null && $filtering['city_id'] !="" ){
+				// 	$query->where('xin_jobs.city_id',$filtering['city_id']);
+				// }
 			}
 			$data = $query->orderBy('job_id','DESC')->get();
 			$data = $data->map(function($key) use($data){
