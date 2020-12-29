@@ -39,5 +39,8 @@ class JobsModel extends Model
 
 	public function applications() {
 		return $this->belongsTo('App\Models\JobsApplicationModel', 'job_id','job_id');
+	}
+	public function job_types() {
+		return $this->hasMany('App\Models\Fase2\JobTypeListModel', 'job_id','job_id')->with(["jobtype"]);
   	}
 }

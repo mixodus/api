@@ -47,7 +47,7 @@ class GeneralServices extends BaseController
 
 	}
 
-	public function response($statusCode, $msg, $data=null,$with_alert= null){
+	public function response($statusCode, $msg, $data=array(),$with_alert= null){
 		$response = [
 			'status' => true,
 			'message' => $msg,
