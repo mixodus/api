@@ -137,6 +137,12 @@ class GetDataServices extends BaseController
 		//level
 		$level = LevelModel::select('*')->where('level_min_point','<=',$profile->points)->where('level_max_point','>=',$profile->points)->first();
 		$profile->level_icon_url = url('/')."/uploads/level/".$level->level_icon;
+		
+		$profile->profile_picture_url = "";
+		if(!empty($profile->profile_picture) && $profile->profile_picture != null){
+			$profile->profile_picture_url = url('/')."/uploads/profile/".$profile->profile_picture;
+		}
+		
 		$profile->level_name = $level->level_name;
 
 		$profile->total_achievement =  $this->totalAwardsbyUserId($id);
@@ -150,7 +156,6 @@ class GetDataServices extends BaseController
 		//certification
 		$collect = collect($profile->certifications);
 		$profile->certification  = $collect->map(function($key) use($collect){
-			
 			$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
 			return $key;
 		});

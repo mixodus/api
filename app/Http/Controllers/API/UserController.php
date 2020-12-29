@@ -279,24 +279,48 @@ class UserController extends BaseController
 			'zip_code' => "nullable|string",
 			'summary' => "nullable|string",
 			'address' => "nullable|string",
-			'profile_picture' => "nullable|string",
+			'profile_picture' => "nullable",
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-		$postUpdate = $request->all();
+		$postUpdate = $request->except(['r','_method','profile_picture_url']);
 		$postUpdate['profile_picture'] = "";
-		if($request->profile_picture != null){
-			$image = $request->file('photo');
-			$imgname = time().'.'.$image->getClientOriginalExtension();
-			$destinationPath = public_path('/uploads/profile/');
-			$image->move($destinationPath, $imgname);
+		if($request->profile_picture != null && $request->profile_picture != null){
+			// $image = $request->file('profile_picture');
+			// $imgname = time().'.'.$image->getClientOriginalExtension();
+			// $img = str_replace('data:image/jpeg;base64,', '', $request['profile_picture']);
+            // $img = str_replace(' ', '+', $img);
+            // $data_file = base64_decode($img);
+			// $destinationPath = public_path('/uploads/profile/');
+            // $imgname = "profile_".round(microtime(true)).".jpeg";
+			// $img->move($destinationPath, $data_file);
+			$extension = explode('/', explode(':', substr($request->profile_picture, 0, strpos($request->profile_picture, ';')))[1])[1];
+			// $image = $request->profile_picture;  // your base64 encoded
+			// $image = str_replace('data:image/png;base64,', '', $image);
+			// $image = str_replace(' ', '+', $image);
+			// $imageName = str_random(10).'.'.$extension;
+			$folder = 'uploads/profile/';
+			if($extension =="jpeg"){
+				$img = str_replace('data:image/jpeg;base64,', '', $request['profile_picture']);
+			}elseif($extension == "png"){
+				$img = str_replace('data:image/png;base64,', '', $request['profile_picture']);
+			}elseif($extension =="jpg"){
+				$img = str_replace('data:image/jpg;base64,', '', $request['profile_picture']);
+			}else{
+				return $this->services->response(406,"Format gambar tidak mendukung!");
+			}
+            $img = str_replace(' ', '+', $img);
+            $data_file = base64_decode($img);
+            $filename = "profile_".round(microtime(true)).'.'.$extension;
+            $path = $folder . $filename;
+			file_put_contents($path, $data_file);
 			
-			$postUpdate['profile_picture'] = $imgname;
+			$postUpdate['profile_picture'] = $filename;
 		}
-		
+		// return $postUpdate;
 		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
 
 		if(!$updateProfile){
