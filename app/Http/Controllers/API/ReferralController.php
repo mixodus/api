@@ -37,9 +37,9 @@ class ReferralController extends Controller
 		$getData = $this->getDataServices->getReferralMember($checkUser->user_id);
 		
 		if (!$getData->isEmpty()) {
-			return $this->services->response(200,"Referral List",$getData);
+			return $this->services->response(200,"Daftar Rujukan",$getData);
 		}else{
-			return $this->services->response(200,"Referral not found!");
+			return $this->services->response(200,"Rujukan tidak ditemukan");
 		}
 	}
 	public function getReferralMemberSuccess(Request $request){
@@ -47,7 +47,7 @@ class ReferralController extends Controller
 		$getData = $this->getDataServices->ValidateReferralPoints($checkUser->user_id);
 	  
 		if ($getData->isEmpty()) {
-			return $this->services->response(200,"Referral not found!");
+			return $this->services->response(200,"Rujukan tidak ditemukan");
 		}
 		//update data (gatau fungsinya ada di code lama)
 		foreach($getData as $row){
@@ -68,7 +68,7 @@ class ReferralController extends Controller
 				$updateStatusRefferal = $this->actionServices->updateReferral("successful_referral",$row->referral_id);
 			}
 		}
-		return $this->services->response(200,"Referral List",$getData);
+		return $this->services->response(200,"Daftar Rujukan",$getData);
 	}
 	// kedepannya akan ada upload cv
 	public function AssignMember(Request $request){
@@ -91,8 +91,8 @@ class ReferralController extends Controller
 		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
 		$saveReferral = $this->actionServices->saveReferral($request->all(),$checkUser->user_id,$status[0]);
 		if(!$saveReferral){
-			return $this->services->response(503,"Server Error!");
+			return $this->services->response(503,"Kesalahan Jaringan!");
 		}  
-		return $this->services->response(200,"You have successfully referral your friend.",$request->all());
+		return $this->services->response(200,"Berhasil mengirim Rujukan.",$request->all());
 	}   
 }

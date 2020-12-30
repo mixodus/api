@@ -16,13 +16,14 @@ class UploadController extends Controller
 			return $this->services->response(503,"File tidak ditemukan!");
 		}
 
-		$image = $request->file('userfile');
-		$imgname = $image->getClientOriginalName();
+		$file = $request->file('userfile');
+		$imgname = $file->getClientOriginalName();
 		$destinationPath = public_path('/uploads/certification/');
-		$image->move($destinationPath, $imgname);
+		$file->move($destinationPath, $imgname);
 		
-		// $request['certification_file'] = $imgname;
-		// $upload = $this->actionServices->updateCertificationfile($request->all());
+		$request['id'] = $id;
+		$request['certification_file'] = $imgname;
+		$upload = $this->actionServices->updateCertificationfile($request->all());
 		if(!$upload){
 			return $this->services->response(503,"Terjadi Kesalahan Jaringan!");
 		} 

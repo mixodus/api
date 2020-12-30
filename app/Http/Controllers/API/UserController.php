@@ -47,12 +47,12 @@ class UserController extends BaseController
 				$data = $this->services->generateToken($checkAuth);
 				$data['user'] = $this->getDataServices->userData($checkAuth->user_id);
 
-				return $this->services->response(200,"login success",$data);
+				return $this->services->response(200,"Login Berhasil",$data);
 			}else{
-				return $this->services->response(406,"Username and Password doesn't Match. Please Try Again !");
+				return $this->services->response(406,"Username atau password salah!");
 			}
 		}else{
-			return $this->services->response(406,"User doesnt exist!");
+			return $this->services->response(406,"User tidak ditemukan!");
 		}
 	}
 
@@ -84,7 +84,7 @@ class UserController extends BaseController
 		$saved = UserModels::create($PostRequest);
 
 		if(!$saved){
-			return $this->services->response(406,"Server Error!");
+			return $this->services->response(406,"Kesalahan Jaringan!");
 		}
 		$getPoint = $this->activity_point->where('activity_point_code', 'registration')->first();
 		if($getPoint) {
@@ -92,7 +92,7 @@ class UserController extends BaseController
 		}
 		
 		$email = $this->SendMailVerify($saved);
-		return $this->services->response(200,"You have been successfully registered, Please check your email to verify your email",$saved);
+		return $this->services->response(200,"Pendaftaran Berhasil, segera cek email dan verifikasi emailmu !",$saved);
 	}
 	public function resetPassword(Request $request){
 		$rules = [
@@ -109,7 +109,7 @@ class UserController extends BaseController
 		// cek email available or not on xin_employee 
 		$checkUser = $this->users->where('username', $email)->first();
 		if (!$checkUser)
-			return $this->services->response(404,"User doesnt exist!");
+			return $this->services->response(404,"User tidak ditemukan!");
 
 		// generate reset password on table 
 		$code = substr(md5(uniqid(mt_rand(), true)) , 0, 20);
@@ -118,7 +118,7 @@ class UserController extends BaseController
 		$data['link'] = env('URL_RESET').'?code='.$code.'&email='.$email;
 		$sendEmail = $this->services->sendmail('Reset Password | One Talents', $checkUser, 'reset_password', $data);
 	
-		return $this->services->response(200,"A confirmation email has been send to your email address ".$email,$sendEmail);
+		return $this->services->response(200,"Link verifikasi berhasil dikirim".$email,$sendEmail);
 	}
 
 	public function resetPasswordAction(Request $request){
@@ -135,15 +135,15 @@ class UserController extends BaseController
 		
 		$checkCode = $this->reset_password->where('code', $request['code'])->first();
 		if (!$checkCode)
-			return $this->services->response(400,"Error : Wrong verification code",null,1);
+			return $this->services->response(400,"Error : Verification code tidak ditemukan",null,1);
 		$today = date("Y-m-d H:i:s");
 		if($today > $checkCode->expired_at) 
-			return redirect('sites')->with('alert-error','Error : Your verification code have been expired');
+			return redirect('sites')->with('alert-error','Error : Verification telah expired');
 			// return $this->services->response(400,"Error : Your verification code have been expired",null,1);
 		
 		if($checkCode->is_used) 
 			// return $this->services->response(400,"Error : Your verification code have been used",null,1);
-			return redirect('sites')->with('alert-error','Error : Your verification code have been used');
+			return redirect('sites')->with('alert-error','Error : Verification code sudah pernah dipakai');
 		
 		
 		$checkUser = $this->users->where('email', $checkCode->email)->first();
@@ -158,7 +158,6 @@ class UserController extends BaseController
 		// return $this->services->response(200,"You have been successfully to reset password.",null,1);
 		
 		return redirect('sites')->with('alert-success','Password berhasil diubah!');
-
 	}
 	
 	public function completeProfile(Request $request){
@@ -190,12 +189,12 @@ class UserController extends BaseController
 		
 		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
 		//notif
-		$save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Your profile has been updated');
+		$save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Data Profile berhasil di update');
 
 		if(!$updateProfile){
-			return $this->services->response(406,"Server Error!");
+			return $this->services->response(406,"Kesalahan Jaringan!");
 		}
-		return $this->services->response(200,"Your profile has been updated!", $request->all());
+		return $this->services->response(200,"Data Profile berhasil di update!", $request->all());
 	}
 	public function updateSkill(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
@@ -221,9 +220,9 @@ class UserController extends BaseController
 
 		$save_trx_point = $this->actionServices->postTrxPoints("add_skill",$getPoint->activity_point_point,$checkUser->user_id,0,1);
 		if(!$updateSkill){
-			return $this->services->response(406,"Server Error!");
+			return $this->services->response(406,"Kesalahan Jaringan!");
 		}
-		return $this->services->response(200,"Your skills has been updated!", $request->all());
+		return $this->services->response(200,"Data skill berhasil di update!", $request->all());
 	}
 	public function changePassword(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
@@ -245,11 +244,11 @@ class UserController extends BaseController
 			$postUpdate['password'] = $this->services->password_generate($request->newpassword);
 			$updatePassword = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate);
 			if(!$updatePassword){
-				return $this->services->response(406,"Server Error!");
+				return $this->services->response(406,"Kesalahan Jaringan!");
 			}
-			return $this->services->response(200,"You have been successfully change password.", $request->all());
+			return $this->services->response(200,"Password berhasil diubah.", $request->all());
 		}else{
-			return $this->services->response(406,"Invalid Current Password!");
+			return $this->services->response(406,"Kata Sandi Saat Ini Tidak Valid!");
 		}
 
 	}
@@ -257,7 +256,7 @@ class UserController extends BaseController
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 
 		if (!$checkUser)
-			return $this->services->response(406,"User doesnt exist!");
+			return $this->services->response(406,"User tidak ditemukan!");
 
 		$profile = $this->getDataServices->userDetail($checkUser->user_id);
 		
@@ -299,9 +298,9 @@ class UserController extends BaseController
 		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
 
 		if(!$updateProfile){
-			return $this->services->response(406,"Server Error!");
+			return $this->services->response(406,"Kesalahan Jaringan!");
 		}
-		return $this->services->response(200,"Your profile has been updated!", $request->all());
+		return $this->services->response(200,"Data Profile berhasil diupdate!", $request->all());
 	}
 	
 	public function uploadPicture(Request $request){
@@ -328,9 +327,9 @@ class UserController extends BaseController
 		$save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Your photo successfully uploaded');
 
 		if(!$updateProfile){
-			return $this->services->response(406,"Server Error!");
+			return $this->services->response(406,"Kesalahan Jaringan!");
 		}
-		return $this->services->response(200,"Your profile has been updated!", array());
+		return $this->services->response(200,"Data Profile berhasil diupdate!", array());
 			
 	}
 	public function checkmailVerified(Request $request){
@@ -367,7 +366,7 @@ class UserController extends BaseController
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		
 		if (!$checkUser)
-			return $this->services->response(404,"User doesnt exist!");
+			return $this->services->response(404,"User tidak ditemukan!");
 		// send mail
 		return $this->SendMailVerify($checkUser);
 	}
@@ -427,7 +426,7 @@ class UserController extends BaseController
 		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
 
 		if(!$updateProfile){
-			return $this->services->response(406,"Server Error!");
+			return $this->services->response(406,"Kesalahan Jaringan!");
 		}
 		return $this->services->response(200,"NPWP telah ditambahkan!", $request->all());
 	}

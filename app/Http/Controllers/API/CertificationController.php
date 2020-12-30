@@ -71,11 +71,15 @@ class CertificationController extends Controller
 		$request['id'] = $id;
 
 		$image = $request->file('userfile');
-		$imgname = $image->getClientOriginalName();
+		$imgname = "certification_".round(microtime(true)).'.'.$request->file('userfile')->extension();
 		$destinationPath = public_path('/uploads/certification/');
 		$image->move($destinationPath, $imgname);
+
+		$folder = 'uploads/certification/';
+		$path = $folder . $imgname;
+		file_put_contents($path, $image);
 		
-		$request['certification_file'] = $imgname;
+		$request['certification_file'] = $imgname; 
 		$upload = $this->actionServices->updateCertificationfile($request->all());
 		if(!$upload){
 			return $this->services->response(503,"Terjadi Kesalahan Jaringan!");
