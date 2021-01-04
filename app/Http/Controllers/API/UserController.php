@@ -167,7 +167,7 @@ class UserController extends BaseController
 			'country' => "required|string",
 			'province' => "required|string",
 			'expected_salary' => "nullable|integer",
-			'summary' => "required|string",
+			'summary' => "nullable|string",
 			'currency_salary' => "required|string",
 			'start_work_year' => "nullable|string",
 		];
@@ -260,6 +260,16 @@ class UserController extends BaseController
 			return $this->services->response(406,"User doesnt exist!");
 
 		$profile = $this->getDataServices->userDetail($checkUser->user_id);
+		$profile['status_email'] = true;
+		if($profile['npwp']==null){
+			$profile['npwp'] = "";
+		}
+		if($profile['skill_text']==null){
+			$profile['skill_text'] = "";
+		}
+		if($checkUser['is_mail_verified']=="0"){
+			$profile['status_email'] = false;
+		}
 		
 		return response()->json($profile, 200);
 	}
@@ -386,8 +396,8 @@ class UserController extends BaseController
 		$checkVerif = $this->users->where('email',$request['email'])->where('email_verification_code',$request['code'])->first();
 		if(!empty($checkVerif)){
 			$postUpdate['email_verification_code'] = "";
-			$postUpdate['is_mail_verified'] = 1;
-			$update = UserModels::where('user_id', $checkVerif->user_id)->update($postUpdate);
+			$postUpdate['is_mail_verified'] = '1';
+			$update = UserModels::where('email', $request['email'])->update($postUpdate);
 			
 			return redirect('sites')->with('alert-success','Email berhasil di verifikasi!');
 		}else{

@@ -122,7 +122,7 @@ class GetDataServices extends BaseController
 		return $checkAuth;
 	}
 	public function userDetail($id){
-		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')->with('work_experience','certification')->where('user_id',$id)->first();
+		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp','is_mail_verified')->with('work_experience','certification')->where('user_id',$id)->first();
 		
 		//point
 		$point = $this->totalTrxPointbyUserId($id);
