@@ -16,12 +16,18 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
 	return $request->user();
 });
-Route::group(['middleware' => 'user.token'], function ($router) {
+
+//FASE 2
+
+require 'fase2/api.php';
+Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 	//Home
+	Route::get('/home/check_session', 'API\MainController@checkSession');
 	Route::get('/home', 'API\MainController@index');
 	Route::get('/level', 'API\MainController@Level');  
 	Route::get('/event/all_ongoing', 'API\MainController@allOngoing');
 	Route::get('/home_event', 'API\MainController@homeEvent'); 
+	Route::get('/home_news', 'API\MainController@homeNews'); 
 
 	//User
 	Route::get('/profile', 'API\UserController@getProfile'); 
@@ -30,6 +36,8 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::post('/profile/skill', 'API\UserController@updateSkill'); 
 	Route::post('/profile/change_password', 'API\UserController@changePassword'); 
 	Route::post('/profile/photo', 'API\UserController@uploadPicture'); 
+	Route::get('/profile/check-npwp', 'API\UserController@checkNpwp'); 
+	Route::post('/profile/npwp', 'API\UserController@updateNpwp'); 
 
 	//News
 	Route::get('/news', 'API\NewsController@index'); 
@@ -121,10 +129,11 @@ Route::group(['middleware' => 'user.token'], function ($router) {
 	Route::put('/work_experience', 'API\WorkExperienceController@update');
 	Route::delete('/work_experience', 'API\WorkExperienceController@delete');
 
-
+	//point
+	Route::get('/point', 'API\PointController@index');
+	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth'); 
+	// Route::get('/point/leaderboard_challenge', 'API\PointController@leaderboardChallenge');//invalid old code
 	
-
-
 
 
 });

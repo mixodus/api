@@ -22,7 +22,7 @@ class GeneralServices extends BaseController
 				'status' => false,
 				'message' => $validator->messages()
 			];
-			return $response;
+			return response()->json($response, 406);
 		}
 	}
 	public function generateToken($dataUser,$key = false)
@@ -39,7 +39,7 @@ class GeneralServices extends BaseController
 		$date = new DateTime();
 		$token['data'] = ['id' => $dataUser->user_id];
 		$token['iat'] = $date->getTimestamp();
-		$token['exp'] = $date->getTimestamp() + 7200;
+		$token['exp'] = $date->getTimestamp() + 86400*7; // a week 
 		
 		$data['token'] = JWT::encode($token, $key);
 		$data['expiration'] =  ["second"=>$exp,'hours' => $exp / (60 * 60 * 7)];
@@ -47,16 +47,17 @@ class GeneralServices extends BaseController
 
 	}
 
-	public function response($statusCode, $msg, $data=null,$with_alert= null){
+	public function response($statusCode, $msg, $data=array(),$with_alert= null){
 		$response = [
 			'status' => true,
 			'message' => $msg,
 			'data' => $data,
 		];
-		if ($statusCode != 200) {
+		if ($statusCode != 200 && $data == array()) {
 			$response = [
 				'status' => false,
-				'message' => $msg
+				'message' => $msg,
+				'data' => $data
 			];
 		}
 		if ($with_alert != null && $statusCode != 200) {

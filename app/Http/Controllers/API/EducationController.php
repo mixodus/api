@@ -32,8 +32,11 @@ class EducationController extends Controller
 		}
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$getData = $this->getDataServices->employeeQualification($checkUser->user_id);	
-
-		return $this->services->response(200,"Education",$getData);
+		if (!$getData->isEmpty()) {
+			return $this->services->response(200,"Education",$getData);
+		}else{
+			return $this->services->response(200,"Education",array());
+		}
 	}
 	public function create(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);

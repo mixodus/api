@@ -27,11 +27,20 @@ use App\Models\JobsModel;
 use App\Models\JobsApplicationModel;
 use App\Models\SettingModel;
 use App\Models\BannerModel;
-use App\Models\BannerEventModel;
 use App\Models\CountryModel;
+use App\Models\BannerNewsModel;
 use App\Models\ReferralModel;
+use App\Models\FriendModel;
+use App\Models\UserBankModel;
+use App\Models\UserWithdrawModel;
+use App\Models\UserWithdrawHistoryModel;
 use Firebase\JWT\JWT;
 use DateTime;
+use DB;
+//Fase 2
+use App\Models\Fase2\NewsCommentModel;
+use App\Models\Fase2\NewsCommentReplyModel;
+use App\Models\Fase2\JobTypeModel;
 
 class GetDataServices extends BaseController
 {
@@ -50,15 +59,27 @@ class GetDataServices extends BaseController
 	// =========================================USER MODULE ===============================================================
 	function userData($id){
 		$data = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
-		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')->where('user_id',$id)->first();
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')->where('user_id',$id)->first();
 
 		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_picture'];
 
 		return $data;
 	}
+	function searchuserData($user_id,$keyword){
+		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')
+		->where('user_id','!=',$user_id)->where('fullname','LIKE','%'.$keyword.'%');
+
+		$data = $query->get();
+		$data = $data->map(function($key) use($data){
+			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			return $key;
+		});
+		return $data;
+	}
 	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null){
 		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
-		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text');
+		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp');
 		if($array != null){
 			$query->whereIn('user_id',$array);
 		}
@@ -72,19 +93,17 @@ class GetDataServices extends BaseController
 		$data  = $data->map(function($key) use($array){
 			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
 			$key['pic']  = url('/')."/uploads/profile/".$key['profile_picture'];
-			$key['mutual_friends']  = $this->getMutualFriend($key['user_id'],$array);
+			// $key['mutual_friends']  = $this->getMutualFriend($key['user_id'],$array);
 			return $key;
 		});
 		return $data;
 	}
-	public function getMutualFriend($friend_id,$user_id){
-		$list2 = ($this->userDatainArray($friend_id))['data'];
-		$list2 = $this->remove_element($user_id, $list2);
-
-		$data = array();
-		$data['count'] = sizeof($list2);
-		$data['data'] = $list2;
-		return $data;
+	function userIDinArray($array=null){
+		$query = UserModels::select('user_id');
+		if($array != null){
+			$query->whereIn('user_id',$array);
+		}
+		return $query->get();
 	}
 	public function getUserbyToken(Request $request){
 		$token = $request->header('X-Token');
@@ -94,7 +113,7 @@ class GetDataServices extends BaseController
 		return $checkAuth;
 	}
 	public function userDetail($id){
-		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text')->with('work_experience','certification')->where('user_id',$id)->first();
+		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')->with('work_experience','certification')->where('user_id',$id)->first();
 		
 		//point
 		$point = $this->totalTrxPointbyUserId($id);
@@ -131,16 +150,54 @@ class GetDataServices extends BaseController
 	public function totalTrxPointbyUserId($user_id){
 		return TransactionsPoints::select('*')->where('employee_id',$user_id)->where('status',1)->sum('point');
 	}
+	public function getleaderboardMonth(){
+		$data =  TransactionsPoints::select(DB::raw('SUM(point) AS total_point'),'xin_transaction_point.created_at','xin_transaction_point.employee_id', 'fullname' , 'profile_picture')
+		->LeftJoin('xin_employees', 'xin_employees.user_id', '=', 'xin_transaction_point.employee_id')
+		->where('xin_transaction_point.status',1)
+		->whereYear('xin_transaction_point.created_at', date('Y'))
+		->whereMonth('xin_transaction_point.created_at', date('m'))
+		->groupBy('xin_transaction_point.employee_id')
+		->orderBy('total_point','Desc')
+		->limit(10)->get();
+		$data = $data->map(function($key) use($data){
+			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			$key['month']  = $key->created_at->format('Y-m');
+			return $key;
+		});
+
+		return $data;
+		
+
+		// $sql = 'SELECT sum(point) as total_point, substring(xin_transaction_point.created_at,1,7) as month , 
+		// xin_transaction_point.employee_id, fullname , profile_picture, IF(profile_picture IS NULL OR profile_picture=\'\',\'\',CONCAT("'.$url_image.'",profile_picture)) as profile_picture_url   FROM `xin_transaction_point` 
+		// LEFT JOIN xin_employees on (xin_transaction_point.employee_id = xin_employees.user_id) 
+		// WHERE xin_transaction_point.status=1  AND substring(xin_transaction_point.created_at,1,7) = ?
+		// GROUP BY employee_id , month order by total_point DESC limit 10';
+
+		
+	}
+
 	// =========================================EMPLOYEE DETAILS MODULE ==============================================================
 	public function employeeExperiences($user_id){
 		return EmployeeWorkExperienceModel::select('*')->where('employee_id',$user_id)->get();
 	}
 	public function employeeQualification($user_id){
-		return EmployeeQualificationModel::select('xin_employee_qualification.*','xin_qualification_education_level.name as education_level_name')->LeftJoin('xin_qualification_education_level', 'xin_qualification_education_level.education_level_id', '=', 'xin_employee_qualification.education_level_id')->where('xin_employee_qualification.employee_id',$user_id)->get();
+		$data = EmployeeQualificationModel::select('xin_employee_qualification.*','xin_qualification_education_level.name as education_level_name')->LeftJoin('xin_qualification_education_level', 'xin_qualification_education_level.education_level_id', '=', 'xin_employee_qualification.education_level_id')->where('xin_employee_qualification.employee_id',$user_id)->get();
+		
+		$data = $data->map(function($key){
+			$key['education_level_id']  = strval($key['education_level_id']); 
+			return $key;
+		});
+		return $data;
 	}
 	public function getWorkExperience($user_id){
-		return EmployeeProjectExperienceModel::select('xin_employee_project_experiences.*','xin_employee_work_experience.company_name')->LeftJoin('xin_employee_work_experience', 'xin_employee_work_experience.work_experience_id', '=', 'xin_employee_project_experiences.work_experience_id')
+		$data = EmployeeProjectExperienceModel::select('xin_employee_project_experiences.*','xin_employee_work_experience.company_name')->LeftJoin('xin_employee_work_experience', 'xin_employee_work_experience.work_experience_id', '=', 'xin_employee_project_experiences.work_experience_id')
 					->where('xin_employee_project_experiences.employee_id',$user_id)->get();
+		$data = $data->map(function($key){
+			$key['work_experience_id']  = strval($key['work_experience_id']); 
+			return $key;
+		});
+		return $data;
 	}
 	public function getCertification($user_id,$id=null){
 		$query = EmployeeCertification::select('*')->where('employee_id',$user_id);
@@ -165,12 +222,12 @@ class GetDataServices extends BaseController
 		}else{
 			$query->limit(25);
 		}
-		$data = $query->orderBy('news_id','DESC')->get();
+		$data = $query->withCount('comments')->orderBy('news_id','DESC')->get();
 		if(!empty($id)){
 			$data = NewsModel::select('xin_news.*','xin_news_type.news_type_name as news_type','xin_news_type.news_colour')
 					->LeftJoin('xin_news_type', 'xin_news_type.news_type_id', '=', 'xin_news.news_type_id')
-					->where('xin_news.news_id',$id)
-					->get();
+					->where('xin_news.news_id',$id['id'])->with('comments')
+					->offset($id['start'])->limit($id['length'])->get(); 
 		}
 		$data = $data->map(function($key) use($data){
 			$key['news_photo_url']  = url('/')."/uploads/news/".$key['news_photo'];
@@ -178,36 +235,94 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
-		// =========================================Jobs MODULE ==============================================================
-	public function getJobs($id=null,$user_id=null,$keyword=null,$limit=null){
+
+	//====NEWS FASE 2
+	public function getNewsComment($data){
+		return NewsCommentModel::where('news_id',$data['news_id'])->with(['user'=>function($query){
+			$query->select('user_id','fullname');
+		},'comment_replies'=>function($query){
+			$query->with(['user'=>function($query){
+				$query->select('user_id','fullname');
+			}]);
+		}])->get(); 
+	}
+	public function getNewsReplyComment($data){
+		return NewsCommentReplyModel::where('comment_id',$data['comment_id'])->with(['user'=>function($query){
+			$query->select('user_id','fullname');
+		}])->get(); 
+	}
+	public function getNewsCommentDetail($id){
+		return NewsCommentModel::where('comment_id',$id)->with(['user'=>function($query){
+			$query->select('user_id','fullname');
+		},'comment_replies'=>function($query){
+			$query->with(['user'=>function($query){
+				$query->select('user_id','fullname');
+			}]);
+		}])->first(); 
+	}
+	
+	// =========================================Jobs MODULE ==============================================================
+	public function getJobs($id=null,$user_id=null,$filtering=null){
 		if(!empty($id)){
-			$data = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name')
+			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name',
+					'provinsi.nama as province','kabupaten.nama as city_name','kecamatan.nama as districts_name','kelurahan.nama as sub_districts_name')
 					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
 					->LeftJoin('xin_designations', 'xin_designations.designation_id', '=', 'xin_jobs.designation_id')
 					->LeftJoin('xin_job_type', 'xin_job_type.job_type_id', '=', 'xin_jobs.job_type')
-					->where('xin_jobs.job_id',$id)
-					->with(["applications" => function($q) use($user_id){
-						$q->where('xin_job_applications.user_id', '=', $user_id);
-					}])->first();
-			$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
-			$data->is_applied = false;
-			if($data->applications != null){
-				$data->is_applied = true;
+					->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
+					->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
+					->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
+					->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
+					->where('xin_jobs.job_id',$id);
+			if($user_id != null && $user_id !=""){
+				$query->with(["applications" => function($q) use($user_id){
+					$q->where('xin_job_applications.user_id', '=', $user_id);
+				},'job_types']);
 			}
-			$system_setting = $this->getSettingApp(1);
-			$dateClose = new DateTime($data->date_of_closing);
-			$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
+			$data = $query->first();
+
+			if(!empty($data)){
+				$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
+				$data->is_applied = false;
+				if($data->applications != null){
+					$data->is_applied = true;
+				}
+				$system_setting = $this->getSettingApp(1);
+				$dateClose = new DateTime($data->date_of_closing);
+				$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
+			}
 		}else{
-			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo')
+			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo',
+					'provinsi.nama as province','kabupaten.nama as city_name','kecamatan.nama as districts_name','kelurahan.nama as sub_districts_name')
+					->with('job_types')
 					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
+					->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
+					->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
+					->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
+					->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
 					->where('xin_jobs.date_of_closing','>=',date('Y-m-d'));
-			if($keyword != null){
-				$query->where('xin_jobs.job_title','LIKE','%'.$keyword.'%');
-			}
-			if($limit != null){
-				$query->limit($limit);
-			}else{
-				$query->limit(100);
+			if($filtering != null){
+				// if($filtering['start'] != null && $filtering['length'] !=null ){
+				// 	$query->offset($start)->limit($length); 
+				// }
+				if($filtering['q'] != null && $filtering['q'] !="" ){
+					$query->where('xin_jobs.job_title','LIKE','%'.$filtering['q'].'%');
+				}
+				// if($filtering['range_salary_start'] != null && $filtering['range_salary_start'] !="" ){
+				// 	$query->where('xin_jobs.salary_start','>=',$filtering['range_salary_start']);
+				// }
+				// if($filtering['range_salary_end'] != null && $filtering['range_salary_end'] !="" ){
+				// 	$query->where('xin_jobs.salary_end','<=',$filtering['range_salary_end']);
+				// }
+				// if($filtering['country_id'] != null && $filtering['country_id'] !="" ){
+				// 	$query->where('xin_jobs.country_id',$filtering['country_id']);
+				// }
+				// if($filtering['province'] != null && $filtering['province'] !="" ){
+				// 	$query->where('xin_jobs.province',$filtering['province']);
+				// }
+				// if($filtering['city_id'] != null && $filtering['city_id'] !="" ){
+				// 	$query->where('xin_jobs.city_id',$filtering['city_id']);
+				// }
 			}
 			$data = $query->orderBy('job_id','DESC')->get();
 			$data = $data->map(function($key) use($data){
@@ -232,6 +347,11 @@ class GetDataServices extends BaseController
 			return $key;
 		});
 		return $data;
+	}
+	///====Jobs Fase 2
+	
+	public function getJobTypeList(){
+		return JobTypeModel::select('job_type_id','type')->get(); 
 	}
 	// =========================================EVENT MODULE ==============================================================
 	public function homeEvent($user_id,$event_id=null){
@@ -279,6 +399,30 @@ class GetDataServices extends BaseController
 				$key->banners_type = "challenge";
 				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->banners_photo;
 
+			}
+			return $key;
+		});
+		return $data;
+	}
+	public function getBannerNews($limit)
+	{
+		$query = BannerNewsModel::select('xin_banners_news.*','xin_news.news_url as banner_url')->LeftJoin('xin_news', 'xin_banners_news.news_detail_id', '=', 'xin_news.news_id');
+		if($limit != null){
+			$query->limit($limit);
+		}
+		$data = $query->get();
+		$data = $data->map(function($key) use($data){
+			$key->banners_type = null;
+			$key->banners_photo_url = url('/')."/uploads/news/".$key->news_photo;
+			if($key->banners_type_id == 1 ){
+				$key->banners_type = "event";
+				$key->banners_photo_url = url('/')."/uploads/event/".$key->news_photo;
+			}elseif($key->banners_type_id == 2 ){
+				$key->banners_type = "news";
+				$key->banners_photo_url =url('/')."/uploads/news/".$key->news_photo;
+			}elseif($key->banners_type_id == 3){
+				$key->banners_type = "challenge";
+				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->news_photo;
 			}
 			return $key;
 		});
@@ -374,7 +518,7 @@ class GetDataServices extends BaseController
 	// =========================================FRIEND MODULE ==============================================================
 	public function get_all_friends_complete($user_id){
 		$data = EmployeeFriendshipModel::select('xin_friendship.uid2','xin_friendship.uid1')
-					->LeftJoin('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
+					->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
 					->where('xin_friendship.uid1',$user_id)
 					->groupBy('xin_friendship.uid2')
 					->get();
@@ -386,6 +530,30 @@ class GetDataServices extends BaseController
 		}	
 		$friendList = $this->userDatainArray($friendIdList);
 		return $friendList;
+	}
+	
+	public function getMutualFriend($friend_id,$user_id){
+		$list2 = ($this->userDatainArray($friend_id))['data'];
+		$list2 = $this->remove_element($user_id, $list2);
+
+		$data = array();
+		$data['count'] = sizeof($list2);
+		$data['data'] = $list2;
+		return $data;
+	}
+
+	
+	public function checkFriendStatus($friend_id,$user_id){
+		return FriendModel::select('*')->where('uid1',$friend_id)->where('uid2',$user_id)->get();
+	}
+
+	public function friendRequestList($user_id){
+		return  DB::select('SELECT t1.uid1,xin_employees.user_id, xin_employees.fullname, xin_employees.profile_picture,  
+		CONCAT("'.url('/').'/uploads/profile/'.'" ,xin_employees.profile_picture) AS profile_picture_url
+							FROM xin_friendship t1 
+							LEFT JOIN xin_employees ON t1.uid1 = xin_employees.user_id WHERE t1.uid2 = 9106');
+	
+		
 	}
 	// =========================================CHALLENGE MODULE ==============================================================
 	public function getChallengebyUser($user_id,$type=null){
@@ -561,6 +729,39 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
+	//bank account
+	public function getUserBankAccount($user_id){
+		$data = UserBankModel::select('*')->where('employee_id',$user_id)->get();
+		$data = $data->map(function($raw) use($data){
+			$raw['user_id'] = $raw->employee_id;
+			$raw['primary_account'] = "No";
+			if($raw->isPrimary = 1)
+				$raw['primary_account'] = "Yes";
+			
+			return $raw;
+		});
+		return $data;
+	}
+	//withdraw
+	public function getWithdrawInfo($user_id){
+		// $data = DB::select('SELECT SUM(withdraw_reward) FROM xin_referral WHERE user_id = '.$user_id.' AND added_to_transaction_point IS NOT NULL');
+		// return $data;
+		// $postParam = array(
+		//     'total_amount' => $data
+		// );
+		// UserWithdrawModel::where('user_id',$user_id)->update($postParam);
+
+		// DB::update('UPDATE xin_withdraw SET total_amount = (SELECT SUM(withdraw_reward) FROM xin_referral WHERE user_id = ? AND added_to_transaction_point IS NOT NULL', [$user_id]);
+		return UserWithdrawModel::select('*')->where('user_id',$user_id)->get();
+	}
+	public function getWithdrawCurrentValue($user_id){
+		return UserWithdrawModel::select(DB::raw('SUM(current_amount) as current_amounts'))->where('user_id',$user_id)
+		->get();
+	}
+	public function getWithdrawHistory($user_id){
+		$id = 6;
+		return DB::select('SELECT *,withdraw_history_id as id from xin_withdraw_history JOIN xin_employee_bank_account ON xin_withdraw_history.account_list_id = xin_employee_bank_account.account_list_id WHERE xin_employee_bank_account.account_list_id = '.$id);
+	}
 	public function time_elapsed_string($datetime, $full = false) {
 		$now = new DateTime;
 		$ago = new DateTime($datetime);
@@ -603,6 +804,7 @@ class GetDataServices extends BaseController
 		}
 		return $result;
 	}
+	
 //================================Dashboard=======================================//
 	public function getAdminbyToken(Request $request){
 		$token = $request->header('X-Token');

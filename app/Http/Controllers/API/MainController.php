@@ -89,6 +89,21 @@ class MainController extends Controller
 		$data['banner'] = $this->getDataServices->getBannerEvent(5);
 		
 		return $this->services->response(200,"Banner Event",$data);
+	}
+	public function homeNews(Request $request){
+		$data['banner'] = $this->getDataServices->getBannerNews(5);
+		
+		return $this->services->response(200,"Banner News",$data);
+	}
+	public function checkSession(Request $request){
+		
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+
+		$response = [
+			'status' => true,
+			'message' => "Check session OK"
+		];
+		return response()->json($response, 200);
     }
     
 }
