@@ -33,6 +33,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/profile', 'API\UserController@getProfile'); 
 	Route::put('/profile', 'API\UserController@updateProfile'); 
 	Route::post('/profile', 'API\UserController@completeProfile'); 
+	Route::get('/profile/friend/{id}', 'API\UserController@friendProfile'); 
 	Route::post('/profile/skill', 'API\UserController@updateSkill'); 
 	Route::post('/profile/change_password', 'API\UserController@changePassword'); 
 	Route::post('/profile/photo', 'API\UserController@uploadPicture'); 

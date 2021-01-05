@@ -39,7 +39,7 @@ class ReferralController extends Controller
 		if (!$getData->isEmpty()) {
 			return $this->services->response(200,"Referral List",$getData);
 		}else{
-			return $this->services->response(200,"Referral not found!");
+			return $this->services->response(200,"Referral not found!",array());
 		}
 	}
 	public function getReferralMemberSuccess(Request $request){

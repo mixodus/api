@@ -12,17 +12,17 @@ class UploadController extends Controller
         return view('general.upload', $data);
     }
     public function upload(Request $request){
-        if($request->userfile == null){
-			return $this->services->response(503,"File tidak ditemukan!");
-		}
-
+        // if($request->userfile == null){
+		// 	return $this->services->response(503,"File tidak ditemukan!");
+		// }
 		$image = $request->file('userfile');
 		$imgname = $image->getClientOriginalName();
 		$destinationPath = public_path('/uploads/certification/');
 		$image->move($destinationPath, $imgname);
 		
-		// $request['certification_file'] = $imgname;
-		// $upload = $this->actionServices->updateCertificationfile($request->all());
+		$request['certification_file'] = $imgname;
+		$request['id'] = $id;
+		$upload = $this->actionServices->updateCertificationfile($request->all());
 		if(!$upload){
 			return $this->services->response(503,"Terjadi Kesalahan Jaringan!");
 		} 
