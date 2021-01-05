@@ -45,7 +45,7 @@ class CertificationController extends Controller
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-		if(empty($request['id']) AND $request['id'] == null){
+		if(empty($request['certification_id']) AND $request['certification_id'] == null){
 			$save = $this->actionServices->saveCertification($request->all(),$checkUser->user_id);
 			if(!$save){
 				return $this->services->response(406,"Terjadi Kesalahan Jaringan!");
@@ -65,13 +65,11 @@ class CertificationController extends Controller
 		}
     }
 	public function upload(Request $request,$id){
-        if($request->userfile == null){
-			return $this->services->response(503,"File tidak ditemukan!");
-		}
-		$request['id'] = $id;
-
+        // if($request->userfile == null){
+		// 	return $this->services->response(503,"File tidak ditemukan!");
+		// }
 		$image = $request->file('userfile');
-		$imgname = "certification_".round(microtime(true)).'.'.$request->file('userfile')->extension();
+		$imgname = "certification_".round(microtime(true)).'.pdf';
 		$destinationPath = public_path('/uploads/certification/');
 		$image->move($destinationPath, $imgname);
 
@@ -79,7 +77,8 @@ class CertificationController extends Controller
 		$path = $folder . $imgname;
 		file_put_contents($path, $image);
 		
-		$request['certification_file'] = $imgname; 
+		$request['certification_file'] = $imgname;
+		$request['id'] = $id;
 		$upload = $this->actionServices->updateCertificationfile($request->all());
 		if(!$upload){
 			return $this->services->response(503,"Terjadi Kesalahan Jaringan!");

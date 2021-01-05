@@ -222,7 +222,7 @@ class ActionServices extends BaseController
 			'title' => $data['title'],
 			'description' => $data['description']
 		);	
-		return EmployeeCertification::where('certification_id',$data['id'])->update($postParam);
+		return EmployeeCertification::where('certification_id',$data['certification_id'])->update($postParam);
 	}
 	public function updateCertificationfile($data){
 		$postParam['certification_file'] = $data['certification_file'];

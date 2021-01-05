@@ -39,7 +39,7 @@ class ReferralController extends Controller
 		if (!$getData->isEmpty()) {
 			return $this->services->response(200,"Daftar Rujukan",$getData);
 		}else{
-			return $this->services->response(200,"Rujukan tidak ditemukan");
+			return $this->services->response(200,"Rujukan tidak ditemukan",array());
 		}
 	}
 	public function getReferralMemberSuccess(Request $request){

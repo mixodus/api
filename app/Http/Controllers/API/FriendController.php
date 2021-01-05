@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Services\GeneralServices;
 use App\Http\Controllers\Services\GetDataServices;
+use App\Http\Controllers\Services\ActionServices;
 
 class FriendController extends Controller
 {
 	public function __construct(){
 		$this->services = new GeneralServices();
 		$this->getDataServices = new GetDataServices();
+		$this->actionServices = new ActionServices();
 	}
 	//listing friend
 	public function index(Request $request){
@@ -94,7 +96,7 @@ class FriendController extends Controller
 		if(!empty($checkValidate))
 			return $checkValidate;
 		
-		$checkStatus = $this->getDataServices->checkFriendStatus($request->to,$checkUser->user_id);
+		$checkStatus = $this->getDataServices->checkFriendStatusV2($request->to,$checkUser->user_id);
 		if(!empty($checkStatus)){
 			return $this->services->response(400,"User sudah menjadi teman / sedang menunggu persetujuan!");
 		}

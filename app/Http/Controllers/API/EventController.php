@@ -48,6 +48,8 @@ class EventController extends Controller
 					}
 					$today = date('Y-m-d');
 					$timeToday = date('H:i');
+					$key->event_ongoing = false;
+					$key->event_joinable = false;
 					if($key->event_date > $today){
 						$key->event_ongoing = false;
 						$key->event_joinable = true;
@@ -86,7 +88,9 @@ class EventController extends Controller
 		}
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$eventDetail = $this->getDataServices->homeEvent($checkUser->user_id,$request->event_id);
-
+		if(count($eventDetail)==0){
+			return $this->services->response(400,"Event Date is already expired !",array());
+		}
 		if($eventDetail[0]['event_is_join']== true){
 			return $this->services->response(402,"Kamu telah terdaftar di event ini!");
 		}
@@ -106,7 +110,7 @@ class EventController extends Controller
 		if (!$eventDetail->isEmpty()) {
 			return $this->services->response(200,"Detail",$eventDetail);
 		}else{
-			return $this->services->response(200,"Data tidak ditemukan!");
+			return $this->services->response(200,"Data tidak ditemukan!",array());
 		}
 	}
 	public function HistoryEvent(Request $request,$id){
