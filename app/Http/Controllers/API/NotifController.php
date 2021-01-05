@@ -27,12 +27,14 @@ class NotifController extends Controller
 		}
 		
 		$checkUser = $this->getDataServices->getUserbyToken($request);
-        $getData = $this->getDataServices->getNotif($checkUser->user_id);
-		$data = [
+		$getData = $this->getDataServices->getNotif($checkUser->user_id);
+		$response = [
+			'status' => true,
+			'message' =>"Notif Posting",
 			'totalLength' => count($getData),
 			'data'      => $getData
 		];
-		return $this->services->response(200,"Notif Posting",$data);
+		return response()->json($response, 200);
 	}
 	public function detail(Request $request,$id){
 		$rules = [
@@ -48,9 +50,9 @@ class NotifController extends Controller
 		$checkUser = $this->getDataServices->getUserbyToken($request);
         $getData = $this->getDataServices->getNotif($checkUser->user_id,$id);
 		if (!$getData->isEmpty()) {
-			return $this->services->response(200,"Notif Detail",$getData);
+			return $this->services->response(200,"Notifikasi Detail",$getData);
 		}else{
-			return $this->services->response(200,"News doesnt exist!",null);
+			return $this->services->response(200,"Data tidak ditemukan!",null);
 		}
 	}
 	public function newNotif(Request $request){
@@ -60,9 +62,9 @@ class NotifController extends Controller
 		
 		$getData = $this->getDataServices->getNotif($checkUser->user_id,null,1);
 		if (!$getData->isEmpty()) {
-			return $this->services->response(200,"Notif List",count($getData));
+			return $this->services->response(200,"Jumlah Notifikasi",count($getData));
 		}else{
-			return $this->services->response(200,"News doesnt exist!",null);
+			return $this->services->response(200,"Data tidak ditemuka!",0);
 		}
 	}
 	public function update(Request $request){
