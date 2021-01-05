@@ -156,6 +156,7 @@ class GetDataServices extends BaseController
 		$collect = collect($profile->certifications);
 		$profile->certification  = $collect->map(function($key) use($collect){
 			$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
+			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
 			return $key;
 		});
 

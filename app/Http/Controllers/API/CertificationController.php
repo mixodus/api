@@ -72,6 +72,10 @@ class CertificationController extends Controller
 		$imgname = "certification_".round(microtime(true)).'.pdf';
 		$destinationPath = public_path('/uploads/certification/');
 		$image->move($destinationPath, $imgname);
+
+		$folder = 'uploads/certification/';
+		$path = $folder . $imgname;
+		file_put_contents($path, $image);
 		
 		$request['certification_file'] = $imgname;
 		$request['id'] = $id;

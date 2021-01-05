@@ -67,7 +67,7 @@ class EventController extends Controller
 			});
 			return $this->services->response(200,"Event Type",$getEvent);
 		}else{
-			return $this->services->response(200,"Event Type Doesnt Exists!",array());
+			return $this->services->response(200,"Event Type tidak ditemukan!",array());
 		}
 	}
 
@@ -92,31 +92,31 @@ class EventController extends Controller
 			return $this->services->response(400,"Event Date is already expired !",array());
 		}
 		if($eventDetail[0]['event_is_join']== true){
-			return $this->services->response(402,"Sorry, already registered to this event");
+			return $this->services->response(402,"Kamu telah terdaftar di event ini!");
 		}
 		
 		$postParticipants = $this->actionServices->postParticipantEvent($request->all(),$checkUser->user_id);
 		//notif
 		$save_notif = $this->actionServices->postNotif(1,$request->event_id,$checkUser->user_id,'You are registered to ' .$eventDetail[0]['event_title']. ' and Waiting for Aprroval');
 		if(!$postParticipants){
-			return $this->services->response(400,"Any problem with server. Please contact admin !");
+			return $this->services->response(400,"Kesalahan server, tolong hubungi admin !");
 		}
-		return $this->services->response(200,"You are successfully registered to this event", $request->all());
+		return $this->services->response(200,"Pendaftaran berhasil!", $request->all());
 	}
 	public function detail(Request $request,$id){
 		
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$eventDetail = $this->getDataServices->getEventDetail($checkUser->user_id,$id);
 		if (!$eventDetail->isEmpty()) {
-			return $this->services->response(200,"Details",$eventDetail);
+			return $this->services->response(200,"Detail",$eventDetail);
 		}else{
-			return $this->services->response(200,"Event Not Found!",array());
+			return $this->services->response(200,"Data tidak ditemukan!",array());
 		}
 	}
 	public function HistoryEvent(Request $request,$id){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$data = $this->getDataServices->HistoryEvent($checkUser->user_id,$id);
 		
-		return $this->services->response(200,"List Events Done",$data);
+		return $this->services->response(200,"Daftar event yang sudah diikuti",$data);
     }
 }

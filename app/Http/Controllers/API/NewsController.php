@@ -47,9 +47,9 @@ class NewsController extends Controller
 		$getNews = $this->getDataServices->getNews();	
 
 		if (!$getNews->isEmpty()) {
-			return $this->services->response(200,"List News",$getNews);
+			return $this->services->response(200,"Berita dan Artikel",$getNews);
 		}else{
-			return $this->services->response(200,"News doesnt exist!",array());
+			return $this->services->response(200,"Berita / Artikel tidak ditemukan!",array());
 		}
 	}
 	public function detail(Request $request){
@@ -66,9 +66,9 @@ class NewsController extends Controller
 		}
 		$getNews = $this->getDataServices->getNews($request->all());
 		if (!$getNews->isEmpty()) {
-			return $this->services->response(200,"List News",$getNews);
+			return $this->services->response(200,"Berita dan Artikel",$getNews);
 		}else{
-			return $this->services->response(200,"News doesnt exist!",array());
+			return $this->services->response(200,"Data tidak ditemukan!",array());
 		}
 	}
 

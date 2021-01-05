@@ -29,6 +29,6 @@ class PeopleController extends Controller
 		if (!$getData->isEmpty())
 			$getData->makeHidden(['date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'zip_code','cash','points','skill_text']);
 
-		return $this->services->response(200,"People List",$getData);
+		return $this->services->response(200,"Daftar Jaringan",$getData);
 	}
 }

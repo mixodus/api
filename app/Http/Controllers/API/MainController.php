@@ -33,7 +33,7 @@ class MainController extends Controller
 		if ($checkUser) {
 			return $this->services->response(200,"Data",$data);
 		}else{
-			return $this->services->response(200,"Data doesn't exist!",array());
+			return $this->services->response(200,"Data tidak ditemukan!",array());
 		}
 
 	}
@@ -52,7 +52,7 @@ class MainController extends Controller
 			'ongoing_event' => $this->getDataServices->getEventList(),
 			'ongoing_challenge' =>  $this->getDataServices->getChallengeOngoing($request->start,$request->length)
 		];
-		return $this->services->response(200,"List Events Ongoing",$data);
+		return $this->services->response(200,"Daftar Event yang sedang berlangsung",$data);
 	}
 	public function level(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);

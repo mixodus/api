@@ -18,7 +18,7 @@ class UploadController extends Controller
 		$image = $request->file('userfile');
 		$imgname = $image->getClientOriginalName();
 		$destinationPath = public_path('/uploads/certification/');
-		$image->move($destinationPath, $imgname);
+		$file->move($destinationPath, $imgname);
 		
 		$request['certification_file'] = $imgname;
 		$request['id'] = $id;
