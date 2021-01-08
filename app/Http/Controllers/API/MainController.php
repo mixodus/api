@@ -20,6 +20,9 @@ class MainController extends Controller
 	}
 	public function index(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
+		if (!$checkUser) {
+			return $this->services->response(406,"User tidak ditemukan!",array());
+		}
 		$data['user'] = $this->getDataServices->userDetail($checkUser->user_id);
 		$data['friends'] = $this->getDataServices->get_all_friends_complete($checkUser->user_id);
 		$data['events'] = $this->getDataServices->homeEvent($checkUser->user_id);
@@ -30,11 +33,7 @@ class MainController extends Controller
 		$data['friend_list']['data'] = array(); //not done
 		$data['friend_request']['data']  = array(); //not done
 		$data['user']->makeHidden(['qualification','history','project','certification','work_experience','mutual_friends','total_achievement']);
-		if ($checkUser) {
-			return $this->services->response(200,"Data",$data);
-		}else{
-			return $this->services->response(200,"Data tidak ditemukan!",array());
-		}
+		return $this->services->response(200,"Data",$data);
 
 	}
 	public function allOngoing(Request $request){
