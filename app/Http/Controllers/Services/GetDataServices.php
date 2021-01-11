@@ -29,6 +29,7 @@ use App\Models\SettingModel;
 use App\Models\BannerModel;
 use App\Models\CountryModel;
 use App\Models\BannerNewsModel;
+use App\Models\BannerEventModel;
 use App\Models\ReferralModel;
 use App\Models\FriendModel;
 use App\Models\UserBankModel;
@@ -116,14 +117,28 @@ class GetDataServices extends BaseController
 	}
 	public function getUserbyToken(Request $request){
 		$token = $request->header('X-Token');
-
-		$credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
-		$checkAuth = UserModels::select('*')->where('user_id',$credentials->data->id)->first();
+		if(!empty($token)){
+			$credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
+			$checkAuth = UserModels::select('*')->where('user_id',$credentials->data->id)->first();
+		}else{
+			$checkAuth = (object) array();
+			$checkAuth->user_id = 0;
+		}
 		return $checkAuth;
 	}
 	public function userDetail($id){
 		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp','is_mail_verified')->with('work_experience','certification')->where('user_id',$id)->first();
-		
+		if(!empty($profile)){
+			$collect = collect($profile->certifications);
+			$profile->certification  = $collect->map(function($key) use($collect){
+				$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+				return $key;
+			});
+		}else{
+			$profile = (object) array();
+			$profile->certification = array();
+		}
 		//point
 		$point = $this->totalTrxPointbyUserId($id);
 		$profile->points = isset($point)?$point:0;
@@ -153,12 +168,6 @@ class GetDataServices extends BaseController
 							]);
 		$profile->project = $this->getWorkExperience($id);
 		//certification
-		$collect = collect($profile->certifications);
-		$profile->certification  = $collect->map(function($key) use($collect){
-			$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
-			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
-			return $key;
-		});
 
 		return $profile;
 	}
@@ -265,13 +274,25 @@ class GetDataServices extends BaseController
 
 	//====NEWS FASE 2
 	public function getNewsComment($data){
-		return NewsCommentModel::where('news_id',$data['news_id'])->with(['user'=>function($query){
+		$data = NewsCommentModel::where('news_id',$data['news_id'])->with(['user'=>function($query){
 			$query->select('user_id','fullname');
 		},'comment_replies'=>function($query){
 			$query->with(['user'=>function($query){
 				$query->select('user_id','fullname');
 			}]);
 		}])->get(); 
+		$data = $data->map(function($key) use($data){
+			$key['date_created']  = $this->tgl_indo(date("d-m-Y", strtotime($key['created_at'])));
+			$key['time_created']  = date("h:i A", strtotime($key['created_at']));
+			$key['comment_replies'] = $key['comment_replies']->map(function($raw){
+				$raw['date_created']  = $this->tgl_indo(date("d-m-Y", strtotime($raw['created_at'])));
+				$raw['time_created']  = date("h:i A", strtotime($raw['created_at']));
+				return $raw;
+			});
+			return $key;
+		});
+		
+		return $data;
 	}
 	public function getNewsReplyComment($data){
 		return NewsCommentReplyModel::where('comment_id',$data['comment_id'])->with(['user'=>function($query){
@@ -310,7 +331,7 @@ class GetDataServices extends BaseController
 
 			if(!empty($data)){
 				$data['company_logo_url']  = "";
-				if($key['company_logo']!="" || $key['company_logo']!=null){
+				if($data['company_logo']!="" || $data['company_logo']!=null){
 					$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
 				}
 				$data->is_applied = false;
@@ -976,6 +997,29 @@ class GetDataServices extends BaseController
 			}
 		}
 		return $result;
+	}
+	public function tgl_indo($tanggal){
+		$bulan = array (
+			1 =>   'Jan',
+			'Feb',
+			'Maret',
+			'April',
+			'Mei',
+			'Juni',
+			'Juli',
+			'Agustus',
+			'Sept',
+			'Okt',
+			'Nov',
+			'Des'
+		);
+		$pecahkan = explode('-', $tanggal);
+		
+		// variabel pecahkan 0 = tanggal
+		// variabel pecahkan 1 = bulan
+		// variabel pecahkan 2 = tahun
+	 
+		return $pecahkan[2] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[0];
 	}
 	
 //================================Dashboard=======================================//

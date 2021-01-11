@@ -29,8 +29,10 @@ class MainController extends Controller
 		$data['info'] = array('api_version'=>$this->api_version,'url_download'=>$this->url_download,'max_fee_referral'=>$this->max_fee_referral);
 		$data['friend_list']['data'] = array(); //not done
 		$data['friend_request']['data']  = array(); //not done
-		$data['user']->makeHidden(['qualification','history','project','certification','work_experience','mutual_friends','total_achievement']);
-		if ($checkUser) {
+		if($checkUser->user_id != 0){
+			$data['user']->makeHidden(['qualification','history','project','certification','work_experience','mutual_friends','total_achievement']);
+
+		}if ($checkUser) {
 			return $this->services->response(200,"Data",$data);
 		}else{
 			return $this->services->response(200,"Data tidak ditemukan!",array());

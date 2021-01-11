@@ -18,7 +18,7 @@ class NewsCommentReplyModel extends Model
 		'desc',
 		'attachment'
 	];
-	protected $hidden = ['created_at', 'modified_at','updated_at'];
+	protected $hidden = ['modified_at','updated_at','deleted_at'];
 
 	public function comment() {
 		return $this->belongsTo('App\Models\Fase2\NewsCommentModel', 'comment_id','comment_id');

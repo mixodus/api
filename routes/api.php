@@ -12,15 +12,13 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
 Route::middleware('auth:api')->get('/user', function (Request $request) {
 	return $request->user();
 });
 
-//FASE 2
 
 require 'fase2/api.php';
-Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
+Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {
 	//Home
 	Route::get('/home/check_session', 'API\MainController@checkSession');
 	Route::get('/home', 'API\MainController@index');
@@ -28,6 +26,32 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/event/all_ongoing', 'API\MainController@allOngoing');
 	Route::get('/home_event', 'API\MainController@homeEvent'); 
 	Route::get('/home_news', 'API\MainController@homeNews'); 
+	
+	//News
+	Route::get('/news', 'API\NewsController@index'); 
+	Route::get('/news/detail/{id}', 'API\NewsController@detail'); 
+	
+	//Jobs
+	Route::get('/job_post', 'API\JobsController@index'); 
+	Route::get('/job_post/detail/{id}', 'API\JobsController@detail');
+
+	//Events
+	Route::get('/event', 'API\EventController@index');
+	Route::get('/event/event_type/{id}', 'API\EventController@EventType');
+	Route::get('/event/detail/{id}', 'API\EventController@detail');  
+	Route::get('/event/countries', 'API\GeneralController@getCountryList');  
+
+	//Challenge
+	Route::get('/challenge', 'API\ChallengeController@index');
+	Route::get('/challenge/detail/{id}', 'API\ChallengeController@detail');
+
+	//point
+	Route::get('/point', 'API\PointController@index');
+	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth'); 
+	// Route::get('/point/leaderboard_challenge', 'API\PointController@leaderboardChallenge');//invalid old code
+});
+
+Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 
 	//User
 	Route::get('/profile', 'API\UserController@getProfile'); 
@@ -40,28 +64,16 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/profile/check-npwp', 'API\UserController@checkNpwp'); 
 	Route::post('/profile/npwp', 'API\UserController@updateNpwp'); 
 
-	//News
-	Route::get('/news', 'API\NewsController@index'); 
-	Route::get('/news/detail/{id}', 'API\NewsController@detail'); 
-
 	//Jobs
-	Route::get('/job_post', 'API\JobsController@index'); 
-	Route::get('/job_post/detail/{id}', 'API\JobsController@detail');
 	Route::get('/job_post/progress', 'API\JobsController@userJobsApplication');
 	Route::post('/job_post/apply', 'API\JobsController@applyJobsApplication');
 
 	//Events
-	Route::get('/event', 'API\EventController@index');
-	Route::get('/event/event_type/{id}', 'API\EventController@EventType');
 	Route::post('/event/join', 'API\EventController@joinEvent'); 
-	Route::get('/event/detail/{id}', 'API\EventController@detail');  
-	Route::get('/event/countries', 'API\GeneralController@getCountryList');  
 	Route::get('/event/history/{id}', 'API\EventController@HistoryEvent'); //belum ditest dummy data
 
 	//Challenge
-	Route::get('/challenge', 'API\ChallengeController@index');
 	Route::get('/challenge/history', 'API\ChallengeController@history');
-	Route::get('/challenge/detail/{id}', 'API\ChallengeController@detail');
 	Route::get('/challenge/quiz', 'API\ChallengeController@quiz');
 	Route::post('/challenge/join', 'API\ChallengeController@join');
 	Route::post('/challenge/quiz', 'API\ChallengeController@answer'); //answer quiz
@@ -130,10 +142,6 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::put('/work_experience', 'API\WorkExperienceController@update');
 	Route::delete('/work_experience', 'API\WorkExperienceController@delete');
 
-	//point
-	Route::get('/point', 'API\PointController@index');
-	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth'); 
-	// Route::get('/point/leaderboard_challenge', 'API\PointController@leaderboardChallenge');//invalid old code
 	
 
 
