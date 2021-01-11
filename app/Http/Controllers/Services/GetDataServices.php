@@ -726,10 +726,10 @@ class GetDataServices extends BaseController
 			$data = $data->map(function($key) use($data){
 				$key['challenge_icon_trophy']  = url('/')."/uploads/challenge/".$key['challenge_icon_trophy'];
 				$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
-				if($key->banners_photo == "" || $key->banners_photo ==null){
+				if($key->challenge_icon_trophy == "" || $key->challenge_icon_trophy ==null){
 					$key->challenge_icon_trophy ="";
 				}
-				if($key->banners_photo == "" || $key->banners_photo ==null){
+				if($key->challenge_photo == "" || $key->challenge_photo ==null){
 					$key->challenge_photo ="";
 				}
 				$key->status_challenge ="";
@@ -766,7 +766,7 @@ class GetDataServices extends BaseController
 		}
 		$data = $query->orderBy('xin_challenge.challenge_expired_date','ASC')->get();
 		$data = $data->map(function($key) use($data){
-			if($key->banners_photo == "" || $key->banners_photo ==null){
+			if($key->challenge_photo == "" || $key->challenge_photo ==null){
 				$key->challenge_photo ="";
 			}else{
 				$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
@@ -800,7 +800,7 @@ class GetDataServices extends BaseController
 	public function getChallengeOngoing($start=0,$end=25){
 		$data = ChallengeModel::select('*')->where('challenge_expired_date','>=',date('Y-m-d'))->orderBy('challenge_expired_date', 'ASC')->get();
 		$data = $data->map(function($key) use($data){
-			if($key->banners_photo == "" || $key->banners_photo ==null){
+			if($key->challenge_photo == "" || $key->challenge_photo ==null){
 				$key->challenge_photo ="";
 			}else{
 				$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
