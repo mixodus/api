@@ -43,7 +43,7 @@ class UserController extends BaseController
 		if ($checkAuth) {
 			if($checkAuth->is_mail_verified == 0){
 				$this->SendMailVerify($checkAuth);
-				return $this->services->response(406,"Email verifikasi telah dikirim ke emailmu, verifikasi email-mu untuk melanjutkan!");
+				return $this->services->response_verify(406,"Pesan verifikasi telah dikirim. Periksa emailmu dan verifikasi akunmu untuk melanjutkan.");
 			}
 			$password_hash = password_hash($request['password'], PASSWORD_BCRYPT, array('cost' => 12));
 			if(password_verify($request['password'],$checkAuth->password)){
@@ -53,7 +53,7 @@ class UserController extends BaseController
 
 				return $this->services->response(200,"Login Berhasil",$data);
 			}else{
-				return $this->services->response(406,"Username atau password salah!");
+				return $this->services->response(406,"Email atau password salah!");
 			}
 		}else{
 			return $this->services->response(406,"User tidak ditemukan!");
