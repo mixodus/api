@@ -20,7 +20,7 @@ class GeneralServices extends BaseController
 		if ($validator->fails()) {
 			$response = [
 				'status' => false,
-				'message' => $validator->messages()
+				'message' =>  $validator->errors()->first()
 			];
 			return response()->json($response, 406);
 		}

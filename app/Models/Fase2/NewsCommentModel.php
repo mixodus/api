@@ -15,9 +15,10 @@ class NewsCommentModel extends Model
 		'user_id', 
 		'comment',
 		'desc',
-		'attachment'
+		'attachment',
+		'created_at'
 	];
-	protected $hidden = ['created_at', 'deleted_at','updated_at','status'];
+	protected $hidden = ['deleted_at','updated_at','status'];
 	
 	public function comment_replies() {
 		return $this->hasMany('App\Models\Fase2\NewsCommentReplyModel', 'comment_id','comment_id');
