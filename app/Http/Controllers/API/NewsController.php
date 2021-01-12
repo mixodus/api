@@ -103,6 +103,7 @@ class NewsController extends Controller
 		
 		$data = $this->getDataServices->getNewsCommentDetail($request->comment_id);	
 		if ($data) {
+			
 			return $this->services->response(200,"Komentar Berita atau Artikel",$data);
 		}else{
 			return $this->services->response(200,"Komentar tidak ditemukan!",array());

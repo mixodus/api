@@ -41,6 +41,10 @@ class UserController extends BaseController
 
 		$checkAuth = $this->users->where('email', $request['username'])->first();
 		if ($checkAuth) {
+			if($checkAuth->is_mail_verified == 0){
+				$this->SendMailVerify($checkAuth);
+				return $this->services->response(406,"Email verifikasi telah dikirim ke emailmu, verifikasi email-mu untuk melanjutkan!");
+			}
 			$password_hash = password_hash($request['password'], PASSWORD_BCRYPT, array('cost' => 12));
 			if(password_verify($request['password'],$checkAuth->password)){
 

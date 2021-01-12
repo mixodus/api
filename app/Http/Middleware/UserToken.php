@@ -32,7 +32,7 @@ class UserToken
             // Unauthorized response if token not there
             return response()->json([
                 'status' => false,
-                'message' => 'X-Token not provided.'
+                'message' => 'Anda harus login ke aplikasi untuk menggunakan fitur ini.'
             ], 406);
         }
         try {
