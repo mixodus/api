@@ -180,6 +180,9 @@ class UserController extends BaseController
 			return $checkValidate;
 		}
 		$checkUser = $this->getDataServices->getUserbyToken($request);
+		if (!$checkUser) {
+			return $this->services->response(406,"User tidak ditemukan!",array());
+		}
 
 		$postUpdate = array(
 			'country' => $request['country'],

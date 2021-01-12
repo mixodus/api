@@ -15,7 +15,8 @@ class NewsCommentModel extends Model
 		'user_id', 
 		'comment',
 		'desc',
-		'attachment'
+		'attachment',
+		'created_at'
 	];
 	protected $hidden = ['deleted_at','updated_at','status'];
 	

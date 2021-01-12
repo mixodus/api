@@ -16,7 +16,8 @@ class NewsCommentReplyModel extends Model
 		'reply_by',
 		'comment',
 		'desc',
-		'attachment'
+		'attachment',
+		'created_at'
 	];
 	protected $hidden = ['modified_at','updated_at','deleted_at'];
 

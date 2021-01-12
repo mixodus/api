@@ -20,6 +20,9 @@ class MainController extends Controller
 	}
 	public function index(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
+		if (!$checkUser) {
+			return $this->services->response(406,"User tidak ditemukan!",array());
+		}
 		$data['user'] = $this->getDataServices->userDetail($checkUser->user_id);
 		$data['friends'] = $this->getDataServices->get_all_friends_complete($checkUser->user_id);
 		$data['events'] = $this->getDataServices->homeEvent($checkUser->user_id);
