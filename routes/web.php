@@ -19,6 +19,7 @@ Route::get('/', function () {
 Route::get('/site/check-reset', 'API\UserController@checkResetPassword');
 Route::get('/sites', 'API\GeneralController@site');
 Route::get('/site/user/check-verify', 'API\UserController@checkmailVerify');
+Route::get('/site/user/check-verify-change-email', 'API\UserController@checkmailVerifyChangeEmail');
 Route::get('/sites/page-verify', 'API\UserController@PageVerify');
 Route::post('/site/reset_password_action', 'API\UserController@resetPasswordAction');
 Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {

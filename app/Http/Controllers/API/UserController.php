@@ -12,6 +12,10 @@ use App\Models\ActivitiesPointModel;
 use App\Models\TransactionsPoints;
 use App\Models\PointModels;
 use App\Models\ResetPasswordModel;
+use App\Models\Fase2\UserTrxMailChangeModel;
+use Firebase\JWT\JWT;
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
 
 class UserController extends BaseController
 {
@@ -42,7 +46,6 @@ class UserController extends BaseController
 		$checkAuth = $this->users->where('email', $request['username'])->first();
 		if ($checkAuth) {
 			if($checkAuth->is_mail_verified == 0){
-				$this->SendMailVerify($checkAuth);
 				return $this->services->response_verify(406,"Pesan verifikasi telah dikirim. Periksa emailmu dan verifikasi akunmu untuk melanjutkan.");
 			}
 			$password_hash = password_hash($request['password'], PASSWORD_BCRYPT, array('cost' => 12));
@@ -163,7 +166,6 @@ class UserController extends BaseController
 		
 		return redirect('sites')->with('alert-success','Password berhasil diubah!');
 	}
-	
 	public function completeProfile(Request $request){
 		$rules = [
 			'job_title' => "required|string",
@@ -302,13 +304,37 @@ class UserController extends BaseController
 			'address' => "nullable|string",
 			'profile_picture' => "nullable",
 			'npwp' => "nullable|string",
+			'email' => "nullable|string",
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-		$postUpdate = $request->except(['r','_method','profile_picture_url']);
+		$msg_res = "Data Profile berhasil diupdate!";
+		if(!empty($request['email'])){
+			$checkEmail = $this->users->where('user_id', $checkUser->user_id)->where('email', $request->email)->first();
+			if (!$checkEmail){
+				$checkEmail = $this->users->where('email', $request->email)->first();
+				if ($checkEmail){
+					return $this->services->response(406,"Email sudah digunakan!");
+				}
+				$PostRequest = array(
+					'user_id' => $checkUser->user_id,
+					'email' => $request['email'],
+					'is_mail_verified' => 0,
+				);
+				$saved = UserTrxMailChangeModel::create($PostRequest);
+				$checkUser['email'] = $request['email'];
+				$sendVerify = $this->SendMailVerifyChangeEmail($checkUser);
+				
+				$msg_res = "Data Profile berhasil diupdate! Email Verifikasi telah dikirim ke email anda, verifikasi email barumu agar email-mu terganti.";
+			}else{
+				
+				return $this->services->response(406,"Anda tidak dapat mengubahnya dengan email yang sama!");
+			}
+		}
+		$postUpdate = $request->except(['r','_method','profile_picture_url','email']);
 		$postUpdate['profile_picture'] = "";
 		if($request->profile_picture != null && $request->profile_picture != null){
 			// $image = $request->file('profile_picture');
@@ -343,12 +369,12 @@ class UserController extends BaseController
 			$postUpdate['profile_picture'] = $filename;
 		}
 		// return $postUpdate;
-		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
+		$updateProfile = UserModels::where('user_id', $checkUser->user_id)->update($postUpdate); 
 
-		if(!$updateProfile){
-			return $this->services->response(406,"Kesalahan Jaringan!");
-		}
-		return $this->services->response(200,"Data Profile berhasil diupdate!", $request->all());
+		// if(!$updateProfile){
+		// 	return $this->services->response(406,"Kesalahan Jaringan!");
+		// }
+		return $this->services->response(200,$msg_res, $request->all());
 	}
 	
 	public function uploadPicture(Request $request){
@@ -401,13 +427,79 @@ class UserController extends BaseController
 		}
 		$checkVerif = $this->users->where('email',$request['email'])->where('email_verification_code',$request['code'])->first();
 		if(!empty($checkVerif)){
-			$postUpdate['email_verification_code'] = "";
-			$postUpdate['is_mail_verified'] = '1';
-			$update = UserModels::where('email', $request['email'])->update($postUpdate);
+			try {
+				$credentials = JWT::decode($request['code'], 'X-Api-Key', array('HS256'));
+				
+			}catch(SignatureInvalidException $e) {
+				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
 			
-			return redirect('sites')->with('alert-success','Email berhasil di verifikasi!');
+			} 
+			catch(ExpiredException $e) {
+				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+			
+			} catch(Exception $e) {
+				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+			
+			}
+			if($checkVerif->is_mail_verified=='0'){
+				$postUpdate['email_verification_code'] = "";
+				$postUpdate['is_mail_verified'] = '1';
+				$update = UserModels::where('email', $request['email'])->update($postUpdate);
+				
+				return redirect('sites')->with('alert-success','Email berhasil di verifikasi!');
+			}else{
+				return redirect('sites')->with('alert-error','Email-mu sudah terverifikasi');
+			}
 		}else{
-			return redirect('sites')->with('alert-error','Emailmu telah terverifikasi atau Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+			return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+		}
+	}
+	public function checkmailVerifyChangeEmail(Request $request){
+		$rules = [
+			'email' => "required|string",
+			'code' => "required|string",
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return redirect('sites')->with('alert-error','Invalid Parameters');
+		}
+		$checkUser = UserTrxMailChangeModel::where('email',$request['email'])->first();
+		
+		if(!empty($checkUser)){
+			$checkVerif = UserModels::where('user_id',$checkUser->user_id)->where('email_verification_code',$request['code'])->first();
+			if(!empty($checkVerif)){
+				try {
+					$credentials = JWT::decode($request['code'], 'X-Api-Key', array('HS256'));
+					
+				}catch(SignatureInvalidException $e) {
+					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+				
+				} 
+				catch(ExpiredException $e) {
+					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+				
+				} catch(Exception $e) {
+					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+				
+				}
+				if($checkUser->is_mail_verified==null || empty($checkUser->is_mail_verified)){
+					$postUpdate['email_verification_code'] = "";
+					$postUpdate['is_mail_verified'] = '1';
+					$postUpdate['email'] = $request['email'];
+					$update = UserModels::where('user_id', $checkUser->user_id)->update($postUpdate);
+
+					UserTrxMailChangeModel::where('user_id', $checkUser->user_id)->delete();
+					
+					return redirect('sites')->with('alert-success','Email berhasil di verifikasi dan terupdate!');
+				}else{
+					return redirect('sites')->with('alert-error','Email-mu sudah terverifikasi');
+				}
+			}else{
+				return redirect('sites')->with('alert-error','User tidak ditemukan atau kode expired');
+			}
+		}else{
+			return redirect('sites')->with('alert-error','Invalid User');
 		}
 	}
 	public function VerifyMail(Request $request){
@@ -418,12 +510,32 @@ class UserController extends BaseController
 		// send mail
 		return $this->SendMailVerify($checkUser);
 	}
+	public function RequestVerifyMail(Request $request){
+		$checkUser = $this->users->where('email', $request->email)->first();
+		
+		if (!$checkUser)
+			return $this->services->response(404,"User tidak ditemukan!");
+		// send mail
+		return $this->SendMailVerify($checkUser);
+	}
+
 	public function SendMailVerify($userData){
-		$code = $userData->user_id.'000'.substr(md5(uniqid(mt_rand(), true)) , 0, 15);
+		$code = $this->services->generateTokenVerify($userData->user_id);
 		$postUpdate['email_verification_code']  = $code;
 		$updateCodeVerif = $this->users->where('user_id', $userData->user_id)->update($postUpdate);
 		
 		$data['link'] = env('URL_VERIFY').'?code='.$code.'&email='.$userData->email;
+		$sendEmail = $this->services->sendmail('Verifikasi Email | One Talent', $userData, 'verify_email', $data);
+	
+		return $this->services->response(200,"Email Verifikasi telah dikirim ke email anda ".$userData->email,$sendEmail);
+	}
+	public function SendMailVerifyChangeEmail($userData){
+		$code = $this->services->generateTokenVerify($userData->user_id);
+		$postUpdate['email_verification_code']  = $code;
+		$updateCodeVerif = UserModels::where('user_id', $userData->user_id)->update($postUpdate);
+		
+		
+		$data['link'] = env('URL_VERIFY_CHANGE_EMAIL').'?code='.$code.'&email='.$userData->email;
 		$sendEmail = $this->services->sendmail('Verifikasi Email | One Talent', $userData, 'verify_email', $data);
 	
 		return $this->services->response(200,"Email Verifikasi telah dikirim ke email anda ".$userData->email,$sendEmail);

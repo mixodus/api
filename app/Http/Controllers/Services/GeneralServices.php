@@ -47,6 +47,25 @@ class GeneralServices extends BaseController
 
 	}
 
+	public function generateTokenVerify($dataUser,$key = false)
+	{
+		if (!$key) {
+			$key = 'X-Api-Key';
+		}
+		//comment coding lama
+		// $date = new DateTime();
+		// $token['iat'] = $date->getTimestamp(); // waktu dibuat
+		// $token['exp'] = $date->getTimestamp() + (3600*0.1) ; // 1 hour
+
+		$exp = 7776000;
+		$date = new DateTime();
+		$token['data'] = ['id_user' => $dataUser];
+		$token['iat'] = $date->getTimestamp();
+		$token['exp'] = $date->getTimestamp() + 86400*2; // a week 
+		
+		return JWT::encode($token, $key);
+
+	}
 	public function response($statusCode, $msg, $data=array(),$with_alert= null){
 		$response = [
 			'status' => true,
