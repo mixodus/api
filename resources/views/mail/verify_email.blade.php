@@ -8,7 +8,7 @@
         Hai, <br> Verifikasi email kamu dengan mengeklik url verifikasi di bawah ini.
         <br><br>
         <a href="{{$link}}">{{$link}}</a>
-        <br><br>Atau salin dan tempelkan URL berikut ke browser kamu
+        <br>Atau salin dan tempelkan URL berikut ke browser kamu. Email ini akan berlaku selama 48 jam.
         <br><br><hr>
         Terimakasih,<br>
 

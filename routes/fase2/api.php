@@ -10,6 +10,7 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 	Route::get('/city', 'General\LocationController@city');
 	Route::get('/district', 'General\LocationController@district');
 	Route::get('/sub-district', 'General\LocationController@subDistrict');
+	Route::post('/user/request-verify', 'API\UserController@RequestVerifyMail');
 });
 Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 	//News Comment
