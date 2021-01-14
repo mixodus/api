@@ -287,7 +287,6 @@ class UserController extends BaseController
 		
 		return response()->json($profile, 200);
 	}
-
 	public function updateProfile(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
@@ -311,7 +310,7 @@ class UserController extends BaseController
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-		$msg_res = "Data Profile berhasil diupdate!";
+		$response = $this->services->response(200,"Data Profile berhasil diupdate!", $request->all());
 		if(!empty($request['email'])){
 			$checkEmail = $this->users->where('user_id', $checkUser->user_id)->where('email', $request->email)->first();
 			if (!$checkEmail){
@@ -328,14 +327,11 @@ class UserController extends BaseController
 				$checkUser['email'] = $request['email'];
 				$sendVerify = $this->SendMailVerifyChangeEmail($checkUser);
 				
-				$msg_res = "Data Profile berhasil diupdate! Email Verifikasi telah dikirim ke email anda, verifikasi email barumu agar email-mu terganti.";
-			}else{
-				
-				return $this->services->response(406,"Anda tidak dapat mengubahnya dengan email yang sama!");
+				$response = $this->services->response_changemail(200,"Data Profile berhasil diupdate! Email Verifikasi telah dikirim ke email anda, verifikasi email barumu agar email-mu terganti.", $request->all());
 			}
 		}
-		$postUpdate = $request->except(['r','_method','profile_picture_url','email']);
-		$postUpdate['profile_picture'] = "";
+		$postUpdate = $request->except(['r','_method','profile_picture_url','email','profile_picture']);
+		// $postUpdate['profile_picture'] = "";
 		if($request->profile_picture != null && $request->profile_picture != null){
 			// $image = $request->file('profile_picture');
 			// $imgname = time().'.'.$image->getClientOriginalExtension();
@@ -374,9 +370,8 @@ class UserController extends BaseController
 		// if(!$updateProfile){
 		// 	return $this->services->response(406,"Kesalahan Jaringan!");
 		// }
-		return $this->services->response(200,$msg_res, $request->all());
+		return $response;
 	}
-	
 	public function uploadPicture(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
@@ -431,14 +426,14 @@ class UserController extends BaseController
 				$credentials = JWT::decode($request['code'], 'X-Api-Key', array('HS256'));
 				
 			}catch(SignatureInvalidException $e) {
-				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon login ulang untuk mengirim verification emai');
 			
 			} 
 			catch(ExpiredException $e) {
-				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon login ulang untuk mengirim verification emai');
 			
 			} catch(Exception $e) {
-				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon login ulang untuk mengirim verification emai');
 			
 			}
 			if($checkVerif->is_mail_verified=='0'){
@@ -473,14 +468,14 @@ class UserController extends BaseController
 					$credentials = JWT::decode($request['code'], 'X-Api-Key', array('HS256'));
 					
 				}catch(SignatureInvalidException $e) {
-					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon login ulang untuk mengirim verification email');
 				
 				} 
 				catch(ExpiredException $e) {
-					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon login ulang untuk mengirim verification email');
 				
 				} catch(Exception $e) {
-					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon login ulang untuk mengirim verification email');
 				
 				}
 				if($checkUser->is_mail_verified==null || empty($checkUser->is_mail_verified)){
