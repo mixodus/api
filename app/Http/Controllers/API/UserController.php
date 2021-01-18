@@ -46,7 +46,7 @@ class UserController extends BaseController
 		$checkAuth = $this->users->where('email', $request['username'])->first();
 		if ($checkAuth) {
 			if($checkAuth->is_mail_verified == 0){
-				return $this->services->response_verify(406,"Pesan verifikasi telah dikirim. Periksa emailmu dan verifikasi akunmu untuk melanjutkan.");
+				return $this->services->response_verify(406,"Pesan verifikasi telah dikirim. Periksa email dan verifikasi akun Anda untuk melanjutkan.");
 			}
 			$password_hash = password_hash($request['password'], PASSWORD_BCRYPT, array('cost' => 12));
 			if(password_verify($request['password'],$checkAuth->password)){
@@ -54,12 +54,12 @@ class UserController extends BaseController
 				$data = $this->services->generateToken($checkAuth);
 				$data['user'] = $this->getDataServices->userData($checkAuth->user_id);
 
-				return $this->services->response(200,"Login Berhasil",$data);
+				return $this->services->response(200,"Anda berhasil masuk.",$data);
 			}else{
-				return $this->services->response(406,"Email atau password salah!");
+				return $this->services->response(406,"Email atau kata sandi salah!");
 			}
 		}else{
-			return $this->services->response(406,"User tidak ditemukan!");
+			return $this->services->response(406,"Pengguna tidak ditemukan!");
 		}
 	}
 
@@ -91,7 +91,7 @@ class UserController extends BaseController
 		$saved = UserModels::create($PostRequest);
 
 		if(!$saved){
-			return $this->services->response(406,"Kesalahan Jaringan!");
+			return $this->services->response(406,"Koneksi jaringan bermasalah!");
 		}
 		$getPoint = $this->activity_point->where('activity_point_code', 'registration')->first();
 		if($getPoint) {
@@ -99,7 +99,7 @@ class UserController extends BaseController
 		}
 		
 		$email = $this->SendMailVerify($saved);
-		return $this->services->response(200,"Pendaftaran Berhasil, segera cek email dan verifikasi emailmu !",$saved);
+		return $this->services->response(200,"Pendaftaran berhasil. Periksa email dan verifikasi akun Anda untuk melanjutkan!",$saved);
 	}
 	public function resetPassword(Request $request){
 		$rules = [
@@ -116,7 +116,7 @@ class UserController extends BaseController
 		// cek email available or not on xin_employee 
 		$checkUser = $this->users->where('username', $email)->first();
 		if (!$checkUser)
-			return $this->services->response(404,"User tidak ditemukan!");
+			return $this->services->response(404,"Pengguna tidak ditemukan!");
 
 		// generate reset password on table 
 		$code = substr(md5(uniqid(mt_rand(), true)) , 0, 20);
@@ -142,15 +142,15 @@ class UserController extends BaseController
 		
 		$checkCode = $this->reset_password->where('code', $request['code'])->first();
 		if (!$checkCode)
-			return $this->services->response(400,"Error : Verification code tidak ditemukan",null,1);
+			return $this->services->response(400,"Kesalahan : Kode verifikasi tidak ditemukan.",null,1);
 		$today = date("Y-m-d H:i:s");
 		if($today > $checkCode->expired_at) 
-			return redirect('sites')->with('alert-error','Error : Verification telah expired');
+			return redirect('sites')->with('alert-error','Kesalahan : Kode verifikasi telah kedaluwarsa.');
 			// return $this->services->response(400,"Error : Your verification code have been expired",null,1);
 		
 		if($checkCode->is_used) 
 			// return $this->services->response(400,"Error : Your verification code have been used",null,1);
-			return redirect('sites')->with('alert-error','Error : Verification code sudah pernah dipakai');
+			return redirect('sites')->with('alert-error','Kesalahan : Kode verifikasi telah digunakan.');
 		
 		
 		$checkUser = $this->users->where('email', $checkCode->email)->first();
@@ -164,7 +164,7 @@ class UserController extends BaseController
 
 		// return $this->services->response(200,"You have been successfully to reset password.",null,1);
 		
-		return redirect('sites')->with('alert-success','Password berhasil diubah!');
+		return redirect('sites')->with('alert-success','Kata sandi berhasil diubah!');
 	}
 	public function completeProfile(Request $request){
 		$rules = [
@@ -183,7 +183,7 @@ class UserController extends BaseController
 		}
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		if (!$checkUser) {
-			return $this->services->response(406,"User tidak ditemukan!",array());
+			return $this->services->response(406,"Pengguna tidak ditemukan!",array());
 		}
 
 		$postUpdate = array(
@@ -201,7 +201,7 @@ class UserController extends BaseController
 		$save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Data Profile berhasil di update');
 
 		if(!$updateProfile){
-			return $this->services->response(406,"Kesalahan Jaringan!");
+			return $this->services->response(406,"Koneksi jaringan bermasalah!");
 		}
 		return $this->services->response(200,"Data Profile berhasil di update!", $request->all());
 	}
@@ -229,9 +229,9 @@ class UserController extends BaseController
 
 		$save_trx_point = $this->actionServices->postTrxPoints("add_skill",$getPoint->activity_point_point,$checkUser->user_id,0,1);
 		if(!$updateSkill){
-			return $this->services->response(406,"Kesalahan Jaringan!");
+			return $this->services->response(406,"Koneksi jaringan bermasalah!");
 		}
-		return $this->services->response(200,"Data skill berhasil di update!", $request->all());
+		return $this->services->response(200,"Keahlian Anda berhasil diperbaharui!", $request->all());
 	}
 	public function changePassword(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
@@ -253,11 +253,11 @@ class UserController extends BaseController
 			$postUpdate['password'] = $this->services->password_generate($request->newpassword);
 			$updatePassword = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate);
 			if(!$updatePassword){
-				return $this->services->response(406,"Kesalahan Jaringan!");
+				return $this->services->response(406,"Koneksi jaringan bermasalah!");
 			}
-			return $this->services->response(200,"Password berhasil diubah.", $request->all());
+			return $this->services->response(200,"Kata sandi telah berhasil diubah.", $request->all());
 		}else{
-			return $this->services->response(406,"Kata Sandi Saat Ini Tidak Valid!");
+			return $this->services->response(406,"Kata sandi tidak sah!");
 		}
 
 	}
@@ -265,7 +265,7 @@ class UserController extends BaseController
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 
 		if (!$checkUser)
-			return $this->services->response(406,"User tidak ditemukan!");
+			return $this->services->response(406,"Pengguna tidak ditemukan!");
 
 		$profile = $this->getDataServices->userDetail($checkUser->user_id);
 		$profile['status_email'] = true;
@@ -311,13 +311,13 @@ class UserController extends BaseController
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-		$msg_res = "Data Profile berhasil diupdate!";
+		$msg_res = "Profil Anda berhasil diperbaharui.";
 		if(!empty($request['email'])){
 			$checkEmail = $this->users->where('user_id', $checkUser->user_id)->where('email', $request->email)->first();
 			if (!$checkEmail){
 				$checkEmail = $this->users->where('email', $request->email)->first();
 				if ($checkEmail){
-					return $this->services->response(406,"Email sudah digunakan!");
+					return $this->services->response(406,"Email ini telah digunakan!");
 				}
 				$PostRequest = array(
 					'user_id' => $checkUser->user_id,
@@ -328,7 +328,7 @@ class UserController extends BaseController
 				$checkUser['email'] = $request['email'];
 				$sendVerify = $this->SendMailVerifyChangeEmail($checkUser);
 				
-				$msg_res = "Data Profile berhasil diupdate! Email Verifikasi telah dikirim ke email anda, verifikasi email barumu agar email-mu terganti.";
+				$msg_res = "Profil Anda berhasil diperbaharui! Email verifikasi berhasil dikirim. Segera verifikasi email baru Anda.";
 			}else{
 				
 				return $this->services->response(406,"Anda tidak dapat mengubahnya dengan email yang sama!");
@@ -340,10 +340,10 @@ class UserController extends BaseController
 			// $image = $request->file('profile_picture');
 			// $imgname = time().'.'.$image->getClientOriginalExtension();
 			// $img = str_replace('data:image/jpeg;base64,', '', $request['profile_picture']);
-            // $img = str_replace(' ', '+', $img);
-            // $data_file = base64_decode($img);
+			// $img = str_replace(' ', '+', $img);
+			// $data_file = base64_decode($img);
 			// $destinationPath = public_path('/uploads/profile/');
-            // $imgname = "profile_".round(microtime(true)).".jpeg";
+			// $imgname = "profile_".round(microtime(true)).".jpeg";
 			// $img->move($destinationPath, $data_file);
 			$extension = explode('/', explode(':', substr($request->profile_picture, 0, strpos($request->profile_picture, ';')))[1])[1];
 			// $image = $request->profile_picture;  // your base64 encoded
@@ -360,10 +360,10 @@ class UserController extends BaseController
 			}else{
 				return $this->services->response(406,"Format gambar tidak mendukung!");
 			}
-            $img = str_replace(' ', '+', $img);
-            $data_file = base64_decode($img);
-            $filename = "profile_".round(microtime(true)).'.'.$extension;
-            $path = $folder . $filename;
+			$img = str_replace(' ', '+', $img);
+			$data_file = base64_decode($img);
+			$filename = "profile_".round(microtime(true)).'.'.$extension;
+			$path = $folder . $filename;
 			file_put_contents($path, $data_file);
 			
 			$postUpdate['profile_picture'] = $filename;
@@ -372,7 +372,7 @@ class UserController extends BaseController
 		$updateProfile = UserModels::where('user_id', $checkUser->user_id)->update($postUpdate); 
 
 		// if(!$updateProfile){
-		// 	return $this->services->response(406,"Kesalahan Jaringan!");
+		// 	return $this->services->response(406,"Koneksi jaringan bermasalah!");
 		// }
 		return $this->services->response(200,$msg_res, $request->all());
 	}
@@ -401,7 +401,7 @@ class UserController extends BaseController
 		$save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Your photo successfully uploaded');
 
 		if(!$updateProfile){
-			return $this->services->response(406,"Kesalahan Jaringan!");
+			return $this->services->response(406,"Koneksi jaringan bermasalah!");
 		}
 		return $this->services->response(200,"Data Profile berhasil diupdate!", array());
 			
@@ -431,14 +431,14 @@ class UserController extends BaseController
 				$credentials = JWT::decode($request['code'], 'X-Api-Key', array('HS256'));
 				
 			}catch(SignatureInvalidException $e) {
-				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+				return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
 			
 			} 
 			catch(ExpiredException $e) {
-				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+				return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
 			
 			} catch(Exception $e) {
-				return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+				return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
 			
 			}
 			if($checkVerif->is_mail_verified=='0'){
@@ -446,12 +446,12 @@ class UserController extends BaseController
 				$postUpdate['is_mail_verified'] = '1';
 				$update = UserModels::where('email', $request['email'])->update($postUpdate);
 				
-				return redirect('sites')->with('alert-success','Email berhasil di verifikasi!');
+				return redirect('sites')->with('alert-success',' Email Anda berhasil di verifikasi.');
 			}else{
-				return redirect('sites')->with('alert-error','Email-mu sudah terverifikasi');
+				return redirect('sites')->with('alert-error','Email Anda telah terverifikasi.');
 			}
 		}else{
-			return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+			return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
 		}
 	}
 	public function checkmailVerifyChangeEmail(Request $request){
@@ -473,14 +473,14 @@ class UserController extends BaseController
 					$credentials = JWT::decode($request['code'], 'X-Api-Key', array('HS256'));
 					
 				}catch(SignatureInvalidException $e) {
-					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+					return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
 				
 				} 
 				catch(ExpiredException $e) {
-					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+					return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
 				
 				} catch(Exception $e) {
-					return redirect('sites')->with('alert-error','Url Verification-mu telah expired mohon kirim ulang verification email kembali');
+					return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
 				
 				}
 				if($checkUser->is_mail_verified==null || empty($checkUser->is_mail_verified)){
@@ -493,10 +493,10 @@ class UserController extends BaseController
 					
 					return redirect('sites')->with('alert-success','Email berhasil di verifikasi dan terupdate!');
 				}else{
-					return redirect('sites')->with('alert-error','Email-mu sudah terverifikasi');
+					return redirect('sites')->with('alert-error','Email-mu telah terverifikasi');
 				}
 			}else{
-				return redirect('sites')->with('alert-error','User tidak ditemukan atau kode expired');
+				return redirect('sites')->with('alert-error','Pengguna tidak ditemukan atau kode expired');
 			}
 		}else{
 			return redirect('sites')->with('alert-error','Invalid User');
@@ -506,7 +506,7 @@ class UserController extends BaseController
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		
 		if (!$checkUser)
-			return $this->services->response(404,"User tidak ditemukan!");
+			return $this->services->response(404,"Pengguna tidak ditemukan!");
 		// send mail
 		return $this->SendMailVerify($checkUser);
 	}
@@ -514,7 +514,7 @@ class UserController extends BaseController
 		$checkUser = $this->users->where('email', $request->email)->first();
 		
 		if (!$checkUser)
-			return $this->services->response(404,"User tidak ditemukan!");
+			return $this->services->response(404,"Pengguna tidak ditemukan!");
 		// send mail
 		return $this->SendMailVerify($checkUser);
 	}
@@ -586,7 +586,7 @@ class UserController extends BaseController
 		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
 
 		if(!$updateProfile){
-			return $this->services->response(406,"Kesalahan Jaringan!");
+			return $this->services->response(406,"Koneksi jaringan bermasalah!");
 		}
 		return $this->services->response(200,"NPWP telah ditambahkan!", $request->all());
 	}

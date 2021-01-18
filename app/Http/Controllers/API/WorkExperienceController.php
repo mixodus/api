@@ -57,14 +57,14 @@ class WorkExperienceController extends Controller
         }
 		$save = $this->actionServices->saveEmployeeWorkExperience($request->all(),$checkUser->user_id);
 		if(!$save){
-			return $this->services->response(503,"Kesalahan Jaringan!");
+			return $this->services->response(503,"Koneksi jaringan bermasalah!");
         } 
-        $save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Pengalaman kerja berhasil ditambah');
+        $save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Pengalaman kerja berhasil ditambahkan');
         $getPoint = $this->activity_point->where('activity_point_code', 'add_work_experience')->first();
 		if($getPoint) {
 			$save_trx_point = $this->actionServices->postTrxPoints("add_work_experience",$getPoint->activity_point_point,$checkUser->user_id,0,1);
 		}
-		return $this->services->response(200,"Pengalaman kerja berhasil ditambah.",$request->all());
+		return $this->services->response(200,"Pengalaman kerja berhasil ditambahkan",$request->all());
     }
     public function update(Request $request){
         $checkUser = $this->getDataServices->getUserbyToken($request);
@@ -85,11 +85,11 @@ class WorkExperienceController extends Controller
         }
 		$save = $this->actionServices->updateEmployeeWorkExperience($request->all(),$checkUser->user_id);
 		if(!$save){
-			return $this->services->response(406,"Kesalahan Jaringan!");
+			return $this->services->response(406,"Koneksi jaringan bermasalah!");
         } 
-        $save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Pengalaman kerja berhasil perbarui');
+        $save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Pengalaman kerja berhasil diperbaharui');
         
-		return $this->services->response(200,"Pengalaman kerja berhasil perbarui.",$request->all());
+		return $this->services->response(200,"Pengalaman kerja berhasil diperbaharui.",$request->all());
 	}
 	public function delete(Request $request){
         $checkUser = $this->getDataServices->getUserbyToken($request);
@@ -101,10 +101,10 @@ class WorkExperienceController extends Controller
         }
 		$save = $this->actionServices->deleteEmployeeWorkExperience($request->id);
 		if(!$save){
-			return $this->services->response(406,"Kesalahan Jaringan!");
+			return $this->services->response(406,"Koneksi jaringan bermasalah!");
         } 
-        $save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Pengalaman kerja berhasil hapus');
+        $save_notif = $this->actionServices->postNotif(5,0,$checkUser->user_id,'Pengalaman kerja berhasil dihapus');
 
-		return $this->services->response(200,"Pengalaman kerja berhasil hapus.",$request->all());
+		return $this->services->response(200,"Pengalaman kerja berhasil dihapus.",$request->all());
     }
 }
