@@ -114,7 +114,7 @@ class UserController extends BaseController
 		$email = $this->services->clean_post($request['email']);
 		
 		// cek email available or not on xin_employee 
-		$checkUser = $this->users->where('username', $email)->first();
+		$checkUser = $this->users->where('email', $email)->first();
 		if (!$checkUser)
 			return $this->services->response(404,"Pengguna tidak ditemukan!");
 
