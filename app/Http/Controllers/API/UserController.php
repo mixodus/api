@@ -125,7 +125,7 @@ class UserController extends BaseController
 		$data['link'] = env('URL_RESET').'?code='.$code.'&email='.$email;
 		$sendEmail = $this->services->sendmail('Reset Password | One Talents', $checkUser, 'reset_password', $data);
 	
-		return $this->services->response(200,"Link verifikasi berhasil dikirim".$email,$sendEmail);
+		return $this->services->response(200,"Permintaan Reset Password telah dikirim ke email Anda");
 	}
 
 	public function resetPasswordAction(Request $request){
