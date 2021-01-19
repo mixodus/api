@@ -287,7 +287,6 @@ class UserController extends BaseController
 		
 		return response()->json($profile, 200);
 	}
-
 	public function updateProfile(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
@@ -311,7 +310,7 @@ class UserController extends BaseController
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-		$msg_res = "Profil Anda berhasil diperbaharui.";
+		$response = $this->services->response(200,"Profil Anda berhasil diperbaharui.", $request->all());
 		if(!empty($request['email'])){
 			$checkEmail = $this->users->where('user_id', $checkUser->user_id)->where('email', $request->email)->first();
 			if (!$checkEmail){
@@ -328,14 +327,11 @@ class UserController extends BaseController
 				$checkUser['email'] = $request['email'];
 				$sendVerify = $this->SendMailVerifyChangeEmail($checkUser);
 				
-				$msg_res = "Profil Anda berhasil diperbaharui! Email verifikasi berhasil dikirim. Segera verifikasi email baru Anda.";
-			}else{
-				
-				return $this->services->response(406,"Anda tidak dapat mengubahnya dengan email yang sama!");
+				$response = $this->services->response_changemail(200,"Profil Anda berhasil diperbaharui! Email verifikasi berhasil dikirim. Segera verifikasi email baru Anda.", $request->all());
 			}
 		}
-		$postUpdate = $request->except(['r','_method','profile_picture_url','email']);
-		$postUpdate['profile_picture'] = "";
+		$postUpdate = $request->except(['r','_method','profile_picture_url','email','profile_picture']);
+		// $postUpdate['profile_picture'] = "";
 		if($request->profile_picture != null && $request->profile_picture != null){
 			// $image = $request->file('profile_picture');
 			// $imgname = time().'.'.$image->getClientOriginalExtension();
@@ -374,9 +370,8 @@ class UserController extends BaseController
 		// if(!$updateProfile){
 		// 	return $this->services->response(406,"Koneksi jaringan bermasalah!");
 		// }
-		return $this->services->response(200,$msg_res, $request->all());
+		return $response;
 	}
-	
 	public function uploadPicture(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
@@ -474,14 +469,11 @@ class UserController extends BaseController
 					
 				}catch(SignatureInvalidException $e) {
 					return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
-				
 				} 
 				catch(ExpiredException $e) {
 					return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
-				
 				} catch(Exception $e) {
 					return redirect('sites')->with('alert-error','Link verifikasi telah kedaluwarsa. Mohon masuk kembali untuk mendapatkan email verifikasi baru.');
-				
 				}
 				if($checkUser->is_mail_verified==null || empty($checkUser->is_mail_verified)){
 					$postUpdate['email_verification_code'] = "";

@@ -112,6 +112,22 @@ class GeneralServices extends BaseController
 		}
 		return response()->json($response, $statusCode);
 	}
+	public function response_changemail($statusCode, $msg, $data=array(),$with_alert= null){
+		$response = [
+			'status' => true,
+			'isEmailChanged' => true,
+			'message' => $msg,
+			'data' => $data,
+		];
+		if ($statusCode != 200) {
+			$response = [
+				'status' => false,
+				'isEmailChanged' => false,
+				'message' => $msg
+			];
+		}
+		return response()->json($response, $statusCode);
+	}
 
 	public function clean_post($post_name) {
 		$name = trim($post_name);
