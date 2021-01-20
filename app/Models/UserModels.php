@@ -34,7 +34,8 @@ class UserModels extends Model
 			'password',
 			'is_mail_verified',
 			'email_verification_code',
-			'npwp'
+			'npwp',
+			'is_active'
 	];
 
 	public function work_experience() {

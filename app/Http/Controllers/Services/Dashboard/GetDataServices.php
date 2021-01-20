@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Services;
+namespace App\Http\Controllers\Services\Dashboard;
 
-use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use App\Http\Controllers\Controller as BaseController;
+use App\Models\Dashboard\AdminModel;
 use App\Models\TransactionsPoints;
 use App\Models\ResetPasswordModel;
 use App\Models\ActivitiesPointModel;
 use App\Models\UserModels;
-use App\Models\Dashboard\AdminModel;
 use App\Models\NotifModel;
 use App\Models\LevelModel;
 use App\Models\AwardModel;
@@ -37,10 +36,6 @@ use App\Models\UserWithdrawHistoryModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
-//Fase 2
-use App\Models\Fase2\NewsCommentModel;
-use App\Models\Fase2\NewsCommentReplyModel;
-use App\Models\Fase2\JobTypeModel;
 
 class GetDataServices extends BaseController
 {
@@ -264,15 +259,14 @@ class GetDataServices extends BaseController
 	// =========================================Jobs MODULE ==============================================================
 	public function getJobs($id=null,$user_id=null,$filtering=null){
 		if(!empty($id)){
-			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name',
-					'provinsi.nama as province','kabupaten.nama as city_name','kecamatan.nama as districts_name','kelurahan.nama as sub_districts_name')
+			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo','xin_designations.designation_name','xin_job_type.type as job_type_name')
 					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
 					->LeftJoin('xin_designations', 'xin_designations.designation_id', '=', 'xin_jobs.designation_id')
 					->LeftJoin('xin_job_type', 'xin_job_type.job_type_id', '=', 'xin_jobs.job_type')
-					->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
-					->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
-					->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
-					->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
+					// ->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
+					// ->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
+					// ->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
+					// ->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
 					->where('xin_jobs.job_id',$id);
 			if($user_id != null && $user_id !=""){
 				$query->with(["applications" => function($q) use($user_id){
@@ -292,14 +286,13 @@ class GetDataServices extends BaseController
 				$data->date_of_closing = $dateClose->format($system_setting->date_format_xi);
 			}
 		}else{
-			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo',
-					'provinsi.nama as province','kabupaten.nama as city_name','kecamatan.nama as districts_name','kelurahan.nama as sub_districts_name')
+			$query = JobsModel::select('xin_jobs.*','xin_companies.name as company_name','xin_companies.logo as company_logo')
 					->with('job_types')
 					->LeftJoin('xin_companies', 'xin_companies.company_id', '=', 'xin_jobs.company_id')
-					->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
-					->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
-					->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
-					->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
+					// ->LeftJoin('provinsi', 'provinsi.id_prov', '=', 'xin_jobs.province')
+					// ->LeftJoin('kabupaten', 'kabupaten.id_kab', '=', 'xin_jobs.city_id')
+					// ->LeftJoin('kecamatan', 'kecamatan.id_kec', '=', 'xin_jobs.districts_id')
+					// ->LeftJoin('kelurahan', 'kelurahan.id_kel', '=', 'xin_jobs.subdistrict_id')
 					->where('xin_jobs.date_of_closing','>=',date('Y-m-d'));
 			if($filtering != null){
 				// if($filtering['start'] != null && $filtering['length'] !=null ){
@@ -812,5 +805,41 @@ class GetDataServices extends BaseController
 		$credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
 		$checkAuth = AdminModel::select('*')->where('user_id',$credentials->data->id)->first();
 		return $checkAuth;
+	}
+
+	public function employeeLevellist(){
+		$profile = UserModels::select('user_id','email','fullname')->get();
+		
+		foreach($profile as $profiles){
+			$point = $this->totalTrxPointbyUserId($profiles->user_id);
+			$profile->points = isset($point)?$point:0;
+			
+			$profiles->point = $point;
+
+			$level = LevelModel::select('*')->where('level_min_point','<=',$point)->where('level_max_point','>=',$point)->first();
+			$profiles->level = $level;
+		}
+
+		return $profile;
+	}
+
+	public function employeeLevelDetail($id){
+		$profile = UserModels::select('user_id','email','fullname')->with('trx_points')->where('user_id',$id)->first();
+		
+		//point
+		$point = $this->totalTrxPointbyUserId($id);
+		$profile->points = isset($point)?$point:0;
+		//friend
+		$profile->friendship_status = 0;
+		$profile->mutual_friends = [
+			'count' => 0,
+			'data' => array(),
+		];
+		//level
+		$level = LevelModel::select('*')->where('level_min_point','<=',$profile->points)->where('level_max_point','>=',$profile->points)->first();
+		$profile->level_icon_url = url('/')."/uploads/level/".$level->level_icon;
+		$profile->level_name = $level->level_name;
+
+		return $profile;
 	}
 }
