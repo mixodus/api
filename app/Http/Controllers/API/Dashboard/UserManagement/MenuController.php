@@ -31,21 +31,29 @@ class MenuController extends Controller
 
         if($class){
             $menu = MenuModel::getAvailableMenu()->toArray();
-            $data = MenuModel::selectAll()
-                ->where('parent_id', 0)
+            $data = MenuModel::select('xin_menus.id', 'xin_menus.name', 'xin_menus.icon', 'xin_menus.url', 'xin_menus.type', 'xin_menus.is_parent',
+            'xin_menus.parent_id', 'xin_menus.level', 'xin_menus.group_name', 'xin_menus.initial', 'xin_menus.class', 'xin_menus.status')
+                ->join("xin_permissions", "xin_permissions.menu_id", '=', 'xin_menus.id')
+                ->join("xin_roles_permissions", "xin_roles_permissions.permission_id", '=', 'xin_permissions.id')
+                ->where("xin_menus.status", 1)
+                ->where('xin_permissions.action', "view")
                 ->where('class', $class)
                 ->where("status", 1)
-                ->orderby('level')
+                ->orderby('xin_menus.id', 'asc')
                 ->get();
         }else{
             $menu = MenuModel::getAvailableMenu($checkUser->role_id)->toArray();
-            $data = MenuModel::selectAll()
-                ->where('parent_id', 0)
-                ->where("status", 1)
-                ->orderby('level')
+            $data = MenuModel:: select('xin_menus.id', 'xin_menus.name', 'xin_menus.icon', 'xin_menus.url', 'xin_menus.type', 'xin_menus.is_parent',
+            'xin_menus.parent_id', 'xin_menus.level', 'xin_menus.group_name', 'xin_menus.initial', 'xin_menus.class', 'xin_menus.status')
+                ->join("xin_permissions", "xin_permissions.menu_id", '=', 'xin_menus.id')
+                ->join("xin_roles_permissions", "xin_roles_permissions.permission_id", '=', 'xin_permissions.id')
+                ->where("xin_menus.status", 1)
+                ->where('xin_permissions.action', "view")
+                ->where("xin_roles_permissions.role_id", $checkUser->role_id)
+                ->orderby('xin_menus.id', 'asc')
                 ->get();
         }
-        
+
         if ($data){
             $data_child = [];
             $iter = 0;
@@ -108,7 +116,7 @@ class MenuController extends Controller
             'name' => 'required|string',
             'icon' => 'required|string',
             'url' => 'required|string|max:100',
-            'type' => 'required|in:group,collapsable,item',
+            'type' => 'required|in:group,collapsable,item,link',
             'permissions' => 'required|array',
             'initial' => 'string',
         ];

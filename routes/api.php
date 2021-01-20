@@ -85,16 +85,16 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/referral/success', 'API\ReferralController@getReferralMemberSuccess');
 	Route::post('/referral', 'API\ReferralController@AssignMember');
 
-	//Admin
+	//Admin Dashboard
 	Route::get('/admin', 'API\Dashboard\AuthUser\AdminController@index');
 
-	//Menu
+	//Menu Dashboard
 	Route::get('/menu', 'API\Dashboard\UserManagement\MenuController@index');
 	Route::get('/menu-show', 'API\Dashboard\UserManagement\MenuController@show');
 	Route::post('/menu-create', 'API\Dashboard\UserManagement\MenuController@store');
 	Route::put('/menu-update/{id}', 'API\Dashboard\UserManagement\MenuController@update');
 
-	//Access Role
+	//Access Role Dashboard
 	Route::get('/settings/roles', 'API\Dashboard\UserManagement\RolesController@index');
 	Route::get('/settings/roles-show', 'API\Dashboard\UserManagement\RolesController@show');
 	Route::get('/settings/roles-edit', 'API\Dashboard\UserManagement\RolesController@edit');
@@ -102,12 +102,47 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::put('/settings/roles-update/{id}', 'API\Dashboard\UserManagement\RolesController@update');
 	Route::delete('/settings/roles-delete/{id}', 'API\Dashboard\UserManagement\RolesController@destroy');
 
-	//Permission
+	//Permission Dashboard
 	Route::get('/settings/permissions', 'API\Dashboard\UserManagement\PermissionController@index');
 	Route::get('/settings/permissions-show', 'API\Dashboard\UserManagement\PermissionController@show');
 	Route::post('/settings/permissions-create', 'API\Dashboard\UserManagement\PermissionController@store');
 	Route::put('/settings/permissions-update/{id}', 'API\Dashboard\UserManagement\PermissionController@update');
 	Route::delete('/settings/permissions-delete/{id}', 'API\Dashboard\UserManagement\PermissionController@destroy');
+
+	//Admin Dashboard
+	Route::get('/admin/show', 'API\Dashboard\AuthUser\AdminController@show');
+	Route::put('/admin/admin-update/{id}', 'API\Dashboard\AuthUser\AdminController@update');
+	Route::delete('/admin/admin-delete/{id}', 'API\Dashboard\AuthUser\AdminController@destroy');
+
+	//Employee Dashboard
+	Route::get('/user-management/employee', 'API\Dashboard\UserManagement\EmployeeController@index');
+	Route::get('/user-management/employee-show', 'API\Dashboard\UserManagement\EmployeeController@show');
+	Route::get('/user-management/employee-create', 'API\Dashboard\UserManagement\EmployeeController@store');
+	Route::put('/user-management/employee-update/{id}', 'API\Dashboard\UserManagement\EmployeeController@update');
+	Route::delete('/user-management/employee-delete', 'API\Dashboard\UserManagement\EmployeeController@destroy');
+
+	//Jobs Dashboard
+	Route::get('/jobs', 'API\Dashboard\MenuPage\JobsController@index');
+	Route::get('/jobs/show/{id}', 'API\Dashboard\MenuPage\JobsController@show');
+	Route::post('/jobs/create', 'API\Dashboard\MenuPage\JobsController@store');
+	Route::put('/jobs/update/{id}', 'API\Dashboard\MenuPage\JobsController@update');
+	Route::delete('/jobs/delete', 'API\Dashboard\MenuPage\JobsController@destroy');
+
+	//Location Dashboard
+	Route::get('/location/country', 'API\Dashboard\Location\LocationController@get_country');
+	Route::get('/location/province', 'API\Dashboard\Location\LocationController@get_province');
+	Route::get('/location/city/{id}', 'API\Dashboard\Location\LocationController@get_city');
+	Route::get('/location/district/{id}', 'API\Dashboard\Location\LocationController@get_district');
+	Route::get('/location/subdistrict/{id}', 'API\Dashboard\Location\LocationController@get_subDistrict');
+
+	//Company Dashboard
+	Route::get('/company', 'API\Dashboard\MenuPage\CompanyController@index');
+
+	//Employee Level Dashboard
+	Route::get('/user-management/employee-level', 'API\Dashboard\UserManagement\LevelController@index');
+	Route::get('/user-management/employee-level/detail', 'API\Dashboard\UserManagement\LevelController@show');
+	Route::post('/user-management/employee-level/create', 'API\Dashboard\UserManagement\LevelController@store');
+
 	//Notif
 	Route::get('/notif', 'API\NotifController@index');
 	Route::get('/notif/detail_by/{id}', 'API\NotifController@detail');

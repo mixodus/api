@@ -55,13 +55,6 @@ Route::group(['middleware' => ['user.token','cors','log.route']], function ($rou
 	Route::post('/withdraw/check', 'API\UserWithdrawController@check');
 
 	Route::post('/upload/upload/{id}', 'API\CertificationController@upload');
-
-	Route::group(['prefix' => 'admin'], function () {
-		Route::post('/login', 'API\Dashboard\AuthUser\AdminController@login');
-		Route::post('/register', 'API\Dashboard\AuthUser\AdminController@register');
-		Route::post('/reset_password', 'API\Dashboard\AuthUser\AdminController@resetPassword');
-		Route::post('/reset_password_action', 'API\Dashboard\AuthUser\AdminController@resetPasswordAction');
-	});
 });
 
 	Route::post('/upload', 'General\UploadController@index'); // belum tau fungsinya untuk dimana
@@ -74,6 +67,14 @@ Route::group(['middleware' => ['user.token','cors','log.route']], function ($rou
 	Route::get('/search/generalsearch', 'API\GeneralController@generalSearch');
 	Route::get('/search/reference', 'API\GeneralController@referenceSeacrh'); 
 
+///Dashboard
+Route::group(['prefix' => 'admin'], function () {
+	Route::post('/login', 'API\Dashboard\AuthUser\AdminController@login');
+	Route::post('/register', 'API\Dashboard\AuthUser\AdminController@register');
+	Route::post('/reset_password', 'API\Dashboard\AuthUser\AdminController@resetPassword');
+	Route::post('/reset_password_action', 'API\Dashboard\AuthUser\AdminController@resetPasswordAction');
+});
+///endDashboard
 
 	
 
