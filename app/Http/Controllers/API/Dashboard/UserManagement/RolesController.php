@@ -171,8 +171,8 @@ class RolesController extends Controller
         $rolePermissions = RolesPermissionsModel::where("role_id",$request->role_id)
             ->select('permission_id')
             ->get();
-            
-        if(!$rolePermissions){
+        
+        if(count($rolePermissions) != 0){
             foreach($rolePermissions as $rolePermission){
                 $data[]= $rolePermission['permission_id'];
             }
