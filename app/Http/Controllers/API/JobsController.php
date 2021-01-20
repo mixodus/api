@@ -82,14 +82,14 @@ class JobsController extends Controller
 
 		$checkUserApply = $this->getDataServices->userJobsApplication($checkUser->user_id,$request->job_id);
 		if(count($checkUserApply)>0){
-			return $this->services->response(400,"Kamu sudah pernah mengirim pengajuan ke pekerjaan ini");
+			return $this->services->response(400,"Anda telah melamar pekerjaan ini");
 		}
 		
 		$getData = $this->getDataServices->getJobs($request->job_id,null,null);	
 
 		$saveJobs = $this->actionServices->applyJob($request->job_id,$checkUser->user_id,$request->email,$request->contact_no);
-		$save_notif = $this->actionServices->postNotif(4,$request->job_id,$checkUser->user_id,'Kamu berhasil mendaftar pekerjaan sebagai' .$getData->job_title. '');
-		return $this->services->response(200,"Berhasil mendaftar pekerjaan!", array());        
+		$save_notif = $this->actionServices->postNotif(4,$request->job_id,$checkUser->user_id,'Anda telah berhasil melamar pekerjaan sebagai' .$getData->job_title. '');
+		return $this->services->response(200,"Berhasil melamar pekerjaan!", array());        
 	}
 	//================Jobs Type
 	public function getJobTypeList(Request $request){

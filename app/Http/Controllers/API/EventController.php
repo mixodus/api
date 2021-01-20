@@ -34,8 +34,8 @@ class EventController extends Controller
 
 		
 		return $this->services->response(200,"List Event",array('ongoing'=>$getEvent));
-    }
-    public function EventType($id) {
+	}
+	public function EventType($id) {
 		$getEvent = EventModel::where('event_type_id', $id)->get();
 
 		if (!$getEvent->isEmpty()) {
@@ -89,15 +89,15 @@ class EventController extends Controller
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$eventDetail = $this->getDataServices->homeEvent($checkUser->user_id,$request->event_id);
 		if(count($eventDetail)==0){
-			return $this->services->response(400,"Event Date is already expired !",array());
+			return $this->services->response(400,"Tanggal acara telah kedaluwarsa.",array());
 		}
 		if($eventDetail[0]['event_is_join']== true){
-			return $this->services->response(402,"Kamu telah terdaftar di event ini!");
+			return $this->services->response(402,"Anda telah terdaftar pada acara ini.");
 		}
 		
 		$postParticipants = $this->actionServices->postParticipantEvent($request->all(),$checkUser->user_id);
 		//notif
-		$save_notif = $this->actionServices->postNotif(1,$request->event_id,$checkUser->user_id,'You are registered to ' .$eventDetail[0]['event_title']. ' and Waiting for Aprroval');
+		$save_notif = $this->actionServices->postNotif(1,$request->event_id,$checkUser->user_id,'Anda telah terdaftar pada' .$eventDetail[0]['event_title']. ' dan sedang menunggu konfirmasi.');
 		if(!$postParticipants){
 			return $this->services->response(400,"Kesalahan server, tolong hubungi admin !");
 		}
@@ -118,5 +118,5 @@ class EventController extends Controller
 		$data = $this->getDataServices->HistoryEvent($checkUser->user_id,$id);
 		
 		return $this->services->response(200,"Daftar event yang sudah diikuti",$data);
-    }
+	}
 }

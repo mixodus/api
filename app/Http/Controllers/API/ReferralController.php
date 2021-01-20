@@ -86,13 +86,13 @@ class ReferralController extends Controller
 		
 		$checkReferral = $this->getDataServices->ValidateReferralPoints(null,$request->referral_email);
 		if (!$checkReferral->isEmpty()) {
-			return $this->services->response(401,"Sorry, Your friend is already registered in referral!");
+			return $this->services->response(401,"Maaf, teman Anda telah terdaftar pada rujukan. ");
 		}
 		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
 		$saveReferral = $this->actionServices->saveReferral($request->all(),$checkUser->user_id,$status[0]);
 		if(!$saveReferral){
-			return $this->services->response(503,"Kesalahan Jaringan!");
+			return $this->services->response(503,"Koneksi jaringan bermasalah!");
 		}  
-		return $this->services->response(200,"Berhasil mengirim Rujukan.",$request->all());
+		return $this->services->response(200,"Anda telah berhasil membuat rujukan.",$request->all());
 	}   
 }

@@ -5,13 +5,14 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
 <body>
-        Hi, <br> Someone requested a new password for your IDStar account. Click below this link<br><br>
-        <a href="{{$link}}">{{$link}}</a>
-        <br><br>This email will expire in 24 hours. Please make a new request if it expires
-        <br><br><hr>
-        Thank You,<br>
+	Hai, <br> Jika Anda mengajukan permintaan <b>Reset Password</b>, silahkan klik link di bawah ini:<br><br>
+	<a href="{{$link}}">{{$link}}</a>
+	<br><br>Abaikan pesan ini jika Anda tidak mengajukan permintaan <b>Reset Password</b>.<br><br>
+	Link akan kedaluwarsa setelah 24 jam. Mohon ajukan permintaan <b>Reset Password</b> baru jika telah link telah kedaluwarsa.
+	<br><br><hr>
+	Salam,<br>
 
-        ONE Talents Teams
+	ONE Talent Team
 
 </body>
 </html>
