@@ -59,7 +59,7 @@ class UserController extends BaseController
 	public function register(Request $request){
 		$rules = [
 			'fullname' => "required|string",
-			'email' => "required|string|email|unique:xin_employees,email",
+			'email' => "required|string|email",
 			'contact_no' => "required|string",
 			'password' => "required|string|required_with:confirm_password|same:confirm_password",
 			'confirm_password' => "required|string",
@@ -68,6 +68,10 @@ class UserController extends BaseController
 
 		if(!empty($checkValidate)){
 			return $checkValidate;
+		}
+		$getUser = UserModels::where('is_active', 1)->where('email', $request['email'])->first();
+		if(!empty($getUser)){
+			return $this->services->response(406,"Email ini sudah digunakan!",array());
 		}
 		$PostRequest = array(
 			'user_id' => $this->services->randomid(4),

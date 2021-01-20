@@ -6,7 +6,11 @@
  * @package  Laravel
  * @author   Taylor Otwell <taylor@laravel.com>
  */
-
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, PUT, POST, DELETE, OPTIONS, post, get');
+// header("Access-Control-Max-Age", "3600");
+header('Access-Control-Allow-Headers: X-Api-Key,X-Token,Content-Type, X-Auth-Token, Origin, Authorization, Accept');
+header("Access-Control-Allow-Credentials", "true");
 define('LARAVEL_START', microtime(true));
 
 /*

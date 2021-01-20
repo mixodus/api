@@ -97,9 +97,10 @@ class ChallengeController extends Controller
 
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$checkJoin = $this->getDataServices->getChallenge("detail",$request->challenge_id,$checkUser->user_id);
-		if(count($checkJoin[0]['me'])==0){
+		if($checkJoin[0]['me']==null){
 			return $this->services->response(401,"Kamu belum bergabung dengan challenge ini!");
 		}
+		
 		$getQuiz = array();
 		if(!empty($checkJoin[0]['me']['list_quiz_id']) && $checkJoin[0]['me']['list_quiz_id']!=null && $checkJoin[0]['me']['list_quiz_id']!="") {
 			$str_list_quiz = str_replace('##',",",$checkJoin[0]['me']['list_quiz_id']);
