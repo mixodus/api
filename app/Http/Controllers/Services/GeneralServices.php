@@ -20,7 +20,7 @@ class GeneralServices extends BaseController
 		if ($validator->fails()) {
 			$response = [
 				'status' => false,
-				'message' => $validator->messages()
+				'message' =>  $validator->errors()->first()
 			];
 			return response()->json($response, 406);
 		}
@@ -47,6 +47,25 @@ class GeneralServices extends BaseController
 
 	}
 
+	public function generateTokenVerify($dataUser,$key = false)
+	{
+		if (!$key) {
+			$key = 'X-Api-Key';
+		}
+		//comment coding lama
+		// $date = new DateTime();
+		// $token['iat'] = $date->getTimestamp(); // waktu dibuat
+		// $token['exp'] = $date->getTimestamp() + (3600*0.1) ; // 1 hour
+
+		$exp = 7776000;
+		$date = new DateTime();
+		$token['data'] = ['id_user' => $dataUser];
+		$token['iat'] = $date->getTimestamp();
+		$token['exp'] = $date->getTimestamp() + 86400*2; // a week 
+		
+		return JWT::encode($token, $key);
+
+	}
 	public function response($statusCode, $msg, $data=array(),$with_alert= null){
 		$response = [
 			'status' => true,
@@ -73,6 +92,38 @@ class GeneralServices extends BaseController
 				'status' 	=> true,
 				'alert' 	=> 'success',
 				'message' 	=> $msg
+			];
+		}
+		return response()->json($response, $statusCode);
+	}
+	public function response_verify($statusCode, $msg, $data=array(),$with_alert= null){
+		$response = [
+			'status' => true,
+			'isVerified' => true,
+			'message' => $msg,
+			'data' => $data,
+		];
+		if ($statusCode != 200) {
+			$response = [
+				'status' => false,
+				'isVerified' => false,
+				'message' => $msg
+			];
+		}
+		return response()->json($response, $statusCode);
+	}
+	public function response_changemail($statusCode, $msg, $data=array(),$with_alert= null){
+		$response = [
+			'status' => true,
+			'isEmailChanged' => true,
+			'message' => $msg,
+			'data' => $data,
+		];
+		if ($statusCode != 200) {
+			$response = [
+				'status' => false,
+				'isEmailChanged' => false,
+				'message' => $msg
 			];
 		}
 		return response()->json($response, $statusCode);

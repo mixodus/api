@@ -43,16 +43,16 @@ class JobsController extends Controller
 			$getData = $this->getDataServices->getJobs();
 		}
 	
-		return $this->services->response(200,"Job Posting",$getData);
+		return $this->services->response(200,"Daftar Lowongan Pekerjaan",$getData);
 	}
 	public function detail(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$getData = $this->getDataServices->getJobs($request->id,$checkUser->user_id);	
 		if ($getData) {
 			$getData->makeHidden('applications');
-			return $this->services->response(200,"Job Posting",$getData);
+			return $this->services->response(200,"Lowongan Pekerjaan",$getData);
 		}else{
-			return $this->services->response(404,"Job doesn't exist!");
+			return $this->services->response(404,"Job doesn't exist!",array());
 		}
 	}
 
@@ -61,9 +61,9 @@ class JobsController extends Controller
 		$getData = $this->getDataServices->userJobsApplication($checkUser->user_id);	
 	   
 		if(count($getData)>0){
-			return $this->services->response(200,"Job application",$getData);
+			return $this->services->response(200,"Progress Application",$getData);
 		}else{
-			return $this->services->response(404,"Job application not found",array());
+			return $this->services->response(404,"Data tidak ditemukan",array());
 		}
 	}
 	public function applyJobsApplication(Request $request){
@@ -82,22 +82,22 @@ class JobsController extends Controller
 
 		$checkUserApply = $this->getDataServices->userJobsApplication($checkUser->user_id,$request->job_id);
 		if(count($checkUserApply)>0){
-			return $this->services->response(400,"Already Applied");
+			return $this->services->response(400,"Anda telah melamar pekerjaan ini");
 		}
 		
 		$getData = $this->getDataServices->getJobs($request->job_id,null,null);	
 
 		$saveJobs = $this->actionServices->applyJob($request->job_id,$checkUser->user_id,$request->email,$request->contact_no);
-		$save_notif = $this->actionServices->postNotif(4,$request->job_id,$checkUser->user_id,'You are successfully apply to ' .$getData->job_title. ' job');
-		return $this->services->response(200,"You are successfully apply this job!", array());        
+		$save_notif = $this->actionServices->postNotif(4,$request->job_id,$checkUser->user_id,'Anda telah berhasil melamar pekerjaan sebagai' .$getData->job_title. '');
+		return $this->services->response(200,"Berhasil melamar pekerjaan!", array());        
 	}
 	//================Jobs Type
 	public function getJobTypeList(Request $request){
 		$getData = $this->getDataServices->getJobTypeList();	
 		if ($getData) {
-			return $this->services->response(200,"Job Type",$getData);
+			return $this->services->response(200,"Tipe Pekerjaan",$getData);
 		}else{
-			return $this->services->response(200,"Job Type doesn't exist!",array());
+			return $this->services->response(200,"Tipe Pekerjaan tidak ditemukan!",array());
 		}
 	}
 }

@@ -37,9 +37,9 @@ class ReferralController extends Controller
 		$getData = $this->getDataServices->getReferralMember($checkUser->user_id);
 		
 		if (!$getData->isEmpty()) {
-			return $this->services->response(200,"Referral List",$getData);
+			return $this->services->response(200,"Daftar Rujukan",$getData);
 		}else{
-			return $this->services->response(200,"Referral not found!");
+			return $this->services->response(200,"Rujukan tidak ditemukan",array());
 		}
 	}
 	public function getReferralMemberSuccess(Request $request){
@@ -47,7 +47,7 @@ class ReferralController extends Controller
 		$getData = $this->getDataServices->ValidateReferralPoints($checkUser->user_id);
 	  
 		if ($getData->isEmpty()) {
-			return $this->services->response(200,"Referral not found!");
+			return $this->services->response(200,"Rujukan tidak ditemukan");
 		}
 		//update data (gatau fungsinya ada di code lama)
 		foreach($getData as $row){
@@ -68,7 +68,7 @@ class ReferralController extends Controller
 				$updateStatusRefferal = $this->actionServices->updateReferral("successful_referral",$row->referral_id);
 			}
 		}
-		return $this->services->response(200,"Referral List",$getData);
+		return $this->services->response(200,"Daftar Rujukan",$getData);
 	}
 	// kedepannya akan ada upload cv
 	public function AssignMember(Request $request){
@@ -86,13 +86,13 @@ class ReferralController extends Controller
 		
 		$checkReferral = $this->getDataServices->ValidateReferralPoints(null,$request->referral_email);
 		if (!$checkReferral->isEmpty()) {
-			return $this->services->response(401,"Sorry, Your friend is already registered in referral!");
+			return $this->services->response(401,"Maaf, teman Anda telah terdaftar pada rujukan. ");
 		}
 		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
 		$saveReferral = $this->actionServices->saveReferral($request->all(),$checkUser->user_id,$status[0]);
 		if(!$saveReferral){
-			return $this->services->response(503,"Server Error!");
+			return $this->services->response(503,"Koneksi jaringan bermasalah!");
 		}  
-		return $this->services->response(200,"You have successfully referral your friend.",$request->all());
+		return $this->services->response(200,"Anda telah berhasil membuat rujukan.",$request->all());
 	}   
 }

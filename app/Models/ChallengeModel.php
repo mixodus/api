@@ -31,7 +31,7 @@ class ChallengeModel extends Model
 	}
 	//untuk challenge detail
 	public function me() {
-		return $this->hasMany('App\Models\ChallengeParticipants', 'challenge_id','challenge_id');
+		return $this->belongsTo('App\Models\ChallengeParticipants', 'challenge_id','challenge_id');
 	}
 
 	public function quiz() {

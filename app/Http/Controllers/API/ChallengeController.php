@@ -30,9 +30,9 @@ class ChallengeController extends Controller
 		$getData = $this->getDataServices->getChallenge("active");
 		
 		if (!$getData->isEmpty()) {
-			return $this->services->response(200,"Challenge List",$getData);
+			return $this->services->response(200,"Quiz Tantangan",$getData);
 		}else{
-			return $this->services->response(200,"Challenge not found!");
+			return $this->services->response(200,"Data Tidak ditemukan!",array());
 		}
 	}
 	public function detail(Request $request,$id){
@@ -40,9 +40,9 @@ class ChallengeController extends Controller
 		$getData = $this->getDataServices->getChallenge("detail",$id,$checkUser->user_id);
 		
 		if (!$getData->isEmpty()) {
-			return $this->services->response(200,"Challenge Detail",$getData[0]);
+			return $this->services->response(200,"Quiz Tantangan",$getData[0]);
 		}else{
-			return $this->services->response(200,"Challenge not found!");
+			return $this->services->response(200,"Data Tidak ditemukan!");
 		}
 	}
 	public function history(Request $request){
@@ -60,9 +60,9 @@ class ChallengeController extends Controller
 		$getData = $this->getDataServices->getChallengebyUser($checkUser->user_id);
 		
 		if (!$getData->isEmpty()) {
-			return $this->services->response(200,"Challenge List",$getData);
+			return $this->services->response(200,"Quiz Tantangan",$getData);
 		}else{
-			return $this->services->response(200,"Challenge not found!");
+			return $this->services->response(200,"Data Tidak ditemukan!", array());
 		}
 	}
 	public function join(Request $request){
@@ -76,15 +76,14 @@ class ChallengeController extends Controller
 		}
 	   	
 		$checkUser = $this->getDataServices->getUserbyToken($request);
-	
 		$checkChallenge = $this->getDataServices->checkChallengeJoin($request->challenge_id,$checkUser->user_id);
 		if(!empty($checkChallenge)){
-			return $this->services->response(401,"Sorry, You are already registered this challenge");
+			return $this->services->response(401,"Maaf, Anda telah terdaftar pada tantangan ini.");
 		}
 		$data = $this->getDataServices->getChallengeRaw($request->challenge_id);
 
 		$saveJobs = $this->actionServices->joinChallenge($data,$checkUser->user_id);
-		return $this->services->response(200,"You are successfully registered to this challenge!", $data);  
+		return $this->services->response(200,"Anda telah berhasil terdaftar pada tantangan ini!", $data);  
 	}
 	public function quiz(Request $request){
 		$rules = [
@@ -95,27 +94,25 @@ class ChallengeController extends Controller
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-	   	
+
 		$checkUser = $this->getDataServices->getUserbyToken($request);
-	
 		$checkJoin = $this->getDataServices->getChallenge("detail",$request->challenge_id,$checkUser->user_id);
-		if(count($checkJoin[0]['me'])==0){
-			return $this->services->response(401,"You have not join this challenge");
+		if($checkJoin[0]['me']==null){
+			return $this->services->response(401,"Kamu belum bergabung dengan challenge ini!");
 		}
 		$getQuiz = array();
 		if(!empty($checkJoin[0]['me']['list_quiz_id']) && $checkJoin[0]['me']['list_quiz_id']!=null && $checkJoin[0]['me']['list_quiz_id']!="") {
 			$str_list_quiz = str_replace('##',",",$checkJoin[0]['me']['list_quiz_id']);
 			$str_list_quiz = str_replace("#","",$str_list_quiz);
 			$arr_id_quiz = explode(",",$str_list_quiz);
-		
-			$getQuiz = $this->getDataServices->getChallengeQuiz($arr_id_quiz);
+			$getQuiz = $this->getDataServices->getChallengeQuizNotIn($request->challenge_id,$arr_id_quiz);
 		}else{
 			$getQuiz = $this->getDataServices->getChallengeQuiz($request->challenge_id);
 		}
 		if (count($getQuiz)>0) {
-			return $this->services->response(200,"Quiz List",$getQuiz);
+			return $this->services->response(200,"Pertanyaan Kuis",$getQuiz);
 		}else{
-			return $this->services->response(200,"Quiz not found!");
+			return $this->services->response(200,"Kuiz Tidak ditemukan!",array());
 		}
 	}
 	public function answer(Request $request){
@@ -135,7 +132,7 @@ class ChallengeController extends Controller
 		$challenge_register = $this->getDataServices->checkChallengeJoin($checkJoin->challenge_id,$checkUser->user_id);
 		
 		if(empty($challenge_register)){
-			return $this->services->response(401,"You have not join this challenge");
+			return $this->services->response(401,"Anda belum mengikuti tantangan ini.");
 		}
 		$quiz_check = "#".$request->quiz_id."#";
 		$quiz_answer = "#".$request->quiz_answer."#";
@@ -158,7 +155,7 @@ class ChallengeController extends Controller
 		$challenge_register->is_achieve = true;
 		ChallengeParticipants::where('id',$challenge_register['id'])->update($challenge_register->toArray());
 
-		return $this->services->response(200,"You are successfully submit answer",array());
+		return $this->services->response(200,"Anda telah berhasil mengirimkan jawaban.",array());
 	}
 
 	public function achievement(Request $request){
@@ -180,14 +177,14 @@ class ChallengeController extends Controller
 		}
 		$getAwards = $this->getDataServices->getAwardsbyUserId($checkUser->user_id,$request->start,$request->length);
 		
-		return $this->services->response(200,"List Achievement",$getAwards);
+		return $this->services->response(200,"Daftar Pencapaian",$getAwards);
 	}
 	public function achievementAll(Request $request){
 
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$getAwards = $this->getDataServices->getAwardsbyUserId($checkUser->user_id);
 		
-		return $this->services->response(200,"List Achievement",$getAwards);
+		return $this->services->response(200,"Daftar Pencapaian",$getAwards);
 	}
 
 }

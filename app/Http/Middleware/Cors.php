@@ -17,6 +17,7 @@ class Cors {
 	{
 
 		header("Access-Control-Allow-Origin: *");
+        header('Access-Control-Allow-Methods', '*');
 
 		// ALLOW OPTIONS METHOD
 		$headers = [

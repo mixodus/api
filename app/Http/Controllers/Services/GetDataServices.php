@@ -29,6 +29,7 @@ use App\Models\SettingModel;
 use App\Models\BannerModel;
 use App\Models\CountryModel;
 use App\Models\BannerNewsModel;
+use App\Models\BannerEventModel;
 use App\Models\ReferralModel;
 use App\Models\FriendModel;
 use App\Models\UserBankModel;
@@ -60,8 +61,10 @@ class GetDataServices extends BaseController
 	function userData($id){
 		$data = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
 		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')->where('user_id',$id)->first();
-
-		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_picture'];
+		$data['profile_picture_url'] ="";
+		if($data['profile_picture']!="" || $data['profile_picture']!=null){
+			$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_picture'];
+		}
 
 		return $data;
 	}
@@ -72,7 +75,10 @@ class GetDataServices extends BaseController
 
 		$data = $query->get();
 		$data = $data->map(function($key) use($data){
-			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			$key['profile_picture_url'] ="";
+			if($key['profile_picture']!="" || $key['profile_picture']!=null){
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			}
 			return $key;
 		});
 		return $data;
@@ -91,8 +97,12 @@ class GetDataServices extends BaseController
 		}
 		$data = $query->get();
 		$data  = $data->map(function($key) use($array){
-			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
-			$key['pic']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			$key['profile_picture_url'] ="";
+			$key['pic']  ="";
+			if($key['profile_picture']!="" || $key['profile_picture']!=null){
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+				$key['pic']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			}
 			// $key['mutual_friends']  = $this->getMutualFriend($key['user_id'],$array);
 			return $key;
 		});
@@ -107,14 +117,28 @@ class GetDataServices extends BaseController
 	}
 	public function getUserbyToken(Request $request){
 		$token = $request->header('X-Token');
-
-		$credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
-		$checkAuth = UserModels::select('*')->where('user_id',$credentials->data->id)->first();
+		if(!empty($token)){
+			$credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
+			$checkAuth = UserModels::select('*')->where('user_id',$credentials->data->id)->first();
+		}else{
+			$checkAuth = (object) array();
+			$checkAuth->user_id = 0;
+		}
 		return $checkAuth;
 	}
 	public function userDetail($id){
-		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp', 'is_active')->with('work_experience','certification')->where('user_id',$id)->first();
-		
+		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp','is_mail_verified')->with('work_experience','certification')->where('user_id',$id)->first();
+		if(!empty($profile)){
+			$collect = collect($profile->certifications);
+			$profile->certification  = $collect->map(function($key) use($collect){
+				$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+				return $key;
+			});
+		}else{
+			$profile = (object) array();
+			$profile->certification = array();
+		}
 		//point
 		$point = $this->totalTrxPointbyUserId($id);
 		$profile->points = isset($point)?$point:0;
@@ -127,6 +151,12 @@ class GetDataServices extends BaseController
 		//level
 		$level = LevelModel::select('*')->where('level_min_point','<=',$profile->points)->where('level_max_point','>=',$profile->points)->first();
 		$profile->level_icon_url = url('/')."/uploads/level/".$level->level_icon;
+		
+		$profile->profile_picture_url = "";
+		if(!empty($profile->profile_picture) && $profile->profile_picture != null){
+			$profile->profile_picture_url = url('/')."/uploads/profile/".$profile->profile_picture;
+		}
+		
 		$profile->level_name = $level->level_name;
 
 		$profile->total_achievement =  $this->totalAwardsbyUserId($id);
@@ -138,11 +168,6 @@ class GetDataServices extends BaseController
 							]);
 		$profile->project = $this->getWorkExperience($id);
 		//certification
-		$collect = collect($profile->certifications);
-		$profile->certification  = $collect->map(function($key) use($collect){
-			$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
-			return $key;
-		});
 
 		return $profile;
 	}
@@ -160,7 +185,10 @@ class GetDataServices extends BaseController
 		->orderBy('total_point','Desc')
 		->limit(10)->get();
 		$data = $data->map(function($key) use($data){
-			$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			$key['profile_picture_url'] = "";
+			if($key['profile_picture']!="" || $key['profile_picture']!=null){
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			}
 			$key['month']  = $key->created_at->format('Y-m');
 			return $key;
 		});
@@ -207,7 +235,11 @@ class GetDataServices extends BaseController
 		$collect = $query->get();
 		$collect = $collect->map(function($key) use($collect){
 			$key['certification_name']  = $key['certification_file'];
-			$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
+			if($key['certification_file']!="" || $key['certification_file']!=null){
+				$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
+			}else{
+				$key['certification_file']  = "";
+			}
 			return $key;
 		});
 		return $collect;
@@ -230,21 +262,37 @@ class GetDataServices extends BaseController
 					->offset($id['start'])->limit($id['length'])->get(); 
 		}
 		$data = $data->map(function($key) use($data){
-			$key['news_photo_url']  = url('/')."/uploads/news/".$key['news_photo'];
+			$key['news_photo_url']  = "";
+			if($key['news_photo']!="" || $key['news_photo']!=null){
+				$key['news_photo_url']  = url('/')."/uploads/news/".$key['news_photo'];
+			}
 			return $key;
 		});
+		
 		return $data;
 	}
 
 	//====NEWS FASE 2
 	public function getNewsComment($data){
-		return NewsCommentModel::where('news_id',$data['news_id'])->with(['user'=>function($query){
+		$data = NewsCommentModel::where('news_id',$data['news_id'])->with(['user'=>function($query){
 			$query->select('user_id','fullname');
 		},'comment_replies'=>function($query){
 			$query->with(['user'=>function($query){
 				$query->select('user_id','fullname');
 			}]);
 		}])->get(); 
+		$data = $data->map(function($key) use($data){
+			$key['date_created']  = $this->tgl_indo(date("d-m-Y", strtotime($key['created_at'])));
+			$key['time_created']  = date("h:i A", strtotime($key['created_at']));
+			$key['comment_replies'] = $key['comment_replies']->map(function($raw){
+				$raw['date_created']  = $this->tgl_indo(date("d-m-Y", strtotime($raw['created_at'])));
+				$raw['time_created']  = date("h:i A", strtotime($raw['created_at']));
+				return $raw;
+			});
+			return $key;
+		});
+		
+		return $data;
 	}
 	public function getNewsReplyComment($data){
 		return NewsCommentReplyModel::where('comment_id',$data['comment_id'])->with(['user'=>function($query){
@@ -282,7 +330,10 @@ class GetDataServices extends BaseController
 			$data = $query->first();
 
 			if(!empty($data)){
-				$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
+				$data['company_logo_url']  = "";
+				if($data['company_logo']!="" || $data['company_logo']!=null){
+					$data['company_logo_url']  = url('/')."/uploads/company/".$data['company_logo'];
+				}
 				$data->is_applied = false;
 				if($data->applications != null){
 					$data->is_applied = true;
@@ -326,7 +377,10 @@ class GetDataServices extends BaseController
 			}
 			$data = $query->orderBy('job_id','DESC')->get();
 			$data = $data->map(function($key) use($data){
-				$key['company_logo_url']  = url('/')."/uploads/company/".$key['company_logo'];
+				$key['company_logo_url'] ="";
+				if($key['company_logo']!="" || $key['company_logo']!=null){
+					$key['company_logo_url']  = url('/')."/uploads/company/".$key['company_logo'];
+				}
 				return $key;
 			});
 		}
@@ -343,7 +397,10 @@ class GetDataServices extends BaseController
 		$data = $query->limit(100)->orderBy('job_id','DESC')->get();
 
 		$data = $data->map(function($key) use($data){
-			$key['company_logo_url']  = url('/')."/uploads/company/".$key['company_logo'];
+			$key['company_logo_url'] ="";
+			if($key['company_logo']!="" || $key['company_logo']!=null){
+				$key['company_logo_url']  = url('/')."/uploads/company/".$key['company_logo'];
+			}
 			return $key;
 		});
 		return $data;
@@ -366,7 +423,10 @@ class GetDataServices extends BaseController
 		$data =$query->orderBy('xin_events.event_id','DESC')->limit(2)->get();
 
 		$data = $data->map(function($key) use($data){
-			$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner'];
+			$key['event_banner_url'] ="";
+			if($key['event_banner']!="" || $key['event_banner']!=null){
+				$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner'];
+			}
 			$key->event_join_status ="Open";
 			$key->event_is_join = false;
 			if(count($key['participants'])>0 && $key['participants']!=null){
@@ -375,8 +435,7 @@ class GetDataServices extends BaseController
 			}
 			return $key;
 		});
-		return $data;
-				
+		return $data;			
 	}
 	public function getBannerEvent($limit)
 	{
@@ -391,13 +450,22 @@ class GetDataServices extends BaseController
 			if($key->banners_type_id == 1 ){
 				$key->banners_type = "event";
 				$key->banners_photo_url = url('/')."/uploads/event/".$key->banners_photo;
+				if($key->banners_photo == "" || $key->banners_photo ==null){
+					$key->banners_photo_url ="";
+				}
 
 			}elseif($key->banners_type_id == 2 ){
 				$key->banners_type = "news";
 				$key->banners_photo_url =url('/')."/uploads/news/".$key->banners_photo;
+				if($key->banners_photo == "" || $key->banners_photo ==null){
+					$key->banners_photo_url ="";
+				}
 			}elseif($key->banners_type_id == 3){
 				$key->banners_type = "challenge";
 				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->banners_photo;
+				if($key->banners_photo == "" || $key->banners_photo ==null){
+					$key->banners_photo_url ="";
+				}
 
 			}
 			return $key;
@@ -414,15 +482,27 @@ class GetDataServices extends BaseController
 		$data = $data->map(function($key) use($data){
 			$key->banners_type = null;
 			$key->banners_photo_url = url('/')."/uploads/news/".$key->news_photo;
+			if($key->news_photo == "" || $key->news_photo ==null){
+				$key->banners_photo_url ="";
+			}
 			if($key->banners_type_id == 1 ){
 				$key->banners_type = "event";
 				$key->banners_photo_url = url('/')."/uploads/event/".$key->news_photo;
+				if($key->news_photo == "" || $key->news_photo ==null){
+					$key->banners_photo_url ="";
+				}
 			}elseif($key->banners_type_id == 2 ){
 				$key->banners_type = "news";
 				$key->banners_photo_url =url('/')."/uploads/news/".$key->news_photo;
+				if($key->news_photo == "" || $key->news_photo ==null){
+					$key->banners_photo_url ="";
+				}
 			}elseif($key->banners_type_id == 3){
 				$key->banners_type = "challenge";
 				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->news_photo;
+				if($key->news_photo == "" || $key->news_photo ==null){
+					$key->banners_photo_url ="";
+				}
 			}
 			return $key;
 		});
@@ -436,6 +516,44 @@ class GetDataServices extends BaseController
 					->where('xin_events_participant.status','!=' ,"Waiting Approval" )
 					->count();
 	}
+	public function HistoryEvent($user_id,$type){
+		$data = EventModel::select('*')->LeftJoin('xin_events_participant', 'xin_events_participant.event_id', '=', 'xin_events.event_id')
+					->where('xin_events_participant.employee_id',$user_id)
+					->where('xin_events.event_date','<',date('Y-m-d'))
+					->where('xin_events.event_type_id',$type)
+					->where('xin_events_participant.status','!=' ,"Waiting Approval" )
+					->get();
+					$data = $data->map(function($key) use($data){
+						$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner'];
+						
+						if($key->event_banner == "" || $key->event_banner ==null){
+							$key->event_banner_url ="";
+						}
+						// $key['event_banner']  = url('/')."/uploads/event/".$key['event_banner'];
+							if($key['event_type_id']== 1){
+								$key['event_category'] = "Event";
+							}else if($key['event_type_id']== 2){
+								$key['event_category'] = "Bootcamp";
+							}
+							$today = date('Y-m-d');
+							$timeToday = date('H:i');
+							if($key->event_date > $today){
+								$key->event_ongoing = false;
+								$key->event_joinable = true;
+			
+							}else if($key->event_date == $today){
+								$time = strtotime($key->event_time) - 60*60;
+								$getTime = date('H:i',$time);
+								$key->event_ongoing = true;
+								$key->event_joinable = true;
+								if($timeToday > $getTime){
+									$key->event_joinable = false;
+								}
+							}
+						return $key;
+					});
+					return $data;
+	}
 	public function getEventDetail($user_id, $id){
 		$data = EventModel::select('*')->with(["participants" => function($q) use($user_id){
 						$q->where('employee_id', '=', $user_id);
@@ -443,13 +561,35 @@ class GetDataServices extends BaseController
 					->where('xin_events.event_id',$id)
 					->get();
 			$data = $data->map(function($key) use($data){
-						$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner_url'];
+						$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner'];
+								
+						if($key->event_banner == "" || $key->event_banner ==null){
+							$key->event_banner_url ="";
+						}
+						// $key['event_banner']  = url('/')."/uploads/event/".$key['event_banner'];
 						$key['event_registered'] = false;
 						if(count($key['participants'])>0){
 							$key['event_registered'] = true;
 							$key->status = true;
 							if($key['participants'][0]['status']=="Waiting Approval"){
 								$key->status = false;
+							}
+						}
+						$key->event_ongoing = false;
+						$key->event_joinable = false;
+						$today = date('Y-m-d');
+						$timeToday = date('H:i');
+						if($key->event_date > $today){
+							$key->event_ongoing = false;
+							$key->event_joinable = true;
+						}
+						if($key->event_date == $today){
+							$time = strtotime($key->event_time) - 60*60;
+							$getTime = date('H:i',$time);
+							$key->event_ongoing = true;
+							$key->event_joinable = true;
+							if($timeToday > $getTime){
+								$key->event_joinable = false;
 							}
 						}
 					   	return $key;
@@ -463,7 +603,12 @@ class GetDataServices extends BaseController
 					->limit(25)
 					->get();
 		$data = $data->map(function($key) use($data){
-			$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner_url'];
+				$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner'];
+						
+				if($key->event_banner == "" && $key->event_banner ==null){
+					$key->event_banner_url ="";
+				}
+			// $key['event_banner']  = url('/')."/uploads/event/".$key['event_banner'];
 				if($key['event_type_id']== 1){
 					$key['event_category'] = "Event";
 				}else if($key['event_type_id']== 2){
@@ -501,13 +646,22 @@ class GetDataServices extends BaseController
 			if($key->banners_type_id == 1 ){
 				$key->banners_type = "event";
 				$key->banners_photo_url = url('/')."/uploads/event/".$key->banners_photo;
+				if($key->banners_photo == "" || $key->banners_photo ==null){
+					$key->banners_photo_url ="";
+				}
 
 			}elseif($key->banners_type_id == 2 ){
 				$key->banners_type = "news";
 				$key->banners_photo_url =url('/')."/uploads/news/".$key->banners_photo;
+				if($key->banners_photo == "" || $key->banners_photo ==null){
+					$key->banners_photo_url ="";
+				}
 			}elseif($key->banners_type_id == 3){
 				$key->banners_type = "challenge";
 				$key->banners_photo_url = url('/')."/uploads/challenge/".$key->banners_photo;
+				if($key->banners_photo == "" || $key->banners_photo ==null){
+					$key->banners_photo_url ="";
+				}
 
 			}
 			return $key;
@@ -544,7 +698,10 @@ class GetDataServices extends BaseController
 
 	
 	public function checkFriendStatus($friend_id,$user_id){
-		return FriendModel::select('*')->where('uid1',$friend_id)->where('uid2',$user_id)->get();
+		return FriendModel::select('*')->where('uid1',$friend_id)->where('uid2',$user_id)->first();
+	}
+	public function checkFriendStatusV2($friend_id,$user_id){
+		return FriendModel::select('*')->where('uid1',$user_id)->where('uid2',$friend_id)->first();
 	}
 
 	public function friendRequestList($user_id){
@@ -569,6 +726,12 @@ class GetDataServices extends BaseController
 			$data = $data->map(function($key) use($data){
 				$key['challenge_icon_trophy']  = url('/')."/uploads/challenge/".$key['challenge_icon_trophy'];
 				$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
+				if($key->challenge_icon_trophy == "" || $key->challenge_icon_trophy ==null){
+					$key->challenge_icon_trophy ="";
+				}
+				if($key->challenge_photo == "" || $key->challenge_photo ==null){
+					$key->challenge_photo ="";
+				}
 				$key->status_challenge ="";
 				if($key->total_current_point != 0){
 					$key->status_challenge ="Done";
@@ -587,7 +750,7 @@ class GetDataServices extends BaseController
 		}elseif($type =="detail"){
 			$query->where('xin_challenge.challenge_id',$id);
 			$query->with(['me' => function($q) use($user_id){
-				$q->where('employee_id', '=', $user_id)->limit(1);
+				$q->where('employee_id', '=', $user_id)->first();
 			},'top_participant'=> function($user){
 				$user->select('xin_challenge_participant.*','xin_employees.fullname','xin_employees.profile_picture AS profile_picture_url')
 				->LeftJoin('xin_employees', 'xin_employees.user_id', '=', 'xin_challenge_participant.employee_id')->orderBy('total_current_point','DESC')->limit(10);
@@ -603,7 +766,11 @@ class GetDataServices extends BaseController
 		}
 		$data = $query->orderBy('xin_challenge.challenge_expired_date','ASC')->get();
 		$data = $data->map(function($key) use($data){
-			$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
+			if($key->challenge_photo == "" || $key->challenge_photo ==null){
+				$key->challenge_photo ="";
+			}else{
+				$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
+			}
 			$key->event_category = 'Challenge';
 			$key->challenge_ongoing = false;
 			if($key->challenge_expired_date == date('Y-m-d')){
@@ -612,7 +779,11 @@ class GetDataServices extends BaseController
 			if(!empty($key->top_participant)){
 				$participants = collect($key->top_participant);
 				$user = $participants->map(function($raw) use($participants){
-					$raw['profile_picture_url']  = url('/')."/uploads/profile/".$raw['profile_picture_url'];
+					if($raw->profile_picture_url == "" || $raw->profile_picture_url ==null){
+						$raw->profile_picture_url ="";
+					}else{
+						$raw['profile_picture_url']  = url('/')."/uploads/profile/".$raw['profile_picture_url'];
+					}
 					return $raw;
 				});
 			}
@@ -629,7 +800,11 @@ class GetDataServices extends BaseController
 	public function getChallengeOngoing($start=0,$end=25){
 		$data = ChallengeModel::select('*')->where('challenge_expired_date','>=',date('Y-m-d'))->orderBy('challenge_expired_date', 'ASC')->get();
 		$data = $data->map(function($key) use($data){
-			$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
+			if($key->challenge_photo == "" || $key->challenge_photo ==null){
+				$key->challenge_photo ="";
+			}else{
+				$key['challenge_photo']  = url('/')."/uploads/challenge/".$key['challenge_photo'];
+			}
 			$key->event_category = 'Challenge';
 			$key->challenge_ongoing = false;
 			$key->challenge_ongoing = false;
@@ -643,7 +818,15 @@ class GetDataServices extends BaseController
 		return $data;
 	}
 	public function getChallengeQuiz($challenge_id){
-		return ChallengeQuiz::select('id','challenge_id','question','a','b','c')->where('challenge_id',$challenge_id)->get();
+		return ChallengeQuiz::select('id','challenge_id','question','a','b','c')
+				->where('challenge_id',$challenge_id)
+				->get();
+	}
+	public function getChallengeQuizNotIn($challenge_id,$quiz_id){
+		return ChallengeQuiz::select('id','challenge_id','question','a','b','c')
+				->where('challenge_id',$challenge_id)
+				->whereNotIn('id',$quiz_id)
+				->get();
 	}
 	//awards
 	public function getAwardsbyUserId($user_id,$offset=null,$limit=null){
@@ -656,9 +839,13 @@ class GetDataServices extends BaseController
 		}
 		$data = $query->get();
 
-		$data = $data->map(function($raw) use($data){
-			$raw['award_photo']  = url('/')."/uploads/award/".$raw['award_photo'];
-			return $raw;
+		$data = $data->map(function($key) use($data){
+			if($key->award_photo == "" || $key->award_photo ==null){
+				$key->award_photo ="";
+			}else{
+				$key['award_photo']  = url('/')."/uploads/award/".$key['award_photo'];
+			}
+			return $key;
 		});
 		return $data;
 	}
@@ -700,7 +887,11 @@ class GetDataServices extends BaseController
 		$data = $query->orderBy('xin_notif.created_at','DESC')->get();
 
 		$data = $data->map(function($raw) use($data){
-			$raw['image_icon']  = url('/')."/uploads/notif/".$raw['image_icon'];
+			if($raw['image_icon'] == null || $raw['image_icon'] == ""){
+				$raw['image_icon']  = "";
+			}else{
+				$raw['image_icon']  = url('/')."/uploads/notif/".$raw['image_icon'];
+			}
 			$raw['is_new'] = FALSE;
 			if($raw['is_new'] == 1)
 				$raw['is_new'] = TRUE;
@@ -725,6 +916,9 @@ class GetDataServices extends BaseController
 		$data = LevelModel::select('*')->orderBy('level_max_point','DESC')->get();
 		$data = $data->map(function($raw) use($data){
 			$raw['level_icon_url']  = url('/')."/uploads/level/".$raw['level_icon'];
+			if($raw['level_icon']==""){
+				$raw['level_icon_url']  = "";
+			}
 			return $raw;
 		});
 		return $data;
@@ -803,6 +997,29 @@ class GetDataServices extends BaseController
 			}
 		}
 		return $result;
+	}
+	public function tgl_indo($tanggal){
+		$bulan = array (
+			1 =>   'Jan',
+			'Feb',
+			'Maret',
+			'April',
+			'Mei',
+			'Juni',
+			'Juli',
+			'Agustus',
+			'Sept',
+			'Okt',
+			'Nov',
+			'Des'
+		);
+		$pecahkan = explode('-', $tanggal);
+		
+		// variabel pecahkan 0 = tanggal
+		// variabel pecahkan 1 = bulan
+		// variabel pecahkan 2 = tahun
+	 
+		return $pecahkan[2] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[0];
 	}
 	
 //================================Dashboard=======================================//
