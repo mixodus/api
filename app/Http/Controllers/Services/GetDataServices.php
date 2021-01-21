@@ -275,10 +275,10 @@ class GetDataServices extends BaseController
 	//====NEWS FASE 2
 	public function getNewsComment($data){
 		$data = NewsCommentModel::where('news_id',$data['news_id'])->with(['user'=>function($query){
-			$query->select('user_id','fullname');
+			$query->select('user_id','fullname','profile_picture');
 		},'comment_replies'=>function($query){
 			$query->with(['user'=>function($query){
-				$query->select('user_id','fullname');
+				$query->select('user_id','fullname','profile_picture');
 			}]);
 		}])->get(); 
 		$data = $data->map(function($key) use($data){
@@ -287,8 +287,20 @@ class GetDataServices extends BaseController
 			$key['comment_replies'] = $key['comment_replies']->map(function($raw){
 				$raw['date_created']  = $this->tgl_indo(date("d-m-Y", strtotime($raw['created_at'])));
 				$raw['time_created']  = date("h:i A", strtotime($raw['created_at']));
+				if(!empty($raw['user'])){
+					$raw['user']['profile_picture_url'] ="";
+					if($raw['user']['profile_picture']!="" || $raw['user']['profile_picture']!=null){
+						$raw['user']['profile_picture_url']  = url('/')."/uploads/profile/".$raw['user']['profile_picture'];
+					}
+				}
 				return $raw;
 			});
+			if(!empty($key['user'])){
+				$key['user']['profile_picture_url'] ="";
+				if($key['user']['profile_picture']!="" || $key['user']['profile_picture']!=null){
+					$key['user']['profile_picture_url']  = url('/')."/uploads/profile/".$key['user']['profile_picture'];
+				}
+			}
 			return $key;
 		});
 		
