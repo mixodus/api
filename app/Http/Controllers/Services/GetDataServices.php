@@ -274,7 +274,7 @@ class GetDataServices extends BaseController
 
 	//====NEWS FASE 2
 	public function getNewsComment($data){
-		$data = NewsCommentModel::where('news_id',$data['news_id'])->with(['user'=>function($query){
+		$data = NewsCommentModel::where('news_id',$data['news_id'])->withCount('comment_replies')->with(['user'=>function($query){
 			$query->select('user_id','fullname','profile_picture');
 		},'comment_replies'=>function($query){
 			$query->with(['user'=>function($query){

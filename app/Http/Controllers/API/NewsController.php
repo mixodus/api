@@ -85,7 +85,8 @@ class NewsController extends Controller
 			return $checkValidate;
 		
 		$comment = $this->getDataServices->getNewsComment($request->all());	
-		$data['comment_total'] = count($comment);
+		$reply_total = array_sum(array_column($comment->toArray(),'comment_replies_count'));
+		$data['comment_total'] = count($comment)+$reply_total;
 		$data['comments'] =  $comment;
 		
 		if (!$comment->isEmpty()) {
