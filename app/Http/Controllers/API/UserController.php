@@ -122,7 +122,7 @@ class UserController extends BaseController
 		$code = substr(md5(uniqid(mt_rand(), true)) , 0, 20);
 		$save_resetPassword = $this->actionServices->postResetPassword($email,$code);
 		
-		$data['link'] = env('URL_RESET').'?code='.$code.'&email='.$email;
+		$data['link'] = 'http://dev-laravel.oneindonesia.id/site/check-reset?code='.$code.'&email='.$email;
 		$sendEmail = $this->services->sendmail('Reset Password | One Talents', $checkUser, 'reset_password', $data);
 	
 		return $this->services->response(200,"Permintaan Reset Password telah dikirim ke email Anda");
@@ -516,7 +516,7 @@ class UserController extends BaseController
 		$postUpdate['email_verification_code']  = $code;
 		$updateCodeVerif = $this->users->where('user_id', $userData->user_id)->update($postUpdate);
 		
-		$data['link'] = env('URL_VERIFY').'?code='.$code.'&email='.$userData->email;
+		$data['link'] = 'http://dev-laravel.oneindonesia.id/site/user/check-verify?code='.$code.'&email='.$userData->email;
 		$sendEmail = $this->services->sendmail('Verifikasi Email | One Talent', $userData, 'verify_email', $data);
 	
 		return $this->services->response(200,"Email Verifikasi telah dikirim ke email anda ".$userData->email,$sendEmail);
@@ -527,7 +527,7 @@ class UserController extends BaseController
 		$updateCodeVerif = UserModels::where('user_id', $userData->user_id)->update($postUpdate);
 		
 		
-		$data['link'] = env('URL_VERIFY_CHANGE_EMAIL').'?code='.$code.'&email='.$userData->email;
+		$data['link'] = 'http://dev-laravel.oneindonesia.id//site/user/check-verify-change-email?code='.$code.'&email='.$userData->email;
 		$sendEmail = $this->services->sendmail('Verifikasi Email | One Talent', $userData, 'verify_email', $data);
 	
 		return $this->services->response(200,"Email Verifikasi telah dikirim ke email anda ".$userData->email,$sendEmail);
