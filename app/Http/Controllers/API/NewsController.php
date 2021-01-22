@@ -84,12 +84,15 @@ class NewsController extends Controller
 		if(!empty($checkValidate))
 			return $checkValidate;
 		
-		$data = $this->getDataServices->getNewsComment($request->all());	
-
-		if (!$data->isEmpty()) {
+		$comment = $this->getDataServices->getNewsComment($request->all());	
+		$reply_total = array_sum(array_column($comment->toArray(),'comment_replies_count'));
+		$data['comment_total'] = count($comment)+$reply_total;
+		$data['comments'] =  $comment;
+		
+		if (!$comment->isEmpty()) {
 			return $this->services->response(200,"Komentar Berita atau Artikel",$data);
 		}else{
-			return $this->services->response(200,"Komentar tidak ditemukan!",array());
+			return $this->services->response(200,"Komentar tidak ditemukan!",$data);
 		}
 	}
 	public function getCommentDetail(Request $request){
