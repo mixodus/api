@@ -45,12 +45,12 @@ class UserController extends BaseController
 
 		$checkAuth = $this->users->where('email', $request['username'])->first();
 		if ($checkAuth) {
-			if($checkAuth->is_mail_verified == 0){
-				return $this->services->response_verify(406,"Pesan verifikasi telah dikirim. Periksa email dan verifikasi akun Anda untuk melanjutkan.");
-			}
 			$password_hash = password_hash($request['password'], PASSWORD_BCRYPT, array('cost' => 12));
 			if(password_verify($request['password'],$checkAuth->password)){
 
+				if($checkAuth->is_mail_verified == 0){
+					return $this->services->response_verify(406,"Pesan verifikasi telah dikirim. Periksa email dan verifikasi akun Anda untuk melanjutkan.");
+				}
 				$data = $this->services->generateToken($checkAuth);
 				$data['user'] = $this->getDataServices->userData($checkAuth->user_id);
 
@@ -137,7 +137,8 @@ class UserController extends BaseController
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
 		if(!empty($checkValidate)){
-			return $checkValidate;
+			// return redirect('sites')->with('alert-error','Kesalahan : Konfirmasi kata sandi tidak sama');
+			return  redirect()->back()->with('alert-error','Kesalahan : Konfirmasi kata sandi tidak sama');
 		}
 		
 		$checkCode = $this->reset_password->where('code', $request['code'])->first();
