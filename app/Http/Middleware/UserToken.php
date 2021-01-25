@@ -6,6 +6,7 @@ use Closure;
 use Firebase\JWT\JWT;
 use Firebase\JWT\ExpiredException;
 use Firebase\JWT\SignatureInvalidException;
+use Exception;
 
 class UserToken
 {
@@ -42,7 +43,7 @@ class UserToken
             $data["classname"]= "Firebase\\JWT\\SignatureInvalidException";
             return response()->json([
                 'status' => false,
-                'message' => 'Provided Token is Expired',
+                'message' => 'Token Expired, Mohon login ulang.',
                 'error'=> $data
             ], 406);
         } 
@@ -50,14 +51,20 @@ class UserToken
             $data["classname"]= "Firebase\\JWT\\SignatureInvalidException";
             return response()->json([
                 'status' => false,
-                'message' => 'Signature verification failed',
+                'message' => 'Token Expired, Mohon login ulang.',
                 'error'=> $data
             ], 406);
         } catch(Exception $e) {
+            // return response()->json([
+            //     'status' => (method_exists($e, 'getStatusCode')) ? $e->getStatusCode() : 500,
+            //     'message' => 'Auth - '.$e->getMessage().' - '.$e->getFile().' - L '.$e->getLine()
+            // ],(method_exists($e, 'getStatusCode')) ? $e->getStatusCode() : 500);
+            $data["classname"]='Auth - '.$e->getMessage().' - '.$e->getFile().' - L '.$e->getLine();
             return response()->json([
-                'status' => (method_exists($e, 'getStatusCode')) ? $e->getStatusCode() : 500,
-                'message' => 'Auth - '.$e->getMessage().' - '.$e->getFile().' - L '.$e->getLine()
-            ],(method_exists($e, 'getStatusCode')) ? $e->getStatusCode() : 500);
+                'status' => false,
+                'message' => 'Anda harus login untuk mengakses fitur ini.',
+                'error'=> $data
+            ], 406);
         }
         return $next($request);
 

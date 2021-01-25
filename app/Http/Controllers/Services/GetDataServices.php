@@ -292,6 +292,12 @@ class GetDataServices extends BaseController
 					if($raw['user']['profile_picture']!="" || $raw['user']['profile_picture']!=null){
 						$raw['user']['profile_picture_url']  = url('/')."/uploads/profile/".$raw['user']['profile_picture'];
 					}
+				}else{
+					$key['user'] = array();
+					$key['user']['user_id'] ="";
+					$key['user']['fullname'] ="";
+					$key['user']['profile_picture'] ="";
+					$key['user']['profile_picture_url'] ="";
 				}
 				return $raw;
 			});
@@ -300,6 +306,13 @@ class GetDataServices extends BaseController
 				if($key['user']['profile_picture']!="" || $key['user']['profile_picture']!=null){
 					$key['user']['profile_picture_url']  = url('/')."/uploads/profile/".$key['user']['profile_picture'];
 				}
+			}
+			else{
+				$key['user'] = array();
+				$key['user']['user_id'] ="";
+				$key['user']['fullname'] ="";
+				$key['user']['profile_picture'] ="";
+				$key['user']['profile_picture_url'] ="";
 			}
 			return $key;
 		});

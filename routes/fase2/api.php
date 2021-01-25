@@ -11,12 +11,12 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 	Route::get('/district', 'General\LocationController@district');
 	Route::get('/sub-district', 'General\LocationController@subDistrict');
 	Route::post('/user/request-verify', 'API\UserController@RequestVerifyMail');
+	Route::get('/news/comment', 'API\NewsController@getComment');
 });
 Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 	//News Comment
 	Route::post('/news/comment', 'API\NewsController@addComment');
 	Route::delete('/news/comment', 'API\NewsController@deleteComment');
-	Route::get('/news/comment', 'API\NewsController@getComment');
 	Route::get('/news/comment/detail', 'API\NewsController@getCommentDetail');
 	Route::get('/news/reply-comment', 'API\NewsController@getReplyComment');
 
