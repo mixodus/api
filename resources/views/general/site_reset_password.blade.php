@@ -23,6 +23,10 @@
             <div class="row">
                 <div class="col-lg-12"><!-- Sign Up Form -->
                     <div class="form-container">
+                        @if(Session::get('alert-error'))
+                        <h4 style="color:red">ERROR</h4>
+                        <p style="color:red">{{ Session::get('alert-error') }}</password_get_info>
+                        @endif
                         <form data-toggle="validator" data-focus="false" action="{{ url('/site/reset_password_action') }}" method="post">
                             
                         <div class="form-group">
