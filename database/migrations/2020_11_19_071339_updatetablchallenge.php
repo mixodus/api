@@ -13,9 +13,9 @@ class Updatetablchallenge extends Migration
 	 */
 	public function up()
 	{
-		Schema::table('xin_challenge', function($table) {
-			$table->timestamp('updated_at')->nullable()->after('created_at');
-		});
+		// Schema::table('xin_challenge', function($table) {
+		// 	$table->timestamp('updated_at')->nullable()->after('created_at');
+		// });
 		DB::unprepared("
 			ALTER TABLE xin_challenge MODIFY challenge_description TEXT NULL;
 			ALTER TABLE xin_challenge MODIFY challenge_long_desciption TEXT NULL;

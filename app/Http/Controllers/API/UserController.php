@@ -45,12 +45,12 @@ class UserController extends BaseController
 
 		$checkAuth = $this->users->where('email', $request['username'])->first();
 		if ($checkAuth) {
-			if($checkAuth->is_mail_verified == 0){
-				return $this->services->response_verify(406,"Pesan verifikasi telah dikirim. Periksa email dan verifikasi akun Anda untuk melanjutkan.");
-			}
 			$password_hash = password_hash($request['password'], PASSWORD_BCRYPT, array('cost' => 12));
 			if(password_verify($request['password'],$checkAuth->password)){
 
+				if($checkAuth->is_mail_verified == 0){
+					return $this->services->response_verify(406,"Pesan verifikasi telah dikirim. Periksa email dan verifikasi akun Anda untuk melanjutkan.");
+				}
 				$data = $this->services->generateToken($checkAuth);
 				$data['user'] = $this->getDataServices->userData($checkAuth->user_id);
 
@@ -66,7 +66,7 @@ class UserController extends BaseController
 	public function register(Request $request){
 		$rules = [
 			'fullname' => "required|string",
-			'email' => "required|string|email|unique:xin_employees,email",
+			'email' => "required|string|email",
 			'contact_no' => "required|string",
 			'password' => "required|string|required_with:confirm_password|same:confirm_password",
 			'confirm_password' => "required|string",
@@ -75,6 +75,10 @@ class UserController extends BaseController
 
 		if(!empty($checkValidate)){
 			return $checkValidate;
+		}
+		$getUser = UserModels::where('is_active', 1)->where('email', $request['email'])->first();
+		if(!empty($getUser)){
+			return $this->services->response(406,"Email ini sudah digunakan!",array());
 		}
 		$PostRequest = array(
 			'user_id' => $this->services->randomid(4),
@@ -122,7 +126,7 @@ class UserController extends BaseController
 		$code = substr(md5(uniqid(mt_rand(), true)) , 0, 20);
 		$save_resetPassword = $this->actionServices->postResetPassword($email,$code);
 		
-		$data['link'] = env('URL_RESET').'?code='.$code.'&email='.$email;
+		$data['link'] = 'https://dev-api.oneindonesia.id/site/check-reset?code='.$code.'&email='.$email;
 		$sendEmail = $this->services->sendmail('Reset Password | One Talents', $checkUser, 'reset_password', $data);
 	
 		return $this->services->response(200,"Permintaan Reset Password telah dikirim ke email Anda");
@@ -137,7 +141,8 @@ class UserController extends BaseController
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
 		if(!empty($checkValidate)){
-			return $checkValidate;
+			// return redirect('sites')->with('alert-error','Kesalahan : Konfirmasi kata sandi tidak sama');
+			return  redirect()->back()->with('alert-error','Kesalahan : Konfirmasi kata sandi tidak sama');
 		}
 		
 		$checkCode = $this->reset_password->where('code', $request['code'])->first();
@@ -314,8 +319,8 @@ class UserController extends BaseController
 		if(!empty($request['email'])){
 			$checkEmail = $this->users->where('user_id', $checkUser->user_id)->where('email', $request->email)->first();
 			if (!$checkEmail){
-				$checkEmail = $this->users->where('email', $request->email)->first();
-				if ($checkEmail){
+				$checkEmail2 = $this->users->where('email', $request->email)->first();
+				if ($checkEmail2){
 					return $this->services->response(406,"Email ini telah digunakan!");
 				}
 				$PostRequest = array(
@@ -516,7 +521,7 @@ class UserController extends BaseController
 		$postUpdate['email_verification_code']  = $code;
 		$updateCodeVerif = $this->users->where('user_id', $userData->user_id)->update($postUpdate);
 		
-		$data['link'] = env('URL_VERIFY').'?code='.$code.'&email='.$userData->email;
+		$data['link'] = 'https://dev-api.oneindonesia.id/site/user/check-verify?code='.$code.'&email='.$userData->email;
 		$sendEmail = $this->services->sendmail('Verifikasi Email | One Talent', $userData, 'verify_email', $data);
 	
 		return $this->services->response(200,"Email Verifikasi telah dikirim ke email anda ".$userData->email,$sendEmail);
@@ -527,7 +532,7 @@ class UserController extends BaseController
 		$updateCodeVerif = UserModels::where('user_id', $userData->user_id)->update($postUpdate);
 		
 		
-		$data['link'] = env('URL_VERIFY_CHANGE_EMAIL').'?code='.$code.'&email='.$userData->email;
+		$data['link'] = 'https://dev-api.oneindonesia.id/site/user/check-verify-change-email?code='.$code.'&email='.$userData->email;
 		$sendEmail = $this->services->sendmail('Verifikasi Email | One Talent', $userData, 'verify_email', $data);
 	
 		return $this->services->response(200,"Email Verifikasi telah dikirim ke email anda ".$userData->email,$sendEmail);
