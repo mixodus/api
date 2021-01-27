@@ -35,7 +35,6 @@ class LogRoute
             'status_code' => $response->getStatusCode()
         ];
         Log::info(json_encode($log));
-        LogModel::create($log);
         return $response;
     }
 }
