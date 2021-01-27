@@ -96,11 +96,11 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 
 	//Access Role Dashboard
 	Route::get('/settings/roles', 'API\Dashboard\UserManagement\RolesController@index');
-	Route::get('/settings/roles-show', 'API\Dashboard\UserManagement\RolesController@show');
-	Route::get('/settings/roles-edit', 'API\Dashboard\UserManagement\RolesController@edit');
-	Route::post('/settings/roles-create', 'API\Dashboard\UserManagement\RolesController@store');
-	Route::put('/settings/roles-update/{id}', 'API\Dashboard\UserManagement\RolesController@update');
-	Route::delete('/settings/roles-delete/{id}', 'API\Dashboard\UserManagement\RolesController@destroy');
+	Route::get('/settings/roles-show', 'API\Dashboard\UserManagement\RolesController@show')->middleware('log.dashboard:role,Admin,get-data');
+	Route::get('/settings/roles-edit', 'API\Dashboard\UserManagement\RolesController@edit')->middleware('log.dashboard:role,Admin,action');
+	Route::post('/settings/roles-create', 'API\Dashboard\UserManagement\RolesController@store')->middleware('log.dashboard:role,Admin,action');
+	Route::put('/settings/roles-update/{id}', 'API\Dashboard\UserManagement\RolesController@update')->middleware('log.dashboard:role,Admin,action');
+	Route::delete('/settings/roles-delete/{id}', 'API\Dashboard\UserManagement\RolesController@destroy')->middleware('log.dashboard:role,Admin,remove-data');
 
 	//Permission Dashboard
 	Route::get('/settings/permissions', 'API\Dashboard\UserManagement\PermissionController@index');
@@ -110,23 +110,23 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::delete('/settings/permissions-delete/{id}', 'API\Dashboard\UserManagement\PermissionController@destroy');
 
 	//Admin Dashboard
-	Route::get('/admin/show', 'API\Dashboard\AuthUser\AdminController@show');
-	Route::put('/admin/admin-update/{id}', 'API\Dashboard\AuthUser\AdminController@update');
-	Route::delete('/admin/admin-delete/{id}', 'API\Dashboard\AuthUser\AdminController@destroy');
+	Route::get('/admin/show', 'API\Dashboard\AuthUser\AdminController@show')->middleware('log.dashboard:news,Admin,get-data');
+	Route::put('/admin/admin-update/{id}', 'API\Dashboard\AuthUser\AdminController@update')->middleware('log.dashboard:admin,Admin,action');
+	Route::delete('/admin/admin-delete/{id}', 'API\Dashboard\AuthUser\AdminController@destroy')->middleware('log.dashboard:admin,Admin,remove-data');
 
 	//Employee Dashboard
 	Route::get('/user-management/employee', 'API\Dashboard\UserManagement\EmployeeController@index');
-	Route::get('/user-management/employee-show', 'API\Dashboard\UserManagement\EmployeeController@show');
-	Route::get('/user-management/employee-create', 'API\Dashboard\UserManagement\EmployeeController@store');
-	Route::put('/user-management/employee-update/{id}', 'API\Dashboard\UserManagement\EmployeeController@update');
-	Route::delete('/user-management/employee-delete', 'API\Dashboard\UserManagement\EmployeeController@destroy');
+	Route::get('/user-management/employee-show', 'API\Dashboard\UserManagement\EmployeeController@show')->middleware('log.dashboard:employee,Admin,get-data');
+	Route::get('/user-management/employee-create', 'API\Dashboard\UserManagement\EmployeeController@store')->middleware('log.dashboard:employee,Admin,action');
+	Route::put('/user-management/employee-update/{id}', 'API\Dashboard\UserManagement\EmployeeController@update')->middleware('log.dashboard:employee,Admin,action');
+	Route::delete('/user-management/employee-delete', 'API\Dashboard\UserManagement\EmployeeController@destroy')->middleware('log.dashboard:employee,Admin,remove-data');;
 
 	//Jobs Dashboard
 	Route::get('/jobs', 'API\Dashboard\MenuPage\JobsController@index');
-	Route::get('/jobs/show/{id}', 'API\Dashboard\MenuPage\JobsController@show');
-	Route::post('/jobs/create', 'API\Dashboard\MenuPage\JobsController@store');
-	Route::put('/jobs/update/{id}', 'API\Dashboard\MenuPage\JobsController@update');
-	Route::delete('/jobs/delete', 'API\Dashboard\MenuPage\JobsController@destroy');
+	Route::get('/jobs/show/{id}', 'API\Dashboard\MenuPage\JobsController@show')->middleware('log.dashboard:jobs,Admin,get-data');
+	Route::post('/jobs/create', 'API\Dashboard\MenuPage\JobsController@store')->middleware('log.dashboard:jobs,Admin,action');
+	Route::put('/jobs/update/{id}', 'API\Dashboard\MenuPage\JobsController@update')->middleware('log.dashboard:jobs,Admin,action');
+	Route::delete('/jobs/delete', 'API\Dashboard\MenuPage\JobsController@destroy')->middleware('log.dashboard:jobs,Admin,remove-data');
 
 	//Location Dashboard
 	Route::get('/location/country', 'API\Dashboard\Location\LocationController@get_country');
@@ -140,8 +140,22 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 
 	//Employee Level Dashboard
 	Route::get('/user-management/employee-level', 'API\Dashboard\UserManagement\LevelController@index');
-	Route::get('/user-management/employee-level/detail', 'API\Dashboard\UserManagement\LevelController@show');
-	Route::post('/user-management/employee-level/create', 'API\Dashboard\UserManagement\LevelController@store');
+	Route::get('/user-management/employee-level/detail', 'API\Dashboard\UserManagement\LevelController@show')->middleware('log.dashboard:level,Admin,get-data');;
+	Route::post('/user-management/employee-level/create', 'API\Dashboard\UserManagement\LevelController@store')->middleware('log.dashboard:level,Admin,action');
+
+	//News Dashboard
+	Route::get('/news', 'API\Dashboard\MenuPage\NewsController@index');
+	Route::get('/news-show', 'API\Dashboard\MenuPage\NewsController@show')->middleware('log.dashboard:news,Admin,get-data');
+	Route::post('/news-create', 'API\Dashboard\MenuPage\NewsController@store')->middleware('log.dashboard:news,Admin,action');
+	Route::post('/news-update', 'API\Dashboard\MenuPage\NewsController@update')->middleware('log.dashboard:news,Admin,action');
+	Route::delete('/news-delete', 'API\Dashboard\MenuPage\NewsController@destroy')->middleware('log.dashboard:news,Admin,remove-data');
+	Route::get('/news-type', 'API\Dashboard\MenuPage\NewsController@getNewstype');
+
+	//Comment Dashboard
+	Route::post('/news-comment', 'API\Dashboard\MenuPage\NewsController@addComment')->middleware('log.dashboard:comment,Admin,action');;
+	Route::post('/news-reply-comment', 'API\Dashboard\MenuPage\NewsController@addReplyComment')->middleware('log.dashboard:comment,Admin,action');
+	Route::delete('/news-comment-delete', 'API\Dashboard\MenuPage\NewsController@deleteComment')->middleware('log.dashboard:comment,Admin,remove-data');
+	Route::delete('/news-repcomment-delete', 'API\Dashboard\MenuPage\NewsController@deleteReplyComment')->middleware('log.dashboard:comment,Admin,remove-data');
 
 	//Notif
 	Route::get('/notif', 'API\NotifController@index');

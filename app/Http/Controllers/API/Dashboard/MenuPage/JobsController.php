@@ -116,7 +116,7 @@ class JobsController extends Controller
             return $this->services->response(406,"User doesnt exist!");
         }
 
-        $data_jobs = $this->getDataServices->getJobs($request->id,$checkUser->user_id);
+        $data_jobs = $this->getDataServices->getJobs($request->id,$request->user_id);
         if ($data_jobs) {
 			// $data_jobs->makeHidden('applications');
 			return $this->services->response(200,"Job Show",$data_jobs);

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\API\Dashboard\UserManagement;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Services\GetDataServices;
+use App\Http\Controllers\Services\Dashboard\GetDataServices;
 use App\Http\Controllers\Services\Dashboard\ActionServices;
 use App\Http\Controllers\Services\GeneralServices;
 use App\Models\Dashboard\AdminModel;
