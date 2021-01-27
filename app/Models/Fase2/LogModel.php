@@ -13,10 +13,12 @@ class LogModel extends Model
 	protected $fillable = [
 		'server_type', 
 		'type',
+		'module',
 		'name',
 		'user_id',
 		'version',
 		'ip_address',
+		'uri',
 		'method',
 		'request_header',
 		'request_body',

@@ -55,35 +55,35 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 
 	//User
 	Route::get('/profile', 'API\UserController@getProfile'); 
-	Route::put('/profile', 'API\UserController@updateProfile'); 
-	Route::post('/profile', 'API\UserController@completeProfile'); 
+	Route::put('/profile', 'API\UserController@updateProfile')->middleware('log.route:user,Update-Profile,action'); 
+	Route::post('/profile', 'API\UserController@completeProfile')->middleware('log.route:user,Complete-Profile,action');  
 	Route::get('/profile/friend/{id}', 'API\UserController@friendProfile'); 
-	Route::post('/profile/skill', 'API\UserController@updateSkill'); 
-	Route::post('/profile/change_password', 'API\UserController@changePassword'); 
-	Route::post('/profile/photo', 'API\UserController@uploadPicture'); 
+	Route::post('/profile/skill', 'API\UserController@updateSkill')->middleware('log.route:user,Update-Skill,action');
+	Route::post('/profile/change_password', 'API\UserController@changePassword')->middleware('log.route:user,Change-Password,action');
+	Route::post('/profile/photo', 'API\UserController@uploadPicture')->middleware('log.route:user,Update-Photo,action');
 	Route::get('/profile/check-npwp', 'API\UserController@checkNpwp'); 
-	Route::post('/profile/npwp', 'API\UserController@updateNpwp'); 
+	Route::post('/profile/npwp', 'API\UserController@updateNpwp')->middleware('log.route:user,Update-NPWP,action'); 
 
 	//Jobs
 	Route::get('/job_post/progress', 'API\JobsController@userJobsApplication');
-	Route::post('/job_post/apply', 'API\JobsController@applyJobsApplication');
+	Route::post('/job_post/apply', 'API\JobsController@applyJobsApplication')->middleware('log.route:jobs,Apply-Job,action');
 
 	//Events
-	Route::post('/event/join', 'API\EventController@joinEvent'); 
+	Route::post('/event/join', 'API\EventController@joinEvent')->middleware('log.route:join_event,action');
 	Route::get('/event/history/{id}', 'API\EventController@HistoryEvent'); //belum ditest dummy data
 
 	//Challenge
 	Route::get('/challenge/history', 'API\ChallengeController@history');
 	Route::get('/challenge/quiz', 'API\ChallengeController@quiz');
-	Route::post('/challenge/join', 'API\ChallengeController@join');
-	Route::post('/challenge/quiz', 'API\ChallengeController@answer'); //answer quiz
+	Route::post('/challenge/join', 'API\ChallengeController@join')->middleware('log.route:challenge,Join-Challenge,action');
+	Route::post('/challenge/quiz', 'API\ChallengeController@answer')->middleware('log.route:challenge,Answer-Quiz,action');
 	Route::get('/challenge/achievement', 'API\ChallengeController@achievement');
 	Route::get('/challenge/achievement_all', 'API\ChallengeController@achievementAll');
 
 	//Referral
 	Route::get('/referral', 'API\ReferralController@getReferralMember');
 	Route::get('/referral/success', 'API\ReferralController@getReferralMemberSuccess');
-	Route::post('/referral', 'API\ReferralController@AssignMember');
+	Route::post('/referral', 'API\ReferralController@AssignMember')->middleware('log.route:referral,Assign-Member,action');
 
 	//Admin Dashboard
 	Route::get('/admin', 'API\Dashboard\AuthUser\AdminController@index');
@@ -177,7 +177,6 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::put('/work_experience', 'API\WorkExperienceController@update');
 	Route::delete('/work_experience', 'API\WorkExperienceController@delete');
 
-	
 
 
 });
