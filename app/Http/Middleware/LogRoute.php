@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Support\Facades\Log;
+use App\Models\Fase2\LogModel;
+use Illuminate\Http\Request;
 
 class LogRoute
 {
@@ -14,23 +16,25 @@ class LogRoute
      * @param  \Closure  $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle($request, Closure $next,$module=null,$name=null,$type=null)
     {
         $response = $next($request);
-
         $log = [
-            'TYPE' =>  env("APP_VER", "Local"),
-            'VER' =>  1,
-            'IP_ADDRESS' =>  $request->getClientIp(),
-            'URI' => $request->getUri(),
-            'METHOD' => $request->getMethod(),
-            'REQUEST_BODY' => $request->all(),
-            'RESPONSE' => $response->getContent(),
-            'STATUS_CODE' => $response->getStatusCode()
+            'server_type' =>  env("SERVER_TYPE", "Local"),
+            'module' =>  $module,
+            'name' =>  $name,
+            'type' =>  $type,
+            'version' =>  env('APP_VERSION','0.00'),
+            'user_id' =>  0,
+            'ip_address' =>  $request->getClientIp(),
+            'uri' => $request->getUri(),
+            'method' => $request->getMethod(),
+            'request_header' => $request->headers ,
+            'request_body' => json_encode($request->all()),
+            'response' => $response->getContent(),
+            'status_code' => $response->getStatusCode()
         ];
         Log::info(json_encode($log));
-     
-
         return $response;
     }
 }

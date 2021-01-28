@@ -27,4 +27,12 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	//mail verified
 	Route::get('/user/check-email', 'API\UserController@checkmailVerified');
 	Route::get('/user/verify-email', 'API\UserController@VerifyMail');
+
+	//cv
+	Route::get('/user-cv', 'API\UserCVController@index');
+	Route::post('/user-cv', 'API\UserCVController@create');
+	Route::delete('/user-cv', 'API\UserCVController@delete');
+
+	//referral
+	Route::post('/referral/upload-cv/{id}', 'API\ReferralController@uploadCV');
 });
