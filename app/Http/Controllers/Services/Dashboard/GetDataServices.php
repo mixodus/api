@@ -22,6 +22,7 @@ use App\Models\ChallengeModel;
 use App\Models\ChallengeParticipants;
 use App\Models\ChallengeQuiz;
 use App\Models\NewsModel;
+use App\Models\Dashboard\NewsTypeModel;
 use App\Models\JobsModel;
 use App\Models\JobsApplicationModel;
 use App\Models\SettingModel;
@@ -53,10 +54,10 @@ class GetDataServices extends BaseController
 	}
 	// =========================================USER MODULE ===============================================================
 	function userData($id){
-		$data = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
-		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp')->where('user_id',$id)->first();
+		$data = AdminModel::select('user_id','email','first_name', 'gender',
+		'country','profile_photo', 'zipcode')->where('user_id',$id)->first();
 
-		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_picture'];
+		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_photo'];
 
 		return $data;
 	}
@@ -208,21 +209,15 @@ class GetDataServices extends BaseController
 		return $collect;
 	}
 	// =========================================NEWS MODULE ==============================================================
-	public function getNews($id=null,$limit=null){
+	public function getNews($id=null){
 		$query = NewsModel::select('xin_news.*','xin_news_type.news_type_name as news_type','xin_news_type.news_colour')
 				->LeftJoin('xin_news_type', 'xin_news_type.news_type_id', '=', 'xin_news.news_type_id');
 				
-		if($limit != null){
-			$query->limit($limit);
-		}else{
-			$query->limit(25);
-		}
 		$data = $query->withCount('comments')->orderBy('news_id','DESC')->get();
 		if(!empty($id)){
 			$data = NewsModel::select('xin_news.*','xin_news_type.news_type_name as news_type','xin_news_type.news_colour')
 					->LeftJoin('xin_news_type', 'xin_news_type.news_type_id', '=', 'xin_news.news_type_id')
-					->where('xin_news.news_id',$id['id'])->with('comments')
-					->offset($id['start'])->limit($id['length'])->get(); 
+					->where('xin_news.news_id',$id)->with('comments')->get(); 
 		}
 		$data = $data->map(function($key) use($data){
 			$key['news_photo_url']  = url('/')."/uploads/news/".$key['news_photo'];
@@ -824,22 +819,23 @@ class GetDataServices extends BaseController
 	}
 
 	public function employeeLevelDetail($id){
-		$profile = UserModels::select('user_id','email','fullname')->with('trx_points')->where('user_id',$id)->first();
+		$profile = UserModels::select('user_id','email','fullname')->with('trx_points')->where('user_id', $id)->get();
 		
-		//point
-		$point = $this->totalTrxPointbyUserId($id);
-		$profile->points = isset($point)?$point:0;
-		//friend
-		$profile->friendship_status = 0;
-		$profile->mutual_friends = [
-			'count' => 0,
-			'data' => array(),
-		];
-		//level
-		$level = LevelModel::select('*')->where('level_min_point','<=',$profile->points)->where('level_max_point','>=',$profile->points)->first();
-		$profile->level_icon_url = url('/')."/uploads/level/".$level->level_icon;
-		$profile->level_name = $level->level_name;
+		foreach($profile as $profiles){
+			$point = $this->totalTrxPointbyUserId($profiles->user_id);
+			$profile->points = isset($point)?$point:0;
+			$profiles->point = $point;
+
+			$level = LevelModel::select('*')->where('level_min_point','<=',$point)->where('level_max_point','>=',$point)->first();
+			$profiles->level_icon_url = url('/')."/uploads/level/".$level->level_icon;
+			$profiles->level = $level;
+		}
 
 		return $profile;
+	}
+
+	public function getNewsType(){
+
+		return NewsTypeModel::select('news_type_id', 'news_type_name')->get();
 	}
 }

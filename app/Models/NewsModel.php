@@ -14,6 +14,7 @@ class NewsModel extends Model
 		'news_id',
 		'news_title', 
 		'news_type_id',
+		'news_details',
 		'news_url', 
 		'news_photo', 
 		'created_at',
