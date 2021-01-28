@@ -140,6 +140,10 @@ class NewsController extends Controller
 			'attachment' => "nullable|string",
 			'desc' => "nullable|string"
 		];
+		
+		if(strlen($request['comment']) > 200)
+			return $this->services->response(406,"Komentar tidak dapat melebihi 200 karakter!");
+		 
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		if($request->type =="comment"){
 			$save = $this->actionServices->postComment($request->all(),$checkUser->user_id);

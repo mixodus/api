@@ -280,7 +280,7 @@ class GetDataServices extends BaseController
 			$query->with(['user'=>function($query){
 				$query->select('user_id','fullname','profile_picture');
 			}]);
-		}])->get(); 
+		}])->orderBy('comment_id','DESC')->get(); 
 		$data = $data->map(function($key) use($data){
 			$key['date_created']  = $this->tgl_indo(date("d-m-Y", strtotime($key['created_at'])));
 			$key['time_created']  = date("h:i A", strtotime($key['created_at']));
@@ -938,7 +938,7 @@ class GetDataServices extends BaseController
 
 	//level
 	public function getLevel(){
-		$data = LevelModel::select('*')->orderBy('level_max_point','DESC')->get();
+		$data = LevelModel::select('*')->orderBy('level_max_point','ASC')->get();
 		$data = $data->map(function($raw) use($data){
 			$raw['level_icon_url']  = url('/')."/uploads/level/".$raw['level_icon'];
 			if($raw['level_icon']==""){
