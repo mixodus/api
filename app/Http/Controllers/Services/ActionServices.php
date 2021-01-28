@@ -30,6 +30,7 @@ use Firebase\JWT\JWT;
 use App\Models\Fase2\NewsCommentModel;
 use App\Models\Fase2\NewsCommentReplyModel;
 use App\Models\Fase2\JobTypeModel;
+use App\Models\Fase2\EmployeeCV;
 
 class ActionServices extends BaseController
 {
@@ -142,6 +143,12 @@ class ActionServices extends BaseController
 		);
 		return ReferralModel::create($postParam);
 	}
+	//==new fase 2
+	public function updateReferralfile($data){
+		$postParam['file'] = $data['file'];
+		return ReferralModel::where('referral_id',$data['id'])->update($postParam);
+	}
+	//==
 	public function updateNotif($data,$notif_id,$user_id){
 		return NotifModel::where('user_id',$user_id)->where('notif_id',$notif_id)->update($data);
 	}
@@ -353,6 +360,21 @@ class ActionServices extends BaseController
 
 	public function deleteReplyComment($id){
 		return NewsCommentReplyModel::where('reply_id',$id)->delete();
+	}
+
+	public function saveCV($data,$user_id){
+
+		EmployeeCV::where('employee_id',$user_id)->delete();
+
+		$postParam = array(
+			'desc' => $data['desc'],
+			'file' => $data['file_name'],
+			'employee_id' => $user_id
+		);	
+		return EmployeeCV::create($postParam);
+	}
+	public function deleteEmployeeCV($id){
+		return EmployeeCV::where('employee_cv_id',$id)->delete();
 	}
 
 	

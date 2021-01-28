@@ -42,6 +42,7 @@ use DB;
 use App\Models\Fase2\NewsCommentModel;
 use App\Models\Fase2\NewsCommentReplyModel;
 use App\Models\Fase2\JobTypeModel;
+use App\Models\Fase2\EmployeeCV;
 
 class GetDataServices extends BaseController
 {
@@ -879,7 +880,15 @@ class GetDataServices extends BaseController
 	}
 	//Referral
 	public function getReferralMember($user_id,$offset =0,$limit=25){
-		return ReferralModel::select('*')->where('referral_employee_id',$user_id)->offset($offset)->limit($limit)->orderBy('referral_id', 'DESC')->get();
+		$data = ReferralModel::select('*')->where('referral_employee_id',$user_id)->offset($offset)->limit($limit)->orderBy('referral_id', 'DESC')->get();
+		$data = $data->map(function($key) use($data){
+			$key['file']  = url('/')."/uploads/referral/".$key['file'];
+			if($key->file == "" || $key->file ==null){
+				$key->file ="";
+			}
+			return $key;
+		});
+		return $data;
 	}
 	public function ValidateReferralPoints($user_id=null,$email=null){
 		$query = ReferralModel::select('referral_id','withdraw_reward','referral_name as name','referral_status as status','added_to_transaction_point as added_yet');
@@ -980,6 +989,17 @@ class GetDataServices extends BaseController
 	public function getWithdrawHistory($user_id){
 		$id = 6;
 		return DB::select('SELECT *,withdraw_history_id as id from xin_withdraw_history JOIN xin_employee_bank_account ON xin_withdraw_history.account_list_id = xin_employee_bank_account.account_list_id WHERE xin_employee_bank_account.account_list_id = '.$id);
+	}
+	//Fase 2
+	public function employeeCV($user_id){
+		$data = EmployeeCV::select('*')->where('employee_id',$user_id)->first();
+		if(!empty($data)){
+			$data['file']  = url('/')."/uploads/user_cv/".$data['file'];
+			if($data->file == "" || $data->file ==null){
+				$data->file ="";
+			}
+		}
+		return $data;
 	}
 	public function time_elapsed_string($datetime, $full = false) {
 		$now = new DateTime;

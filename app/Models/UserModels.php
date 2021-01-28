@@ -139,6 +139,10 @@ class UserModels extends Model
 	public function comment_replies() {
 		return $this->hasMany('App\Models\Fase2\NewsCommentReplyModel', 'reply_by','user_id');
 	}
+
+	public function employee_cv() {
+		return $this->hasMany('App\Models\Fase2\EmployeeCV', 'employee_id','user_id');
+	}
 	
 		
 }

@@ -42,7 +42,7 @@
                             </div>
                             <input type="text" value="{{$code}}" name="code" style="display:none">
                             <div class="form-group">
-                                <button type="submit" class="form-control-submit-button" 
+                                <button type="submit" class="form-control-submit-button" id="Button"
                                     style="background-color: #75C244;border-color: #75C244;">Lanjutkan</button>
                             </div>
                         </form>
@@ -61,8 +61,10 @@
        $('#confirm_password').on('keyup', function () {
         if ($('#password').val() == $('#confirm_password').val()) {
             $('#message').html(' ').css('color', 'green');
+            document.getElementById("Button").disabled = false;
         } else 
             $('#message').html('Password tidak sama').css('color', 'red');
+            document.getElementById("Button").disabled = true;
         });
     </script>
     <script src="js/jquery.min.js"></script> <!-- jQuery for Bootstrap's JavaScript plugins -->

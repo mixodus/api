@@ -93,6 +93,21 @@ class ReferralController extends Controller
 		if(!$saveReferral){
 			return $this->services->response(503,"Koneksi jaringan bermasalah!");
 		}  
-		return $this->services->response(200,"Anda telah berhasil membuat rujukan.",$request->all());
+		return $this->services->response(200,"Anda telah berhasil membuat rujukan.",$saveReferral);
 	}   
+	public function uploadCV(Request $request,$id){
+
+		$file = $request->file('userfile');
+		$imgname = $file->getClientOriginalName().round(microtime(true));
+		$destinationPath = public_path('/uploads/referral/');
+		$file->move($destinationPath,$imgname);
+		
+		$request['file'] = $imgname;
+		$request['id'] = $id;
+		$upload = $this->actionServices->updateReferralfile($request->all());
+		if(!$upload){
+			return $this->services->response(503,"Koneksi jaringan bermasalah!");
+		} 
+		return $this->services->response(200,"Anda telah berhasil membuat rujukan.",$request->all());
+	}
 }

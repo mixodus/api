@@ -22,12 +22,10 @@ Route::get('/site/user/check-verify', 'API\UserController@checkmailVerify');
 Route::get('/site/user/check-verify-change-email', 'API\UserController@checkmailVerifyChangeEmail');
 Route::get('/sites/page-verify', 'API\UserController@PageVerify');
 Route::post('/site/reset_password_action', 'API\UserController@resetPasswordAction');
-Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {
-	Route::group(['prefix' => 'user'], function () {
-		Route::post('/login', 'API\UserController@login');
-		Route::post('/register', 'API\UserController@register');
-		Route::post('/reset_password', 'API\UserController@resetPassword');
-	});
+Route::group(['middleware' => ['app.token', 'cors'], 'prefix' => 'user'], function ($router) {
+	Route::post('/login', 'API\UserController@login')->middleware('log.route:user,Login,action');
+	Route::post('/register', 'API\UserController@register')->middleware('log.route:user,register,action');
+	Route::post('/reset_password', 'API\UserController@resetPassword')->middleware('log.route:user,Reset-Password,action');
 });
 Route::group(['middleware' => ['user.token','cors','log.route']], function ($router) {
 	//friend --API di hide di existing mobile (production)
@@ -54,7 +52,7 @@ Route::group(['middleware' => ['user.token','cors','log.route']], function ($rou
 	Route::get('/withdraw/history', 'API\UserWithdrawController@history');
 	Route::post('/withdraw/check', 'API\UserWithdrawController@check');
 
-	Route::post('/upload/upload/{id}', 'API\CertificationController@upload');
+	Route::post('/upload/upload/{id}', 'API\CertificationController@upload')->middleware('log.route:user-data,Upload-Certification,action');
 });
 
 	Route::post('/upload', 'General\UploadController@index'); // belum tau fungsinya untuk dimana
