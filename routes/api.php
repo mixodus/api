@@ -144,7 +144,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::post('/user-management/employee-level/create', 'API\Dashboard\UserManagement\LevelController@store')->middleware('log.dashboard:level,Admin,action');
 
 	//News Dashboard
-	Route::get('/news', 'API\Dashboard\MenuPage\NewsController@index');
+	Route::get('/news-dashboard', 'API\Dashboard\MenuPage\NewsController@index');
 	Route::get('/news-show', 'API\Dashboard\MenuPage\NewsController@show')->middleware('log.dashboard:news,Admin,get-data');
 	Route::post('/news-create', 'API\Dashboard\MenuPage\NewsController@store')->middleware('log.dashboard:news,Admin,action');
 	Route::post('/news-update', 'API\Dashboard\MenuPage\NewsController@update')->middleware('log.dashboard:news,Admin,action');
