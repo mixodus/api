@@ -7,7 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Services\GeneralServices;
 use App\Http\Controllers\Services\ActionServices;
 use App\Http\Controllers\Services\GetDataServices;
+use App\Exports\LogExport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\ReferenceModel;
+use App\Models\Fase2\LogModel;
 
 class GeneralController extends Controller
 {
@@ -58,5 +61,44 @@ class GeneralController extends Controller
 	public function site(){
         $data['title'] = "One Talent";
         return view('general.sites', $data);
-    }
+	}
+	public function exportLog(Request $request){
+		$dataLog = LogModel::select('*')->get();
+		$exportData = array();
+		if (!$dataLog->isEmpty()) {
+			foreach($dataLog as $key){
+				$rowData = [
+					$key->type,
+					$key->module,
+					$key->name,
+					$key->ip_address,
+					$key->uri,
+					$key->method,
+					$key->request_header,
+					$key->request_body,
+					$key->status_code,
+					$key->response,
+					$key->created_at	
+				];
+				$exportData[] = $rowData;
+			}
+		}
+		$fileName ='logdata'.'_'.round(microtime(true)).'.xlsx';
+
+		Excel::store(new LogExport($exportData),$fileName,'real_public');
+
+		$responseData = [
+			'path' => url('/')."/export/log/".$fileName
+		];
+
+		//send email log
+		$user['fullname'] = "Administrator";
+		$user['email'] = env('ADMIN_EMAIL');
+
+		$sendEmail = $this->services->sendmail('Log Activity | 2 Month', $user, 'backup_log', $responseData);
+
+		// $delete_log = LogModel::delete();
+
+		return $this->services->response(200,"Export Log",$responseData);
+	}
 }
