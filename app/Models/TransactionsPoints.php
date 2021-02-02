@@ -15,7 +15,7 @@ class TransactionsPoints extends Model
         'point',
         'employee_id',
         'challenge_id',
-        'status'
+        'status',
     ];
 	protected $hidden = ['modified_at','updated_at'];
 }

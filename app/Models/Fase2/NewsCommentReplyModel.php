@@ -3,9 +3,11 @@
 namespace App\Models\Fase2;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class NewsCommentReplyModel extends Model
 {
+	use SoftDeletes;
 	protected $table = 'xin_news_comment_reply';
 	public $primarykey = 'reply_id';
 	
