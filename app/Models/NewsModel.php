@@ -20,7 +20,7 @@ class NewsModel extends Model
 		'created_at',
 		'modified_at',
 	];
-	protected $hidden = ['created_at', 'modified_at','updated_at'];
+	protected $hidden = ['modified_at','updated_at'];
 	
 	public function comments() {
 		return $this->hasMany('App\Models\Fase2\NewsCommentModel', 'news_id','news_id')->with(['comment_replies','user'=>function($query){
