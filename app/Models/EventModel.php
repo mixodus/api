@@ -30,4 +30,8 @@ class EventModel extends Model
 	public function participants() {
 		return $this->hasMany('App\Models\EventParticipantModel', 'event_id','event_id');
 	}
+
+	public function eventType() {
+		return $this->hasMany('App\Models\Dashboard\EventTypeModel', 'event_type_id','event_type_id');
+	}
 }
