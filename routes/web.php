@@ -19,6 +19,7 @@ Route::get('/', function () {
 });
 
 //verify mail
+
 Route::get('/site/check-reset', 'API\UserController@checkResetPassword');
 Route::get('/sites', 'API\GeneralController@site');
 Route::get('/site/user/check-verify', 'API\UserController@checkmailVerify');
@@ -77,5 +78,10 @@ Route::group(['prefix' => 'admin'], function () {
 });
 ///endDashboard
 
+//REPORTING
+Route::group(['prefix' => 'report'], function () {
+	Route::get('/log', 'API\GeneralController@exportLog');
+});
 
+	
 

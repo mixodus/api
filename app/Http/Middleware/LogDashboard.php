@@ -39,7 +39,9 @@ class LogDashboard
         ];
         
         Log::info(json_encode($log));
-        // LogActivity::create($log);
+        if($module != null){
+             // LogActivity::create($log);
+        }
         
         return $response;
     }
