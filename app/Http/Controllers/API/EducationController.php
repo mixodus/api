@@ -56,6 +56,7 @@ class EducationController extends Controller
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
+		
 		$save = $this->actionServices->saveEducation($request->all(),$checkUser->user_id);
 		if(!$save){
 			return $this->services->response(503,"Terjadi Kesalahan Jaringan!");

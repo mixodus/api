@@ -43,10 +43,10 @@ class WorkExperienceController extends Controller
         $checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
 			'company_name' => "required|string",
-			'start_period_month' => "required|integer",
-			'start_period_year' => "required|integer",
-			'end_period_month' => "required|integer",
-			'end_period_year' => "required|integer",
+			'start_period_month' => "required|string",
+			'start_period_year' => "required|string",
+			'end_period_month' => "required|string",
+			'end_period_year' => "required|string",
 			'post' => "required|string",
 			'description' => "nullable|string"
 		];
@@ -71,10 +71,10 @@ class WorkExperienceController extends Controller
 		$rules = [
             'id' => "required",
 			'company_name' => "required",
-			'start_period_month' => "required|integer",
-			'start_period_year' => "required|integer",
-			'end_period_month' => "required|integer",
-			'end_period_year' => "required|integer",
+			'start_period_month' => "required|string",
+			'start_period_year' => "required|string",
+			'end_period_month' => "required|string",
+			'end_period_year' => "required|string",
 			'post' => "required|string",
 			'description' => "nullable|string"
         ];
