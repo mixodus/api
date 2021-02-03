@@ -38,8 +38,8 @@ class LogDashboard
             'status_code' => $response->getStatusCode()
         ];
         
-        // Log::info(json_encode($log));
-        LogActivity::create($log);
+        Log::info(json_encode($log));
+        // LogActivity::create($log);
         
         return $response;
     }
