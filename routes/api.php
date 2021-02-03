@@ -22,24 +22,24 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 	//Home
 	Route::get('/home/check_session', 'API\MainController@checkSession');
 	Route::get('/home', 'API\MainController@index');
-	Route::get('/level', 'API\MainController@Level');  
+	Route::get('/level', 'API\MainController@Level');
 	Route::get('/event/all_ongoing', 'API\MainController@allOngoing');
-	Route::get('/home_event', 'API\MainController@homeEvent'); 
-	Route::get('/home_news', 'API\MainController@homeNews'); 
-	
+	Route::get('/home_event', 'API\MainController@homeEvent');
+	Route::get('/home_news', 'API\MainController@homeNews');
+
 	//News
-	Route::get('/news', 'API\NewsController@index'); 
-	Route::get('/news/detail/{id}', 'API\NewsController@detail'); 
-	
+	Route::get('/news', 'API\NewsController@index');
+	Route::get('/news/detail/{id}', 'API\NewsController@detail');
+
 	//Jobs
-	Route::get('/job_post', 'API\JobsController@index'); 
+	Route::get('/job_post', 'API\JobsController@index');
 	Route::get('/job_post/detail/{id}', 'API\JobsController@detail');
 
 	//Events
 	Route::get('/event', 'API\EventController@index');
 	Route::get('/event/event_type/{id}', 'API\EventController@EventType');
-	Route::get('/event/detail/{id}', 'API\EventController@detail');  
-	Route::get('/event/countries', 'API\GeneralController@getCountryList');  
+	Route::get('/event/detail/{id}', 'API\EventController@detail');
+	Route::get('/event/countries', 'API\GeneralController@getCountryList');
 
 	//Challenge
 	Route::get('/challenge', 'API\ChallengeController@index');
@@ -47,22 +47,22 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 
 	//point
 	Route::get('/point', 'API\PointController@index');
-	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth'); 
+	Route::get('/point/leaderboard_month', 'API\PointController@leaderboardMonth');
 	// Route::get('/point/leaderboard_challenge', 'API\PointController@leaderboardChallenge');//invalid old code
 });
 
 Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 
 	//User
-	Route::get('/profile', 'API\UserController@getProfile'); 
-	Route::put('/profile', 'API\UserController@updateProfile')->middleware('log.route:user,Update-Profile,action'); 
-	Route::post('/profile', 'API\UserController@completeProfile')->middleware('log.route:user,Complete-Profile,action');  
-	Route::get('/profile/friend/{id}', 'API\UserController@friendProfile'); 
+	Route::get('/profile', 'API\UserController@getProfile');
+	Route::put('/profile', 'API\UserController@updateProfile')->middleware('log.route:user,Update-Profile,action');
+	Route::post('/profile', 'API\UserController@completeProfile')->middleware('log.route:user,Complete-Profile,action');
+	Route::get('/profile/friend/{id}', 'API\UserController@friendProfile');
 	Route::post('/profile/skill', 'API\UserController@updateSkill')->middleware('log.route:user,Update-Skill,action');
 	Route::post('/profile/change_password', 'API\UserController@changePassword')->middleware('log.route:user,Change-Password,action');
 	Route::post('/profile/photo', 'API\UserController@uploadPicture')->middleware('log.route:user,Update-Photo,action');
-	Route::get('/profile/check-npwp', 'API\UserController@checkNpwp'); 
-	Route::post('/profile/npwp', 'API\UserController@updateNpwp')->middleware('log.route:user,Update-NPWP,action'); 
+	Route::get('/profile/check-npwp', 'API\UserController@checkNpwp');
+	Route::post('/profile/npwp', 'API\UserController@updateNpwp')->middleware('log.route:user,Update-NPWP,action');
 
 	//Jobs
 	Route::get('/job_post/progress', 'API\JobsController@userJobsApplication');
@@ -157,6 +157,21 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::delete('/news-comment-delete', 'API\Dashboard\MenuPage\NewsController@deleteComment')->middleware('log.dashboard:comment,Admin,remove-data');
 	Route::delete('/news-repcomment-delete', 'API\Dashboard\MenuPage\NewsController@deleteReplyComment')->middleware('log.dashboard:comment,Admin,remove-data');
 
+	//Log Dashboard
+	Route::get('/log/dashboard-log', 'API\Dashboard\MenuPage\LogController@dashboardLog');
+	Route::get('/log/dashboard-log/show', 'API\Dashboard\MenuPage\LogController@dashboardLogShow');
+	Route::get('/log/mobile-log', 'API\Dashboard\MenuPage\LogController@mobileLog');
+	Route::get('/log/mobile-log/show', 'API\Dashboard\MenuPage\LogController@mobileLogShow');
+
+	//Event Dashboard
+	Route::get('/event-list', 'API\Dashboard\MenuPage\EventController@index');
+	Route::get('/event-show', 'API\Dashboard\MenuPage\EventController@show')->middleware('log.dashboard:comment,Admin,get-data');
+	Route::post('/event-create', 'API\Dashboard\MenuPage\EventController@store')->middleware('log.dashboard:comment,Admin,action');
+	Route::post('/event-update', 'API\Dashboard\MenuPage\EventController@update')->middleware('log.dashboard:comment,Admin,action');
+	Route::delete('/event-delete', 'API\Dashboard\MenuPage\EventController@destroy')->middleware('log.dashboard:comment,Admin,remove-data');
+	Route::get('/event-type', 'API\Dashboard\MenuPage\EventController@eventType');
+	Route::put('/event/participant-status/update', 'API\Dashboard\MenuPage\EventController@registerStatus')->middleware('log.dashboard:comment,Admin,action');
+
 	//Notif
 	Route::get('/notif', 'API\NotifController@index');
 	Route::get('/notif/detail_by/{id}', 'API\NotifController@detail');
@@ -184,7 +199,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::delete('/certification', 'API\CertificationController@delete');
 	Route::post('/certification', 'API\CertificationController@postData');
 
-	
+
 	//employee work experience
 	Route::get('/work_experience', 'API\WorkExperienceController@index');
 	Route::post('/work_experience', 'API\WorkExperienceController@create');

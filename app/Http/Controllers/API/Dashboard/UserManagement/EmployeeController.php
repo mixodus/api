@@ -136,7 +136,7 @@ class EmployeeController extends Controller
 			
 			// $postUpdate = $imgname;
 		}
-        // dd($imgname);
+        
         $updateEmployee = UserModels::where('user_id', $id)->update([
             'fullname' => $request->fullname,
 			'contact_no' => $request->contact_no,
