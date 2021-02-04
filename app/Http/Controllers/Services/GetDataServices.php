@@ -278,6 +278,7 @@ class GetDataServices extends BaseController
 		$data = NewsCommentModel::where('news_id',$data['news_id'])->withCount('comment_replies')->with(['user'=>function($query){
 			$query->select('user_id','fullname','profile_picture');
 		},'comment_replies'=>function($query){
+			$query->orderBy('reply_id','DESC'); 
 			$query->with(['user'=>function($query){
 				$query->select('user_id','fullname','profile_picture');
 			}]);
