@@ -43,7 +43,7 @@ class UserCVController extends Controller
 			return $checkValidate;
         }
         $file = $request->file('file');
-		$imgname = $file->getClientOriginalName().'-'.round(microtime(true));
+		$imgname = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
 		$destinationPath = public_path('/uploads/user_cv/');
 		$file->move($destinationPath,$imgname);
 		
