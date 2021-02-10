@@ -8,6 +8,7 @@ use App\Http\Controllers\Services\Dashboard\GetDataServices;
 use App\Http\Controllers\Services\Dashboard\ActionServices;
 use App\Http\Controllers\Services\GeneralServices;
 use App\Models\EventModel;
+use App\Models\EventScheduleModel;
 
 class EventController extends Controller
 {
@@ -74,7 +75,11 @@ class EventController extends Controller
             'event_note' => "required",
             'event_banner' => "required|image|mimes:jpg,png,jpeg|max:5000",
             'event_longitude' => ['regex:/^[-]?(([0-8]?[0-9])\.(\d+))|(90(\.0+)?)$/', 'nullable'],
-            'event_latitude' => ['regex:/^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/', 'nullable']
+            'event_latitude' => ['regex:/^[-]?((((1[0-7][0-9])|([0-9]?[0-9]))\.(\d+))|180(\.0+)?)$/', 'nullable'],
+            'event_requirement' => "nullable|string",
+            'event_additional_information' => "nullable|string",
+            'event_prize' => "nullable|string",
+            'is_road_map' => "nullable|integer"
         ];
         
 		$checkValidate = $this->services->validate($request->all(),$rules);
@@ -93,7 +98,10 @@ class EventController extends Controller
                      'event_latitude' => $request->event_latitude,
                      'event_charge' => $request->event_charge,
                      'event_place' => $request->event_place,
-                     'event_speaker' => $request->event_speaker
+                     'event_speaker' => $request->event_speaker,
+                     'event_requirement' => $request->event_requirement,
+                     'event_prize' => $request->event_prize,
+                     'event_additional_information' => $request->event_additional_information,
                     ];
         
         if($request->hasfile('event_banner')){
@@ -110,6 +118,20 @@ class EventController extends Controller
 
         if(!$saved){
 			return $this->services->response(503,"Server Error!");
+        }
+        if($request['event_type_id'] == 4){
+            if(!empty($request['is_road_map'])){
+                for ($i=0; $i < count($request->name); $i++) { 
+                    $createSchedule['schedule_start'] = $request['schedule_start'][$i];
+                    $createSchedule['schedule_end'] = $request['schedule_end'][$i];
+                    $createSchedule['icon'] = $request['icon'][$i];
+                    $createSchedule['name'] = $request['name'][$i];
+                    $createSchedule['desc'] = $request['desc'][$i];
+                    $createSchedule['link'] = $request['link'][$i];
+                    $createSchedule['additional_information'] = $request['additional_information'][$i];
+                    $saved2 = EventScheduleModel::create($createSchedule);
+                }
+            }
         }
         
         return $this->services->response(200,"Create Event success",$postData);
@@ -195,16 +217,19 @@ class EventController extends Controller
                      'event_latitude' => $request->event_latitude,
                      'event_charge' => $request->event_charge,
                      'event_place' => $request->event_place,
-                     'event_speaker' => $request->event_speaker
+                     'event_speaker' => $request->event_speaker,
+                     'event_requirement' => $request->event_requirement,
+                     'event_prize' => $request->event_prize,
+                     'event_additional_information' => $request->event_additional_information,
                     ];
         
         if(!empty($request->event_banner)){
             $file = $request->file('event_banner');
             $name_file = $file->getClientOriginalName();  
         }
-
+        $folder = public_path().'/uploads/event/';
         if($request->event_banner != '' && $name_file != $eventData->event_banner){
-            $folder = public_path().'/uploads/event/';
+            
 
             if($eventData->event_banner != '' && $eventData->event_banner != null){
                 $file_old = $folder.$eventData->event_banner;
@@ -216,7 +241,48 @@ class EventController extends Controller
 
             $postData['event_banner'] = $filename;
         }
-
+        if($request['event_type_id'] == 4){
+            if(!empty($request['is_road_map'])){
+                EventScheduleModel::where('event_id',$request->byEventid)->delete();
+                for ($i=0; $i < count($request->name); $i++) { 
+                    if($request['name'][$i]!=null){
+                        $createSchedule['event_id'] = $request->byEventid;
+                        $createSchedule['schedule_start'] = date("Y-m-d H:i:s", strtotime($request['schedule_start'][$i]));
+                        $createSchedule['schedule_end'] =  date("Y-m-d H:i:s", strtotime($request['schedule_end'][$i]));
+                        $createSchedule['icon'] = "";
+                        $createSchedule['name'] = $request['name'][$i];
+                        $createSchedule['desc'] = $request['desc'][$i];
+                        $createSchedule['link'] = $request['link'][$i];
+                        $createSchedule['additional_information'] = $request['additional_information'][$i];
+                        $saved2 = EventScheduleModel::create($createSchedule);
+                    }
+                }
+            }
+            if($request->file('icon')) {
+                $images = $request->file('icon');
+                foreach ($images as $index => $key) {
+                    if ($key->getClientOriginalName() != '') {
+                        $image = '0icon_reward'.time().'-'.$index.'.'.$key->getClientOriginalExtension();
+                        $key->move($folder, $image);
+                        $icon['icon'][]        = $image;
+                    }
+                }
+            }
+            $reward = json_decode($request->event_prize);
+            $dataReward= array();
+            if(count($reward)){
+                for ($i=0; $i < count($reward); $i++) { 
+                    if($reward[$i]->name!=null){
+                        $rewards['name'] = $reward[$i]->name;
+                        $rewards['reward_value'] = $reward[$i]->reward_value;
+                        $rewards['reward_icon'] = $icon['icon'][$i];
+                        $dataReward[]=$rewards;
+                    }
+                }
+            }
+            
+            $postData['event_prize'] = json_encode($dataReward);
+        }
         $saved = EventModel::where('event_id', $request->byEventid)->update($postData); 
         if(!$saved){
 			return $this->services->response(503,"Server Error!");
@@ -297,5 +363,21 @@ class EventController extends Controller
         }
         
         return $this->services->response(200,"Update status success");
+    }
+
+    //======================hackathon
+
+    public function hacktown(Request $request)
+    {
+        $checkUser = $this->getDataServices->getAdminbyToken($request);
+
+        if (!$checkUser) {
+            return $this->actionServices->response(406, "User doesnt exist!");
+        }
+
+        $getEvent = $this->getDataServices->getHackTownEvent();
+
+        $action = $this->actionServices->getactionrole($checkUser->role_id, 'hackathon-view');
+        return $this->actionServices->response(200,"Hackathon Detail",$getEvent, $action);
     }
 }
