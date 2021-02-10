@@ -84,7 +84,42 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/referral', 'API\ReferralController@getReferralMember');
 	Route::get('/referral/success', 'API\ReferralController@getReferralMemberSuccess');
 	Route::post('/referral', 'API\ReferralController@AssignMember')->middleware('log.route:referral,Assign-Member,action');
+	
+	//Notif
+	Route::get('/notif', 'API\NotifController@index');
+	Route::get('/notif/detail_by/{id}', 'API\NotifController@detail');
+	Route::get('/notif/new_notif', 'API\NotifController@newNotif');
+	Route::put('/notif', 'API\NotifController@update');
 
+	//employee project experience
+	Route::get('/project', 'API\ProjectExperienceController@index');
+	Route::post('/project', 'API\ProjectExperienceController@create');
+	Route::put('/project', 'API\ProjectExperienceController@update');
+	Route::delete('/project', 'API\ProjectExperienceController@delete');
+
+	//employee education
+	Route::get('/education', 'API\EducationController@index');
+	Route::post('/education', 'API\EducationController@create');
+	Route::put('/education', 'API\EducationController@update');
+	Route::delete('/education', 'API\EducationController@delete');
+
+	//people
+	Route::get('/people', 'API\PeopleController@index');
+
+	//certification
+	Route::get('/certification', 'API\CertificationController@index');
+	Route::get('/certification/certif_by_id/{id}', 'API\CertificationController@detail');
+	Route::delete('/certification', 'API\CertificationController@delete');
+	Route::post('/certification', 'API\CertificationController@postData');
+
+
+	//employee work experience
+	Route::get('/work_experience', 'API\WorkExperienceController@index');
+	Route::post('/work_experience', 'API\WorkExperienceController@create');
+	Route::put('/work_experience', 'API\WorkExperienceController@update');
+	Route::delete('/work_experience', 'API\WorkExperienceController@delete');
+
+	//dashboard===========================
 	//Admin Dashboard
 	Route::get('/admin', 'API\Dashboard\AuthUser\AdminController@index');
 
@@ -172,39 +207,14 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/event-type', 'API\Dashboard\MenuPage\EventController@eventType');
 	Route::put('/event/participant-status/update', 'API\Dashboard\MenuPage\EventController@registerStatus')->middleware('log.dashboard:comment,Admin,action');
 
-	//Notif
-	Route::get('/notif', 'API\NotifController@index');
-	Route::get('/notif/detail_by/{id}', 'API\NotifController@detail');
-	Route::get('/notif/new_notif', 'API\NotifController@newNotif');
-	Route::put('/notif', 'API\NotifController@update');
-
-	//employee project experience
-	Route::get('/project', 'API\ProjectExperienceController@index');
-	Route::post('/project', 'API\ProjectExperienceController@create');
-	Route::put('/project', 'API\ProjectExperienceController@update');
-	Route::delete('/project', 'API\ProjectExperienceController@delete');
-
-	//employee education
-	Route::get('/education', 'API\EducationController@index');
-	Route::post('/education', 'API\EducationController@create');
-	Route::put('/education', 'API\EducationController@update');
-	Route::delete('/education', 'API\EducationController@delete');
-
-	//people
-	Route::get('/people', 'API\PeopleController@index');
-
-	//certification
-	Route::get('/certification', 'API\CertificationController@index');
-	Route::get('/certification/certif_by_id/{id}', 'API\CertificationController@detail');
-	Route::delete('/certification', 'API\CertificationController@delete');
-	Route::post('/certification', 'API\CertificationController@postData');
-
-
-	//employee work experience
-	Route::get('/work_experience', 'API\WorkExperienceController@index');
-	Route::post('/work_experience', 'API\WorkExperienceController@create');
-	Route::put('/work_experience', 'API\WorkExperienceController@update');
-	Route::delete('/work_experience', 'API\WorkExperienceController@delete');
+	Route::group(['prefix' => 'dashboard'], function () {
+		Route::get('/hacktown', 'API\Dashboard\MenuPage\EventController@hacktown');
+		Route::post('/hacktown', 'API\Dashboard\MenuPage\EventController@hacktownCreateEdit');
+		Route::get('/hacktown/participant', 'API\Dashboard\MenuPage\EventController@hacktownParticipant');
+		Route::post('/hacktown/participant/update-status', 'API\Dashboard\MenuPage\EventController@hacktownParticipantUpdatet');
+	});
+	
+	
 
 
 

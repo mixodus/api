@@ -18,6 +18,8 @@ use App\Models\EmployeeCertification;
 use App\Models\EmployeeProjectExperienceModel;
 use App\Models\EmployeeFriendshipModel;
 use App\Models\EventModel;
+use App\Models\EventScheduleModel;
+use App\Models\EventParticipantStatusModel;
 use App\Models\ChallengeModel;
 use App\Models\ChallengeParticipants;
 use App\Models\ChallengeQuiz;
@@ -350,6 +352,7 @@ class GetDataServices extends BaseController
 		$query = EventModel::select('*')->with(["participants" => function($q) use($user_id){
 						$q->where('employee_id', '=', $user_id);
 					}])
+					->where('xin_events.event_type_id','!=',4)
 					->where('xin_events.event_date','>=',date('Y-m-d'));
 		if($event_id!=null){
 			$query->where('xin_events.event_id',$event_id);
@@ -423,6 +426,7 @@ class GetDataServices extends BaseController
 		return EventModel::select('*')->LeftJoin('xin_events_participant', 'xin_events_participant.event_id', '=', 'xin_events.event_id')
 					->where('xin_events_participant.employee_id',$user_id)
 					->where('xin_events.event_date','<',date('Y-m-d'))
+					->where('xin_events.event_type_id','!=',4)
 					->where('xin_events.event_type_id',$type)
 					->where('xin_events_participant.status','!=' ,"Waiting Approval" )
 					->count();
@@ -454,6 +458,7 @@ class GetDataServices extends BaseController
 
 		$data = EventModel::select('*')->with('eventType')
 					->orderBy('xin_events.event_date','desc')
+					->where('xin_events.event_type_id','!=',4)
 					->get();
 		
 		$data = $data->map(function($key) use($data){
@@ -461,6 +466,16 @@ class GetDataServices extends BaseController
 				return $key;
 		});
 
+		return $data;
+	}
+	public function getHackTownEvent(){
+
+		$data = EventModel::select('*')->with('eventType','eventSchedules')
+					->where('xin_events.event_type_id',4)
+					->first();
+		if($data){
+			$data->event_banner_url = url('/')."/uploads/event/".$data->event_banner;
+		}
 		return $data;
 	}
 	// =========================================BANNER MODULE ==============================================================
