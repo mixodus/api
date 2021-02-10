@@ -227,9 +227,9 @@ class EventController extends Controller
             $file = $request->file('event_banner');
             $name_file = $file->getClientOriginalName();  
         }
-
+        $folder = public_path().'/uploads/event/';
         if($request->event_banner != '' && $name_file != $eventData->event_banner){
-            $folder = public_path().'/uploads/event/';
+            
 
             if($eventData->event_banner != '' && $eventData->event_banner != null){
                 $file_old = $folder.$eventData->event_banner;
@@ -241,7 +241,48 @@ class EventController extends Controller
 
             $postData['event_banner'] = $filename;
         }
-
+        if($request['event_type_id'] == 4){
+            if(!empty($request['is_road_map'])){
+                EventScheduleModel::where('event_id',$request->byEventid)->delete();
+                for ($i=0; $i < count($request->name); $i++) { 
+                    if($request['name'][$i]!=null){
+                        $createSchedule['event_id'] = $request->byEventid;
+                        $createSchedule['schedule_start'] = date("Y-m-d H:i:s", strtotime($request['schedule_start'][$i]));
+                        $createSchedule['schedule_end'] =  date("Y-m-d H:i:s", strtotime($request['schedule_end'][$i]));
+                        $createSchedule['icon'] = "";
+                        $createSchedule['name'] = $request['name'][$i];
+                        $createSchedule['desc'] = $request['desc'][$i];
+                        $createSchedule['link'] = $request['link'][$i];
+                        $createSchedule['additional_information'] = $request['additional_information'][$i];
+                        $saved2 = EventScheduleModel::create($createSchedule);
+                    }
+                }
+            }
+            if($request->file('icon')) {
+                $images = $request->file('icon');
+                foreach ($images as $index => $key) {
+                    if ($key->getClientOriginalName() != '') {
+                        $image = '0icon_reward'.time().'-'.$index.'.'.$key->getClientOriginalExtension();
+                        $key->move($folder, $image);
+                        $icon['icon'][]        = $image;
+                    }
+                }
+            }
+            $reward = json_decode($request->event_prize);
+            $dataReward= array();
+            if(count($reward)){
+                for ($i=0; $i < count($reward); $i++) { 
+                    if($reward[$i]->name!=null){
+                        $rewards['name'] = $reward[$i]->name;
+                        $rewards['reward_value'] = $reward[$i]->reward_value;
+                        $rewards['reward_icon'] = $icon['icon'][$i];
+                        $dataReward[]=$rewards;
+                    }
+                }
+            }
+            
+            $postData['event_prize'] = json_encode($dataReward);
+        }
         $saved = EventModel::where('event_id', $request->byEventid)->update($postData); 
         if(!$saved){
 			return $this->services->response(503,"Server Error!");
