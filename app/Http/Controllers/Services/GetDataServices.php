@@ -19,6 +19,8 @@ use App\Models\EmployeeCertification;
 use App\Models\EmployeeProjectExperienceModel;
 use App\Models\EmployeeFriendshipModel;
 use App\Models\EventModel;
+use App\Models\EventScheduleModel;
+use App\Models\EventParticipantStatusModel;
 use App\Models\ChallengeModel;
 use App\Models\ChallengeParticipants;
 use App\Models\ChallengeQuiz;
@@ -278,6 +280,7 @@ class GetDataServices extends BaseController
 		$data = NewsCommentModel::where('news_id',$data['news_id'])->withCount('comment_replies')->with(['user'=>function($query){
 			$query->select('user_id','fullname','profile_picture');
 		},'comment_replies'=>function($query){
+			$query->orderBy('reply_id','DESC'); 
 			$query->with(['user'=>function($query){
 				$query->select('user_id','fullname','profile_picture');
 			}]);
@@ -442,6 +445,7 @@ class GetDataServices extends BaseController
 		$query = EventModel::select('*')->with(["participants" => function($q) use($user_id){
 						$q->where('employee_id', '=', $user_id);
 					}])
+					->where('xin_events.event_type_id','!=',4)
 					->where('xin_events.event_date','>=',date('Y-m-d'));
 		if($event_id!=null){
 			$query->where('xin_events.event_id',$event_id);
@@ -626,6 +630,7 @@ class GetDataServices extends BaseController
 		$data = EventModel::select('*')
 					->where('xin_events.event_date','>=',date('Y-m-d'))
 					->orderBy('xin_events.event_date','asc')
+					->where('xin_events.event_type_id','!=',4)
 					->limit(25)
 					->get();
 		$data = $data->map(function($key) use($data){

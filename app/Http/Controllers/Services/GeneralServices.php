@@ -155,7 +155,7 @@ class GeneralServices extends BaseController
 		try{
 			Mail::send("mail.".$layout, $data, function($message) use ($toname, $tomail, $fromname, $frommail, $subject){
 				$message->to($tomail, $toname)->subject($subject);
-				$message->from('regitalisgianidrajat@gmail.com', $fromname);
+				$message->from('regitalisgianidrajat@gmail.com', "One Talent App");
 			});
 			$success[] = $tomail;
 		}catch (Exception $e) {

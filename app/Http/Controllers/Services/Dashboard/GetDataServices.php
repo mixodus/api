@@ -18,6 +18,8 @@ use App\Models\EmployeeCertification;
 use App\Models\EmployeeProjectExperienceModel;
 use App\Models\EmployeeFriendshipModel;
 use App\Models\EventModel;
+use App\Models\EventScheduleModel;
+use App\Models\EventParticipantStatusModel;
 use App\Models\ChallengeModel;
 use App\Models\ChallengeParticipants;
 use App\Models\ChallengeQuiz;
@@ -34,6 +36,9 @@ use App\Models\FriendModel;
 use App\Models\UserBankModel;
 use App\Models\UserWithdrawModel;
 use App\Models\UserWithdrawHistoryModel;
+use App\Models\Dashboard\LogActivity;
+use App\Models\Dashboard\EventTypeModel;
+use App\Models\Fase2\LogModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -347,6 +352,7 @@ class GetDataServices extends BaseController
 		$query = EventModel::select('*')->with(["participants" => function($q) use($user_id){
 						$q->where('employee_id', '=', $user_id);
 					}])
+					->where('xin_events.event_type_id','!=',4)
 					->where('xin_events.event_date','>=',date('Y-m-d'));
 		if($event_id!=null){
 			$query->where('xin_events.event_id',$event_id);
@@ -420,60 +426,56 @@ class GetDataServices extends BaseController
 		return EventModel::select('*')->LeftJoin('xin_events_participant', 'xin_events_participant.event_id', '=', 'xin_events.event_id')
 					->where('xin_events_participant.employee_id',$user_id)
 					->where('xin_events.event_date','<',date('Y-m-d'))
+					->where('xin_events.event_type_id','!=',4)
 					->where('xin_events.event_type_id',$type)
 					->where('xin_events_participant.status','!=' ,"Waiting Approval" )
 					->count();
 	}
-	public function getEventDetail($user_id, $id){
-		$data = EventModel::select('*')->with(["participants" => function($q) use($user_id){
-						$q->where('employee_id', '=', $user_id);
-					}])
+	public function getEventDetail($id){
+		$data = EventModel::select('*')->with('participants'
+					// ["participants" => function($q) use($user_id){
+					// 	$q->where('employee_id', '=', $user_id);
+					// }]
+					)
 					->where('xin_events.event_id',$id)
 					->get();
 			$data = $data->map(function($key) use($data){
-						$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner_url'];
-						$key['event_registered'] = false;
-						if(count($key['participants'])>0){
-							$key['event_registered'] = true;
-							$key->status = true;
-							if($key['participants'][0]['status']=="Waiting Approval"){
-								$key->status = false;
-							}
-						}
+						$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner'];
+						($key['event_date'] >= date('Y-m-d')) ? $key['status_event'] = 'event is comming' : $key['status_event']= "event end";
+			// 			$key['event_registered'] = false;
+			// 			if(count($key['participants'])>0){
+			// 				$key['event_registered'] = true;
+			// 				$key->status = true;
+			// 				if($key['participants'][0]['status']=="Waiting Approval"){
+			// 					$key->status = false;
+			// 				}
+			// 			}
 					   	return $key;
 				   	});
 		return $data;
 	}
 	public function getEventList(){
-		$data = EventModel::select('*')
-					->where('xin_events.event_date','>=',date('Y-m-d'))
-					->orderBy('xin_events.event_date','asc')
-					->limit(25)
-					->get();
-		$data = $data->map(function($key) use($data){
-			$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner_url'];
-				if($key['event_type_id']== 1){
-					$key['event_category'] = "Event";
-				}else if($key['event_type_id']== 2){
-					$key['event_category'] = "Bootcamp";
-				}
-				$today = date('Y-m-d');
-				$timeToday = date('H:i');
-				if($key->event_date > $today){
-					$key->event_ongoing = false;
-					$key->event_joinable = true;
 
-				}else if($key->event_date == $today){
-					$time = strtotime($key->event_time) - 60*60;
-					$getTime = date('H:i',$time);
-					$key->event_ongoing = true;
-					$key->event_joinable = true;
-					if($timeToday > $getTime){
-						$key->event_joinable = false;
-					}
-				}
-			return $key;
+		$data = EventModel::select('*')->with('eventType')
+					->orderBy('xin_events.event_date','desc')
+					->where('xin_events.event_type_id','!=',4)
+					->get();
+		
+		$data = $data->map(function($key) use($data){
+				$data = ($key['event_date'] >= date('Y-m-d')) ? $key['status_event'] = 'event is comming' : $key['status_event']= "event end";
+				return $key;
 		});
+
+		return $data;
+	}
+	public function getHackTownEvent(){
+
+		$data = EventModel::select('*')->with('eventType','eventSchedules')
+					->where('xin_events.event_type_id',4)
+					->first();
+		if($data){
+			$data->event_banner_url = url('/')."/uploads/event/".$data->event_banner;
+		}
 		return $data;
 	}
 	// =========================================BANNER MODULE ==============================================================
@@ -837,5 +839,34 @@ class GetDataServices extends BaseController
 	public function getNewsType(){
 
 		return NewsTypeModel::select('news_type_id', 'news_type_name')->get();
+	}
+
+	public function dashboardLog($id=null){
+
+		$query = LogActivity::select('*');
+
+		if(!empty($id)){
+			$query->where('id', $id);
+		}
+
+		$data = $query->get();
+		return $data;
+	}
+
+	public function mobileLog($id=null){
+
+		$query = LogModel::select('*');
+
+		if(!empty($id)){
+			$query->where('id', $id);
+		}
+
+		$data = $query->get();
+		return $data;
+	}
+
+	public function getEventType(){
+
+		return EventTypeModel::select('event_type_id', 'event_type_name')->get();
 	}
 }

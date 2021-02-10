@@ -23,5 +23,6 @@ class LogActivity extends Model
 		'request_body',
         'response',
         'status_code',
-	];
+    ];
+    protected $hidden = ['updated_at'];
 }

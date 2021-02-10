@@ -11,6 +11,9 @@
 |
 */
 
+// use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Route;
+
 Route::get('/', function () {
 	return view('welcome');
 });
@@ -28,14 +31,14 @@ Route::group(['middleware' => ['app.token', 'cors'], 'prefix' => 'user'], functi
 	Route::post('/register', 'API\UserController@register')->middleware('log.route:user,register,action');
 	Route::post('/reset_password', 'API\UserController@resetPassword')->middleware('log.route:user,Reset-Password,action');
 });
-Route::group(['middleware' => ['user.token','cors','log.route']], function ($router) {
+Route::group(['middleware' => ['user.token', 'cors', 'log.route']], function ($router) {
 	//friend --API di hide di existing mobile (production)
-	Route::get('/friend/list', 'API\FriendController@index'); 
-	Route::get('/friend/list_id_only', 'API\FriendController@listingId'); 
-	Route::get('/friend/mutual_friends', 'API\FriendController@mutual'); 
-	Route::get('/friend/mutual_friends_id_only', 'API\FriendController@mutualId'); 
-	Route::get('/friend/list_friend_request', 'API\FriendController@friendRequestList');  
-	Route::get('/friend/list_friend_request_id', 'API\FriendController@friendRequestId'); 
+	Route::get('/friend/list', 'API\FriendController@index');
+	Route::get('/friend/list_id_only', 'API\FriendController@listingId');
+	Route::get('/friend/mutual_friends', 'API\FriendController@mutual');
+	Route::get('/friend/mutual_friends_id_only', 'API\FriendController@mutualId');
+	Route::get('/friend/list_friend_request', 'API\FriendController@friendRequestList');
+	Route::get('/friend/list_friend_request_id', 'API\FriendController@friendRequestId');
 	Route::post('/friend/add_friend', 'API\FriendController@add');
 	Route::post('/friend/approve', 'API\FriendController@approve');
 	Route::post('/friend/unfriend', 'API\FriendController@unfriend');
@@ -56,15 +59,15 @@ Route::group(['middleware' => ['user.token','cors','log.route']], function ($rou
 	Route::post('/upload/upload/{id}', 'API\CertificationController@upload')->middleware('log.route:user-data,Upload-Certification,action');
 });
 
-	Route::post('/upload', 'General\UploadController@index'); // belum tau fungsinya untuk dimana
-	Route::post('/upload/do_upload', 'General\UploadController@upload'); // belum tau fungsinya untuk dimana
-	
-	//API
-	//Jobs search
-	Route::get('/search/jobs', 'API\JobsController@index');
-	//search
-	Route::get('/search/generalsearch', 'API\GeneralController@generalSearch');
-	Route::get('/search/reference', 'API\GeneralController@referenceSeacrh'); 
+Route::post('/upload', 'General\UploadController@index'); // belum tau fungsinya untuk dimana
+Route::post('/upload/do_upload', 'General\UploadController@upload'); // belum tau fungsinya untuk dimana
+
+//API
+//Jobs search
+Route::get('/search/jobs', 'API\JobsController@index');
+//search
+Route::get('/search/generalsearch', 'API\GeneralController@generalSearch');
+Route::get('/search/reference', 'API\GeneralController@referenceSeacrh');
 
 ///Dashboard
 Route::group(['prefix' => 'admin'], function () {
