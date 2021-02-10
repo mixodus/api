@@ -61,10 +61,10 @@
        $('#confirm_password').on('keyup', function () {
         if ($('#password').val() == $('#confirm_password').val()) {
             $('#message').html(' ').css('color', 'green');
-            document.getElementById("Button").disabled = false;
+            // document.getElementById("Button").disabled = false;
         } else 
             $('#message').html('Password tidak sama').css('color', 'red');
-            document.getElementById("Button").disabled = true;
+            // document.getElementById("Button").disabled = true;
         });
     </script>
     <script src="js/jquery.min.js"></script> <!-- jQuery for Bootstrap's JavaScript plugins -->
