@@ -21,6 +21,7 @@ use App\Models\EmployeeFriendshipModel;
 use App\Models\EventModel;
 use App\Models\EventScheduleModel;
 use App\Models\EventParticipantStatusModel;
+use App\Models\EventParticipantModel;
 use App\Models\ChallengeModel;
 use App\Models\ChallengeParticipants;
 use App\Models\ChallengeQuiz;
@@ -625,6 +626,12 @@ class GetDataServices extends BaseController
 					   	return $key;
 				   	});
 		return $data;
+	}
+	public function checkEventScheduleStatus($id,$user_id){
+		return EventParticipantStatusModel::select('*')->where('employee_id',$user_id)->where('schedule_id',$id)->first();
+	}
+	public function getEventParticipantbyUser($id,$user_id){
+		return EventParticipantModel::select('*')->where('employee_id',$user_id)->where('event_id',$id)->first();
 	}
 	public function getEventList(){
 		$data = EventModel::select('*')

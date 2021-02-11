@@ -103,7 +103,27 @@ class ActionServices extends BaseController
 			'country' => $data['country'],
 			'city' => $data['city'],
 			'gender' => $data['gender'],
-			'status' => 'Waiting Approval',
+			'status' => 'Approved',
+			'modified_at' => date('Y-m-d h:i:s')
+		);
+		$save = EventParticipantModel::create($data);
+		return $save;
+	}
+	public function postParticipantHackathon($data,$user){
+		$data = array(
+			'event_id' => $data['event_id'],
+			'employee_id' => $user->user_id,
+			'email' => $user->email,
+			'fullname' => $user->fullname,
+			'date_of_birth' => $user->date_of_birth,
+			'address' => $user->date_of_birth,
+			'country' => $user->country,
+			'city' => $user->province,
+			'gender' => $user->gender,
+			'university' => $data['university'],
+			'major' => $data['major'],
+			'semester' => $data['semester'],
+			'status' => 'Approved',
 			'modified_at' => date('Y-m-d h:i:s')
 		);
 		$save = EventParticipantModel::create($data);

@@ -12,6 +12,15 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 	Route::get('/sub-district', 'General\LocationController@subDistrict');
 	Route::post('/user/request-verify', 'API\UserController@RequestVerifyMail');
 	Route::get('/news/comment', 'API\NewsController@getComment');
+
+	//hackathon
+	
+	Route::get('/event/hackathon', 'API\EventController@Hackathon');
+	Route::get('/event/hackathon/semester', 'API\EventController@HackathonSemester');
+	Route::post('/event/hackathon', 'API\EventController@RegisterHackathon');
+	Route::post('/event/hackathon/idcard', 'API\EventController@HackathonIdcard');
+	Route::post('/event/hackathon/studentcard', 'API\EventController@HackathonStudentcard');
+	Route::post('/event/hackathon/transcripts', 'API\EventController@HackathonStudentTranscripts');
 });
 Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 	//News Comment

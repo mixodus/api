@@ -23,6 +23,9 @@ class EventParticipantModel extends Model
 		'city',
 		'gender',
 		'status',
+		'university',
+		'major',
+		'semester',
 		'created_at',
 		'modified_at',
 		'updated_at'
