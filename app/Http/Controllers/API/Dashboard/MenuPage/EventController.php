@@ -258,16 +258,18 @@ class EventController extends Controller
                     }
                 }
             }
-            if($request->file('icon')) {
-                $images = $request->file('icon');
-                foreach ($images as $index => $key) {
-                    if ($key->getClientOriginalName() != '') {
-                        $image = '0icon_reward'.time().'-'.$index.'.'.$key->getClientOriginalExtension();
-                        $key->move($folder, $image);
-                        $icon['icon'][]        = $image;
-                    }
-                }
-            }
+                // $images = $request->file('icon');
+                // foreach ($images as $index => $key) {
+                //     if($request->file('icon')) {
+                //         if ($key->getClientOriginalName() != '') {
+                //             $image = '0icon_reward'.time().'-'.$index.'.'.$key->getClientOriginalExtension();
+                //             $key->move($folder, $image);
+                //             $icon['icon'][]        = $image;
+                //         }
+                //     }else{
+                //         $icon['icon'][]        = $key;
+                //     }
+                // }
             $reward = json_decode($request->event_prize);
             $dataReward= array();
             if(count($reward)){
@@ -275,7 +277,7 @@ class EventController extends Controller
                     if($reward[$i]->name!=null){
                         $rewards['name'] = $reward[$i]->name;
                         $rewards['reward_value'] = $reward[$i]->reward_value;
-                        $rewards['reward_icon'] = $icon['icon'][$i];
+                        $rewards['reward_icon'] = $reward[$i]->reward_icon;
                         $dataReward[]=$rewards;
                     }
                 }
