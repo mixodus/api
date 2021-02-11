@@ -129,18 +129,14 @@ class ActionServices extends BaseController
 		$save = EventParticipantModel::create($data);
 		return $save;
 	}
-	public function joinChallenge($data,$user_id){
-		$postParam = array(
-			'challenge_id' => $data->challenge_id,
-			'employee_id' => $user_id,
-			'total_point' => $data->challenge_total_task * $data->challenge_point_every_task,
-			'total_current_point' =>0,
-			'total_current_task' => 0, 
-			'total_task'=>$data->challenge_total_task,
-			'created_at' => date('Y-m-d h:i:s'),
-			'modified_at' => date('Y-m-d h:i:s')
-		);
-		return ChallengeParticipants::create($postParam);
+	public function updateHackathonfile($data,$user_id){
+		return EventParticipantModel::where('event_id',$data['event_id'])->where('employee_id',$user_id)->update($data);
+	}
+	public function getDataHackathonData($user_id,$event_id){
+		return EventParticipantModel::where('event_id',$event_id)->where('employee_id',$user_id)->first();
+	}
+	public function deleteHackathonData($user_id,$event_id){
+		return EventParticipantModel::where('event_id',$event_id)->where('employee_id',$user_id)->delete();
 	}
 	public function WithdrawRewardModel($refferal_id){
 		
