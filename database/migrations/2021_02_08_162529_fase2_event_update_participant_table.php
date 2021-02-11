@@ -13,7 +13,20 @@ class Fase2EventUpdateParticipantTable extends Migration
      */
     public function up()
     {
-        //
+        DB::unprepared("
+            ALTER TABLE xin_events_participant
+            CHANGE COLUMN created_at created_at DATETIME NOT NULL AFTER country,
+            CHANGE COLUMN modified_at modified_at DATETIME NOT NULL AFTER updated_at;
+        ");
+
+        Schema::table('xin_events_participant', function($table) {
+            $table->string('university')->nullable()->after('country');
+            $table->string('major')->nullable()->after('university');
+            $table->integer('semester')->nullable()->after('major');
+            $table->string('idcard_file')->nullable()->after('semester');
+            $table->string('studentcard_file')->nullable()->after('idcard_file');
+            $table->string('transcripts_file')->nullable()->after('studentcard_file');
+		});
     }
 
     /**

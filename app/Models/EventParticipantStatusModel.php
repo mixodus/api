@@ -16,4 +16,8 @@ class EventParticipantStatusModel extends Model
         'status'
     ];
     protected $hidden = ['created_at','updated_at'];
+
+    public function schedules() {
+		return $this->hasMany('App\Models\EventScheduleModel', 'schedule_id','schedule_id');
+	}
 }
