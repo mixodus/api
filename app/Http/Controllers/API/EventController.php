@@ -119,4 +119,78 @@ class EventController extends Controller
 		
 		return $this->services->response(200,"Daftar event yang sudah diikuti",$data);
 	}
+	// ================================================
+	public function HackathonSemester(){
+		$data['format1'] = array(1,2,3,4,5,6,7,8);
+		for ($i=1; $i <= 8; $i++) { 
+			$semester['semester'] = $i;
+			$array[] = $semester;
+		}
+		$data['format2'] = $array;
+		return $this->services->response(200,"Semester Data",$data);
+	}
+	// Hackathon
+	public function Hackathon(Request $request) {
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+		if(empty($checkUser)){
+			$checkUser = [
+				'user_id' => 0
+			];
+		}
+		$getEvent = EventModel::where('event_type_id', '4')->with(["eventSchedules","participants" => function($q) use($checkUser){
+				$q->where('employee_id', '=', $checkUser->user_id);
+			}])->get();
+			$getEvent = $getEvent->map(function($key) use($getEvent,$checkUser){
+				
+				$key['event_prize'] = json_decode($key['event_prize'],true);
+				$key['event_prize'] = collect($key['event_prize'])->map(function($raw){
+					$raw['reward_icon_url']  = url('/')."/uploads/event/".$raw['reward_icon'];
+					return $raw;
+				});
+				$key['eventSchedules'] = collect($key['eventSchedules'])->map(function($row) use($checkUser){
+					$getStatus =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
+					
+					$row['status']  = "Pending";
+					if($getStatus!=null){
+						$row['status']  = $getStatus->status;
+					}
+					return $row;
+				});
+				$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner_url'];
+				$key['event_category'] = "Hackathon";
+				$key->event_ongoing = true;
+				$key->event_joinable = false;
+				if(count($key['participants'])==0){
+					$key->event_joinable = true;
+				}
+				return $key;
+			});
+		if (!$getEvent->isEmpty()) {
+			$getEvent = $getEvent[0];
+		}
+		return $this->services->response(200,"Event Hackathon",$getEvent);
+	}
+	public function RegisterHackathon(Request $request){
+		$rules = [
+			'event_id' => "required|integer",
+			'university' => "required|string",
+			'major' => "required|string",
+			'semester' => "required|integer"
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+		}
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+		$checkIsJoin = $this->getDataServices->getEventParticipantbyUser($request->event_id,$checkUser->user_id);
+		if(!empty($checkIsJoin)){
+			return $this->services->response(402,"Anda telah terdaftar pada event ini.");
+		}
+		$postParticipants = $this->actionServices->postParticipantHackathon($request->all(),$checkUser);
+		if(!$postParticipants){
+			return $this->services->response(400,"Jaringan bermasalah!");
+		}
+		return $this->services->response(200,"Pendaftaran berhasil!", $request->all());
+	}
 }
