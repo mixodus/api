@@ -142,7 +142,9 @@ class EventController extends Controller
 				$q->where('employee_id', '=', $checkUser->user_id);
 			}])->get();
 			$getEvent = $getEvent->map(function($key) use($getEvent,$checkUser){
-				
+				$key['label_description'] = "Deskripsi";
+				$key['label_requirements'] = "Persyaratan";
+				$key['label_additional_information'] = "Informasi Lainnya";
 				$key['event_prize'] = json_decode($key['event_prize'],true);
 				$key['event_prize'] = collect($key['event_prize'])->map(function($raw){
 					$raw['reward_icon_url']  = url('/')."/uploads/event/".$raw['reward_icon'];
@@ -150,14 +152,22 @@ class EventController extends Controller
 				});
 				$key['eventSchedules'] = collect($key['eventSchedules'])->map(function($row) use($checkUser){
 					$getStatus =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
-					
 					$row['status']  = "Pending";
 					if($getStatus!=null){
 						$row['status']  = $getStatus->status;
 					}
+					$row['icon_url']  = url('/')."/uploads/event/hackathon/Passed/".$row['icon'];
+					$row['icon_status_url']  = url('/')."/uploads/event/hackathon/".$row['status']."/".$row['icon'];
 					return $row;
 				});
-				$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner_url'];
+				$failedData = array_search('Failed', array_column($key['eventSchedules']->toArray(), 'status'));
+				$key['current_state'] = null;
+				$key['failed_message'] = null;
+				if($failedData){
+					$key['current_state'] = $key['eventSchedules'][$failedData];
+					$key['failed_message'] = "Maaf, Anda tidak lolos ke tahap berikutnya karena belum memenuhi kualifikasi yang tersedia. Terima kasih telah berpartisipasi.";
+				}
+				$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner'];
 				$key['event_category'] = "Hackathon";
 				$key->event_ongoing = true;
 				$key->event_joinable = false;
