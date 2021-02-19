@@ -16,11 +16,15 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 	//hackathon
 	
 	Route::get('/event/hackathon', 'API\EventController@Hackathon');
+	Route::get('/event/hackathon/terms-condition', 'API\EventController@HackathonTerms');
 	Route::get('/event/hackathon/semester', 'API\EventController@HackathonSemester');
-	Route::post('/event/hackathon', 'API\EventController@RegisterHackathon');
-	Route::post('/event/hackathon/file', 'API\EventController@HackathonUploadFile');
 });
 Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
+	//hackathon
+	
+	Route::post('/event/hackathon', 'API\EventController@RegisterHackathon');
+	Route::post('/event/hackathon/file', 'API\EventController@HackathonUploadFile');
+	Route::get('/event/hackathon/reset', 'API\EventController@ResetRegisterHackathon');
 	//News Comment
 	Route::post('/news/comment', 'API\NewsController@addComment');
 	Route::delete('/news/comment', 'API\NewsController@deleteComment');

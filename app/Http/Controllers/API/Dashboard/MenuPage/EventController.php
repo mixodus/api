@@ -382,4 +382,24 @@ class EventController extends Controller
         $action = $this->actionServices->getactionrole($checkUser->role_id, 'hackathon-view');
         return $this->actionServices->response(200,"Hackathon Detail",$getEvent, $action);
     }
+    public function hacktownParticipant(Request $request)
+    {
+        $checkUser = $this->getDataServices->getAdminbyToken($request);
+
+        if (!$checkUser) {
+            return $this->actionServices->response(406, "User doesnt exist!");
+        }
+        $rules = [
+            'event_id' => "required|integer",
+        ];
+        
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+        }
+        $getEvent = $this->getDataServices->getEventParticipant($request->event_id);
+
+        return $this->actionServices->response(200,"Hackathon Participant",$getEvent);
+    }
 }

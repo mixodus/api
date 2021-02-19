@@ -630,8 +630,14 @@ class GetDataServices extends BaseController
 	public function checkEventScheduleStatus($id,$user_id){
 		return EventParticipantStatusModel::select('*')->where('employee_id',$user_id)->where('schedule_id',$id)->first();
 	}
+	public function getNextSchedule($id){
+		return EventScheduleModel::select('*')->where('schedule_id','>',$id)->first();
+	}
 	public function getEventParticipantbyUser($id,$user_id){
 		return EventParticipantModel::select('*')->where('employee_id',$user_id)->where('event_id',$id)->first();
+	}
+	public function getEventParticipant($id){
+		return EventParticipantModel::select('*')->where('event_id',$id)->first();
 	}
 	public function getEventList(){
 		$data = EventModel::select('*')
