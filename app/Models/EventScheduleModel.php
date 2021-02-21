@@ -35,4 +35,7 @@ class EventScheduleModel extends Model
 	public function scheduleStatus() {
 		return $this->belongsTo('App\Models\EventParticipantStatusModel', 'schedule_id','schedule_id');
 	}
+	public function participant() {
+		return $this->belongsTo('App\Models\EventParticipantModel', 'event_id','event_id');
+	}
 }

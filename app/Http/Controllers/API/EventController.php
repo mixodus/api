@@ -142,27 +142,65 @@ class EventController extends Controller
 				$q->where('employee_id', '=', $checkUser->user_id);
 			}])->get();
 			$getEvent = $getEvent->map(function($key) use($getEvent,$checkUser){
-				
+				$key['label_description'] = "Deskripsi";
+				$key['label_requirements'] = "Persyaratan";
+				$key['label_additional_information'] = "Informasi Lainnya";
 				$key['event_prize'] = json_decode($key['event_prize'],true);
 				$key['event_prize'] = collect($key['event_prize'])->map(function($raw){
 					$raw['reward_icon_url']  = url('/')."/uploads/event/".$raw['reward_icon'];
 					return $raw;
 				});
 				$key['eventSchedules'] = collect($key['eventSchedules'])->map(function($row) use($checkUser){
-					$getStatus =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
-					
+					$today = date('Y-m-d');
+					$today=date('Y-m-d', strtotime($today));
+
+					$stratDate = date('Y-m-d', strtotime($row['schedule_start']));
+					$endDate = date('Y-m-d', strtotime($row['schedule_end']));
 					$row['status']  = "Pending";
-					if($getStatus!=null){
-						$row['status']  = $getStatus->status;
+					$getStatus =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
+				
+					if (($today >= $stratDate) && ($today <= $endDate)){
+						$row['is_current_state'] = true;
+					}else{
+						$row['is_current_state'] = false;
 					}
+					
+					if($getStatus!=null){
+						$row['is_current_state'] = true;
+					}
+					
+					$getNextSchedule =  $this->getDataServices->getNextSchedule($row['schedule_id']);
+					$row['next_schedule_message'] = "";
+					$row['next_schedule_date'] = "";
+					if($getNextSchedule!=null){
+						$row['next_schedule_message'] = "Lorem Ipsum next schedule ".$getNextSchedule->name;
+						$row['next_schedule_date'] = $getNextSchedule->schedule_start;
+					}
+					
+					$row['icon_url']  = url('/')."/uploads/event/hackathon/Passed/".$row['icon'];
+					$row['icon_status_url']  = url('/')."/uploads/event/hackathon/".$row['status']."/".$row['icon'];
 					return $row;
 				});
-				$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner_url'];
+				$failedData = array_search('Failed', array_column($key['eventSchedules']->toArray(), 'status'));
+				$key['failed_message'] = "";
+				if($failedData){
+					$key['current_state'] = $key['eventSchedules'][$failedData];
+					$key['failed_message'] = "Maaf, Anda tidak lolos ke tahap berikutnya karena belum memenuhi kualifikasi yang tersedia. Terima kasih telah berpartisipasi.";
+				}else{
+
+					$key['current_state'] = null;
+				}
+				$key['event_banner_url']  = url('/')."/uploads/event/".$key['event_banner'];
 				$key['event_category'] = "Hackathon";
 				$key->event_ongoing = true;
-				$key->event_joinable = false;
-				if(count($key['participants'])==0){
-					$key->event_joinable = true;
+				$key->event_joinable = true;
+				if(count($key['participants'])>0){
+					$key->event_joinable = false;
+					if($key['participants'][0]['idcard_file'] == null || $key['participants'][0]['studentcard_file']==null || $key['participants'][0]['transcripts_file']==null)
+					{
+						$deletData = $this->deleteHackathonData($checkUser->user_id,$getEvent[0]['event_id']);
+						$key->event_joinable = true;
+					}	
 				}
 				return $key;
 			});
@@ -170,6 +208,11 @@ class EventController extends Controller
 			$getEvent = $getEvent[0];
 		}
 		return $this->services->response(200,"Event Hackathon",$getEvent);
+	}
+	public function HackathonTerms(Request $request) {
+		$getEvent = EventModel::select('event_terms_conditions','event_label_terms_conditions')->where('event_type_id', '4')->first();
+		$getEvent->makeVisible(['event_terms_conditions','event_label_terms_conditions']);
+		return $this->services->response(200,"Event Hackathon Terms and Conditions",$getEvent);
 	}
 	public function RegisterHackathon(Request $request){
 		$rules = [
@@ -189,10 +232,26 @@ class EventController extends Controller
 			return $this->services->response(402,"Anda telah terdaftar pada event ini.");
 		}
 		$postParticipants = $this->actionServices->postParticipantHackathon($request->all(),$checkUser);
+		$request['user_id'] = $checkUser->user_id;
+		$EventParticipantStatus = $this->actionServices->saveEventParticipantStatus($request->all());
 		if(!$postParticipants){
 			return $this->services->response(400,"Jaringan bermasalah!");
 		}
 		return $this->services->response(200,"Pendaftaran berhasil!", $request->all());
+	}
+	public function ResetRegisterHackathon(Request $request){
+		$rules = [
+			'event_id' => "required|integer"
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+		}
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+		
+		$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
+		return $this->services->response(200,"Pendaftaran berhasil direset!", $request->all());
 	}
 	public function HackathonUploadFile(Request $request){
 
@@ -200,8 +259,8 @@ class EventController extends Controller
 
 		$rules = [
 			'event_id' => "required|integer",
-			'type' => "required|string|in:1,2,3",
-			'file' => "required|mimes:jpg,png,jpeg|max:50240",
+			'type' => "required|in:1,2,3",
+			'file' => "required|mimes:jpg,png,jpeg|max:5120",
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
@@ -213,14 +272,17 @@ class EventController extends Controller
 		if($request->type =="1"){
 			$imgname = "Hackathon_IDCARD_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
 			$postData['idcard_file'] = $imgname;
+			$message = "KTP";
 		}
 		if($request->type =="2"){
 			$imgname = "Hackathon_STUDENTCARD_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
 			$postData['studentcard_file'] = $imgname;
+			$message = "Kartu Mahasiswa";
 		}
 		if($request->type =="3"){
 			$imgname = "Hackathon_STUDENTTRANSCRIPT_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
 			$postData['transcripts_file'] = $imgname;
+			$message = "Transkrip Nilai";
 		}
 		$destinationPath = public_path('/uploads/event/hackathon/');
 		// try {
@@ -237,7 +299,7 @@ class EventController extends Controller
 		if(!$upload){
 			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
 		} 
-		return $this->services->response(200,"File berhasil diunggah",$request->all());
+		return $this->services->response(200,"File berhasil ".$message." diunggah",$request->all());
 	}
 	public function deleteHackathonData($user_id,$event_id){
 		$checkData = $this->actionServices->getDataHackathonData($user_id,$event_id);
