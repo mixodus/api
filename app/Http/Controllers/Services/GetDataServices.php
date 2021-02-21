@@ -628,7 +628,7 @@ class GetDataServices extends BaseController
 		return $data;
 	}
 	public function checkEventScheduleStatus($id,$user_id){
-		return EventParticipantStatusModel::select('*')->where('employee_id',$user_id)->where('schedule_id',$id)->first();
+		return EventParticipantStatusModel::select('*')->where('employee_id',$user_id)->where('schedule_id',$id)->where('status','Failed')->first();
 	}
 	public function getNextSchedule($id){
 		return EventScheduleModel::select('*')->where('schedule_id','>',$id)->first();

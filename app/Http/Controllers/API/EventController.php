@@ -158,21 +158,15 @@ class EventController extends Controller
 					$endDate = date('Y-m-d', strtotime($row['schedule_end']));
 					$row['status']  = "Pending";
 					$getStatus =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
+				
 					if (($today >= $stratDate) && ($today <= $endDate)){
 						$row['is_current_state'] = true;
 					}else{
 						$row['is_current_state'] = false;
 					}
-
 					
 					if($getStatus!=null){
-						$row['status']  = $getStatus->status;
-						if($getStatus->status=="Failed"){
-							$row['is_current_state'] = true;
-						}else{
-							$row['is_current_state'] = false;
-
-						}
+						$row['is_current_state'] = true;
 					}
 					
 					$getNextSchedule =  $this->getDataServices->getNextSchedule($row['schedule_id']);
