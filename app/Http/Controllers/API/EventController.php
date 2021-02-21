@@ -151,7 +151,7 @@ class EventController extends Controller
 				$key['eventSchedules'] = collect($key['eventSchedules'])->map(function($row) use($checkUser){
 					$getStatus =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
 					
-					$row['status']  = "Pending";
+					$row['status']  = "Pending"; 
 					if($getStatus!=null){
 						$row['status']  = $getStatus->status;
 					}

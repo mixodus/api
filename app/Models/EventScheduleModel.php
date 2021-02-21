@@ -18,12 +18,14 @@ class EventScheduleModel extends Model
 		'schedule_start',
 		'schedule_end',
 		'icon',
+		'icon_failed',
+		'icon_pending',
 		'name',
 		'desc',
 		'link',
 		'additional_information'
 	];
-	protected $hidden = ['created_at','updated_at','deleted_at'];
+	protected $hidden = ['created_at','updated_at','deleted_at','icon_failed','icon_pending'];
 	
 	public function participants() {
 		return $this->belongsTo('App\Models\EventModel', 'event_id','event_id');
