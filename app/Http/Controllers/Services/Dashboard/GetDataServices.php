@@ -20,6 +20,7 @@ use App\Models\EmployeeFriendshipModel;
 use App\Models\EventModel;
 use App\Models\EventScheduleModel;
 use App\Models\EventParticipantStatusModel;
+use App\Models\EventParticipantModel;
 use App\Models\ChallengeModel;
 use App\Models\ChallengeParticipants;
 use App\Models\ChallengeQuiz;
@@ -467,6 +468,18 @@ class GetDataServices extends BaseController
 		});
 
 		return $data;
+	}
+	
+	public function getEventParticipant($id){
+		$data = EventParticipantModel::select('*')->with('scheduleStatus')->where('event_id',$id)->get();
+		$data = $data->map(function($key){
+			$key['idcard_file'] = url('/')."/uploads/event/hackathon/".$key['idcard_file'];
+			$key['studentcard_file'] = url('/')."/uploads/event/hackathon/".$key['studentcard_file'];
+			$key['transcripts_file'] = url('/')."/uploads/event/hackathon/".$key['transcripts_file'];
+			return $key;
+	});
+
+	return $data;
 	}
 	public function getHackTownEvent(){
 

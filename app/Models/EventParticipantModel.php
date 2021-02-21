@@ -35,4 +35,11 @@ class EventParticipantModel extends Model
     public function event() {
 		return $this->belongsTo('App\Models\EventModel', 'event_id','event_id');
 	}
+	public function schedules() {
+		return $this->hasMany('App\Models\EventModel', 'event_id','event_id');
+	}
+	
+	public function scheduleStatus() {
+		return $this->hasMany('App\Models\EventParticipantStatusModel', 'employee_id','employee_id')->with('schedule');
+	}
 }

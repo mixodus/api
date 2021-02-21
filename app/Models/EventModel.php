@@ -26,9 +26,11 @@ class EventModel extends Model
 		'event_speaker',
 		'event_requirement',
 		'event_additional_information',
-		'event_prize'
+		'event_prize',
+		'event_terms_conditions',
+		'event_label_terms_conditions'
 	];
-	protected $hidden = ['created_at','updated_at'];
+	protected $hidden = ['created_at','updated_at','event_terms_conditions','event_label_terms_conditions'];
 	
 	public function participants() {
 		return $this->hasMany('App\Models\EventParticipantModel', 'event_id','event_id');

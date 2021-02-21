@@ -396,13 +396,13 @@ class ActionServices extends BaseController
 	}
 	public function saveEventParticipantStatus($data){
 		$schedule =  EventScheduleModel::where('event_id',$data['event_id'])->get();
-		if (!$schedule->isEmpty()) {
+		if (!$eventDetail->isEmpty()) {
 			foreach($schedule as $key){
 				EventParticipantStatusModel::where('employee_id',$data['user_id'])->where('schedule_id',$key['schedule_id'])->delete();
 
 				$postParam = array(
 					'schedule_id' => $key['schedule_id'],
-					'employee_id' => $data['user_id'],
+					'user_id' => $data['user_id'],
 					'status' => 'Pending'
 				);	
 				 EventParticipantStatusModel::create($postParam);

@@ -359,6 +359,7 @@ class EventController extends Controller
                 }
             }
             $postData['event_prize'] = json_encode($dataReward);
+            $postData['event_terms_coditions'] = $request->event_terms_coditions;
         }
         $saved = EventModel::where('event_id', $request->byEventid)->update($postData); 
         if(!$saved){
@@ -456,5 +457,47 @@ class EventController extends Controller
 
         $action = $this->actionServices->getactionrole($checkUser->role_id, 'hackathon-view');
         return $this->actionServices->response(200,"Hackathon Detail",$getEvent, $action);
+    }
+    public function hacktownParticipant(Request $request)
+    {
+        $checkUser = $this->getDataServices->getAdminbyToken($request);
+
+        if (!$checkUser) {
+            return $this->actionServices->response(406, "User doesnt exist!");
+        }
+        $rules = [
+            'event_id' => "required|integer",
+        ];
+        
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+        }
+        $getEvent = $this->getDataServices->getEventParticipant($request->event_id);
+
+        return $this->actionServices->response(200,"Hackathon Participant",$getEvent);
+    }
+    public function hacktownParticipantUpdate(Request $request)
+    {
+        $checkUser = $this->getDataServices->getAdminbyToken($request);
+        if (!$checkUser) {
+            return $this->actionServices->response(406, "User doesnt exist!");
+        }
+        $rules = [
+            'event_id' => "required|integer",
+            'employee_id' => "required|integer",
+            'schedule_id' => "required|integer",
+            'status' => "required|in:Pending,Failed,Passed",
+        ];
+        
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+        }
+        $action = $this->actionServices->hacktownParticipantUpdate($request->all());
+
+        return $this->actionServices->response(200,"Status updated",array());
     }
 }
