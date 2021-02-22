@@ -479,6 +479,7 @@ class GetDataServices extends BaseController
 					->where('xin_events.event_type_id',4)
 					->first();
 		if($data){
+			$data->makeVisible(['event_terms_conditions','event_label_terms_conditions']);
 			$data->event_banner_url = url('/')."/uploads/event/".$data->event_banner;
 		}
 		return $data;
