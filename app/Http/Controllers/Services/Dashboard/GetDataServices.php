@@ -482,7 +482,6 @@ class GetDataServices extends BaseController
 	return $data;
 	}
 	public function getHackTownEvent(){
-
 		$data = EventModel::select('*')->with('eventType','eventSchedules')
 					->where('xin_events.event_type_id',4)
 					->first();
@@ -505,8 +504,7 @@ class GetDataServices extends BaseController
 					$dataschedule[] = $array;
 				}
 			}
-			$data->eventSchedules = $dataschedule;
-			
+			$data->eventSchedules = $dataschedule;	
 		}
 		return $data;
 	}
