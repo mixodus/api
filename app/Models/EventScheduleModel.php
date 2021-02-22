@@ -18,12 +18,14 @@ class EventScheduleModel extends Model
 		'schedule_start',
 		'schedule_end',
 		'icon',
+		'icon_failed',
+		'icon_pending',
 		'name',
 		'desc',
 		'link',
 		'additional_information'
 	];
-	protected $hidden = ['created_at','updated_at','deleted_at'];
+	protected $hidden = ['created_at','updated_at','deleted_at','icon_failed','icon_pending'];
 	
 	public function participants() {
 		return $this->belongsTo('App\Models\EventModel', 'event_id','event_id');
@@ -33,7 +35,7 @@ class EventScheduleModel extends Model
 		return $this->hasMany('App\Models\Dashboard\EventTypeModel', 'event_type_id','event_type_id');
 	}
 	public function scheduleStatus() {
-		return $this->belongsTo('App\Models\EventParticipantStatusModel', 'schedule_id','schedule_id');
+		return $this->hasMany('App\Models\EventParticipantStatusModel', 'schedule_id','schedule_id');
 	}
 	public function participant() {
 		return $this->belongsTo('App\Models\EventParticipantModel', 'event_id','event_id');

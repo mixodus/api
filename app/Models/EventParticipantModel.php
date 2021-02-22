@@ -40,6 +40,6 @@ class EventParticipantModel extends Model
 	}
 	
 	public function scheduleStatus() {
-		return $this->hasMany('App\Models\EventParticipantStatusModel', 'employee_id','employee_id');
+		return $this->hasMany('App\Models\EventParticipantStatusModel', 'employee_id','employee_id')->with('schedule');
 	}
 }
