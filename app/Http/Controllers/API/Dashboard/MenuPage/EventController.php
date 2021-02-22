@@ -227,13 +227,12 @@ class EventController extends Controller
             $file = $request->file('event_banner');
             $name_file = $file->getClientOriginalName();  
         }
-        $folder = public_path().'/uploads/event/';
+        
         if($request->event_banner != '' && $name_file != $eventData->event_banner){
-            
-
+            $folder = public_path().'/uploads/event/';
             if($eventData->event_banner != '' && $eventData->event_banner != null){
                 $file_old = $folder.$eventData->event_banner;
-                unlink($file_old);
+                // unlink($file_old);
             }  
             $extension = $file->getClientOriginalExtension();
             $filename = "event_".round(microtime(true)).'.'.$extension;
@@ -241,56 +240,133 @@ class EventController extends Controller
 
             $postData['event_banner'] = $filename;
         }
+        
         if($request['event_type_id'] == 4){
             if(!empty($request['is_road_map'])){
-                EventScheduleModel::where('event_id',$request->byEventid)->delete();
+                // EventScheduleModel::where('event_id',$request->byEventid)->delete();
+                
+                // $images = $request->icon_schedule_default;
+                // foreach ($images as $index => $key) {
+                //     $image_name       = $key;
+                //     if(file_exists($key)) {
+                //         $folder = public_path().'/uploads/event/hackathon/Passed/';
+                //         if ($key->getClientOriginalName() != '') {
+                //             $image_name = strtolower(explode(" ", $request->name[$index])[0]).'_icon_schedule.png';
+                //             $key->move($folder, $image_name);
+                //         }
+                //     }
+                // }
+                $icon_schedule_default = $request->icon_schedule_default;
+                for ($i=0; $i < count($icon_schedule_default); $i++) { 
+                    if(file_exists($request->icon_schedule_default[$i])) {
+                        if ($request->icon_schedule_default[$i]->getClientOriginalName() != '') {
+                            $image_name = 'default_schedule'.time().'-'.$i  .'.'.$request->icon_schedule_default[$i]->getClientOriginalExtension();
+                            $request->icon_schedule_default[$i]->move('uploads/event/hackathon/Passed/', $image_name);
+                            $icon_default[] = $image_name;
+                        }else{
+                            $icon_default[] = $request->icon_schedule_default[$i];
+                        }
+                    }else{
+                        $icon_default[] = $request->icon_schedule_default[$i];
+                    }
+                } 
+                $icon_schedule_failed = $request->icon_schedule_failed;
+                for ($i=0; $i < count($icon_schedule_failed); $i++) { 
+                    if(file_exists($request->icon_schedule_failed[$i])) {
+                        if ($request->icon_schedule_failed[$i]->getClientOriginalName() != '') {
+                            $image_name = 'failed_schedule'.time().'-'.$i  .'.'.$request->icon_schedule_failed[$i]->getClientOriginalExtension();
+                            $request->icon_schedule_failed[$i]->move('uploads/event/hackathon/Failed/', $image_name);
+                            $icon_failed[] = $image_name;
+                        }else{
+                            $icon_failed[] = $request->icon_schedule_failed[$i];
+                        }
+                    }else{
+                        $icon_failed[] = $request->icon_schedule_failed[$i];
+                    }
+                }
+                $icon_schedule_pending = $request->icon_schedule_pending;
+                for ($i=0; $i < count($icon_schedule_pending); $i++) { 
+                    // $icon_pending[] = $request-> [$i];
+                    if(file_exists($request->icon_schedule_pending[$i])) {
+                        if ($request->icon_schedule_pending[$i]->getClientOriginalName() != '') {
+                            $image_name = 'pending_schedule'.time().'-'.$i  .'.'.$request->icon_schedule_pending[$i]->getClientOriginalExtension();
+                            $icon_pending[] = $image_name;
+                        }else{
+                            $icon_pending[] = $request->icon_schedule_pending[$i];
+                        }
+                    }else{
+                        $icon_pending[] = $request->icon_schedule_pending[$i];
+                    }
+                }
+                $reward_icon = $request->reward_icon;
+                for ($i=0; $i < count($reward_icon); $i++) { 
+                    $image_name = $request->reward_icon[$i];
+                    if(file_exists($request->reward_icon[$i])) {
+                        if ($request->reward_icon[$i]->getClientOriginalName() != '') {
+                            $image_name = '0icon_reward'.time().'-'.$i  .'.'.$request->reward_icon[$i]->getClientOriginalExtension();
+                            $request->reward_icon[$i]->move('uploads/event/hackathon/', $image_name);
+                        }
+                    }
+                    $icon[]        = $image_name;
+                }
+                // $images = $request->icon_schedule_failed;
+                // foreach ($images as $index => $key) {
+                //     $image_name       = $key;
+                //     if(file_exists($key)) {
+                //         $folder = public_path().'/uploads/event/hackathon/Failed/';
+                //         if ($key->getClientOriginalName() != '') {
+                //             $image_name = strtolower(explode(" ", $request->name[$index])[0]).'_icon_schedule.png';
+                //             $key->move($folder, $image_name);
+                //         }
+                //     }
+                // }
+                // $images = $request->icon_schedule_pending;
+                // foreach ($images as $index => $key) {
+                //     $image_name       = $key;
+                //     if(file_exists($key)) {
+                //         $folder = public_path().'/uploads/event/hackathon/Pending/';
+                //         if ($key->getClientOriginalName() != '') {
+                //             $image_name = strtolower(explode(" ", $request->name[$index])[0]).'_icon_schedule.png';
+                //             $key->move($folder, $image_name);
+                //         }
+                //     }
+                // }
                 for ($i=0; $i < count($request->name); $i++) { 
                     if($request['name'][$i]!=null){
                         $createSchedule['event_id'] = $request->byEventid;
                         $createSchedule['schedule_start'] = date("Y-m-d H:i:s", strtotime($request['schedule_start'][$i]));
                         $createSchedule['schedule_end'] =  date("Y-m-d H:i:s", strtotime($request['schedule_end'][$i]));
-                        $createSchedule['icon'] = "";
+                        $createSchedule['icon'] = $icon_default[$i];
+                        $createSchedule['icon_failed'] = $icon_failed[$i];
+                        $createSchedule['icon_pending'] = $icon_pending[$i];
                         $createSchedule['name'] = $request['name'][$i];
                         $createSchedule['desc'] = $request['desc'][$i];
                         $createSchedule['link'] = $request['link'][$i];
                         $createSchedule['additional_information'] = $request['additional_information'][$i];
-                        $saved2 = EventScheduleModel::create($createSchedule);
-                    }
-                }
-            }
-                // $images = $request->file('icon');
-                // foreach ($images as $index => $key) {
-                //     if($request->file('icon')) {
-                //         if ($key->getClientOriginalName() != '') {
-                //             $image = '0icon_reward'.time().'-'.$index.'.'.$key->getClientOriginalExtension();
-                //             $key->move($folder, $image);
-                //             $icon['icon'][]        = $image;
-                //         }
-                //     }else{
-                //         $icon['icon'][]        = $key;
-                //     }
-                // }
-            $reward = json_decode($request->event_prize);
-            $dataReward= array();
-            if(count($reward)){
-                for ($i=0; $i < count($reward); $i++) { 
-                    if($reward[$i]->name!=null){
-                        $rewards['name'] = $reward[$i]->name;
-                        $rewards['reward_value'] = $reward[$i]->reward_value;
-                        $rewards['reward_icon'] = $reward[$i]->reward_icon;
-                        $dataReward[]=$rewards;
+                        $saved2 = EventScheduleModel::where('schedule_id',$request['schedule_id'][$i])->update($createSchedule);
                     }
                 }
             }
             
+            if(count($request->reward_name)){
+                for ($i=0; $i < count($request->reward_name); $i++) { 
+                    if($request->reward_name[$i]!=null){
+                        $rewards['reward_name'] = $request->reward_name[$i];
+                        $rewards['reward_value'] = $request->reward_value[$i];
+                        $rewards['reward_icon'] = $icon[$i];
+                        $dataReward[]=$rewards;
+                    }
+                }
+            }
             $postData['event_prize'] = json_encode($dataReward);
+            $postData['event_terms_coditions'] = $request->event_terms_coditions;
         }
         $saved = EventModel::where('event_id', $request->byEventid)->update($postData); 
         if(!$saved){
 			return $this->services->response(503,"Server Error!");
         }
         
-        return $this->services->response(200,"Create news success",$postData);
+        return $this->services->response(200,"Update event success",$saved);
     }
 
     /**
@@ -401,5 +477,27 @@ class EventController extends Controller
         $getEvent = $this->getDataServices->getEventParticipant($request->event_id);
 
         return $this->actionServices->response(200,"Hackathon Participant",$getEvent);
+    }
+    public function hacktownParticipantUpdate(Request $request)
+    {
+        $checkUser = $this->getDataServices->getAdminbyToken($request);
+        if (!$checkUser) {
+            return $this->actionServices->response(406, "User doesnt exist!");
+        }
+        $rules = [
+            'event_id' => "required|integer",
+            'employee_id' => "required|integer",
+            'schedule_id' => "required|integer",
+            'status' => "required|in:Pending,Failed,Passed",
+        ];
+        
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+        }
+        $action = $this->actionServices->hacktownParticipantUpdate($request->all());
+
+        return $this->actionServices->response(200,"Status updated",array());
     }
 }

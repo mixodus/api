@@ -471,7 +471,15 @@ class GetDataServices extends BaseController
 	}
 	
 	public function getEventParticipant($id){
-		return EventParticipantModel::select('*')->with('scheduleStatus')->where('event_id',$id)->get();
+		$data = EventParticipantModel::select('*')->with('scheduleStatus')->where('event_id',$id)->get();
+		$data = $data->map(function($key){
+			$key['idcard_file'] = url('/')."/uploads/event/hackathon/".$key['idcard_file'];
+			$key['studentcard_file'] = url('/')."/uploads/event/hackathon/".$key['studentcard_file'];
+			$key['transcripts_file'] = url('/')."/uploads/event/hackathon/".$key['transcripts_file'];
+			return $key;
+	});
+
+	return $data;
 	}
 	public function getHackTownEvent(){
 
@@ -480,6 +488,24 @@ class GetDataServices extends BaseController
 					->first();
 		if($data){
 			$data->event_banner_url = url('/')."/uploads/event/".$data->event_banner;
+			$data->event_prize = json_decode($data->event_prize,true);
+			$data->event_prize  = collect($data->event_prize)->map(function($key) use($data){
+				$key['reward_icon_url'] = url('/')."/uploads/event/hackathon/".$key['reward_icon'];
+				return $key;
+			});
+		$dataschedule= array();
+			if(count($data->eventSchedules)>0){
+				$data->eventSchedules->makeVisible(['icon_failed','icon_pending']);
+				foreach($data->eventSchedules as $key){
+					$array = $key;
+					$array['icon_schedule_default']  = url('/')."/uploads/event/hackathon/Passed/".$key['icon'];
+					$array['icon_schedule_failed']  = url('/')."/uploads/event/hackathon/Failed/".$key['icon_pending'];
+					$array['icon_schedule_pending']  = url('/')."/uploads/event/hackathon/Pending/".$key['icon_failed'];
+					$dataschedule[] = $array;
+				}
+			}
+			$data->eventSchedules = $dataschedule;
+			
 		}
 		return $data;
 	}

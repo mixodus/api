@@ -10,12 +10,20 @@ use App\Models\RolesModel;
 use App\Models\JobsModel;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\ActivitiesPointModel;
+use App\Models\EventModel;
+use App\Models\EventScheduleModel;
+use App\Models\EventParticipantStatusModel;
+use App\Models\EventParticipantModel;
 
 class ActionServices extends Controller
 {
     public function __construct(){
 		$this->services = new GeneralServices();
     }
+    public function hacktownParticipantUpdate($data){
+        $updateData['status']= $data['status'];
+		return EventParticipantStatusModel::where('schedule_id',$data['schedule_id'])->where('employee_id',$data['employee_id'])->update($updateData);
+	}
     
     public function getactionrole($role_id, $name_action, $data=null)
     {
