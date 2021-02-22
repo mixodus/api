@@ -138,7 +138,7 @@ class EventController extends Controller
 				'user_id' => 0
 			];
 		}
-		$getEvent = EventModel::where('event_type_id', '4')->with(["eventSchedules","participants" => function($q) use($checkUser){
+		$getEvent = EventModel::where('event_type_id','=', '4')->with(["eventSchedules","participants" => function($q) use($checkUser){
 				$q->where('employee_id', '=', $checkUser->user_id);
 			}])->get();
 			$getEvent = $getEvent->map(function($key) use($getEvent,$checkUser){
