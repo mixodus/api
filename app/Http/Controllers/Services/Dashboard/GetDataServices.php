@@ -490,7 +490,7 @@ class GetDataServices extends BaseController
 			$data->event_banner_url = url('/')."/uploads/event/".$data->event_banner;
 			$data->event_prize = json_decode($data->event_prize,true);
 			$data->event_prize  = collect($data->event_prize)->map(function($key) use($data){
-				$key['reward_icon_url'] = url('/')."/uploads/event/hackathon/".$key['reward_icon'];
+				$key['reward_icon_url'] = url('/')."/uploads/event/".$key['reward_icon'];
 				return $key;
 			});
 		$dataschedule= array();

@@ -304,7 +304,7 @@ class EventController extends Controller
                     if(file_exists($request->reward_icon[$i])) {
                         if ($request->reward_icon[$i]->getClientOriginalName() != '') {
                             $image_name = '0icon_reward'.time().'-'.$i  .'.'.$request->reward_icon[$i]->getClientOriginalExtension();
-                            $request->reward_icon[$i]->move('uploads/event/hackathon/', $image_name);
+                            $request->reward_icon[$i]->move('uploads/event/', $image_name);
                         }
                     }
                     $icon[]        = $image_name;
