@@ -351,7 +351,7 @@ class EventController extends Controller
             if(count($request->reward_name)){
                 for ($i=0; $i < count($request->reward_name); $i++) { 
                     if($request->reward_name[$i]!=null){
-                        $rewards['reward_name'] = $request->reward_name[$i];
+                        $rewards['name'] = $request->reward_name[$i];
                         $rewards['reward_value'] = $request->reward_value[$i];
                         $rewards['reward_icon'] = $icon[$i];
                         $dataReward[]=$rewards;
