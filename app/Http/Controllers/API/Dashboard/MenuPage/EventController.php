@@ -496,6 +496,12 @@ class EventController extends Controller
 		if(!empty($checkValidate)){
 			return $checkValidate;
         }
+        
+        $validateDataStatus = $this->getDataServices->validateDataStatusEvent($request->all());
+        if (!empty($validateDataStatus)) {
+            return $this->actionServices->response(400,"You should change the failed data to change the next step status",array());
+        }
+
         $action = $this->actionServices->hacktownParticipantUpdate($request->all());
 
         return $this->actionServices->response(200,"Status updated",array());

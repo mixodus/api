@@ -432,6 +432,9 @@ class GetDataServices extends BaseController
 					->where('xin_events_participant.status','!=' ,"Waiting Approval" )
 					->count();
 	}
+	public function validateDataStatusEvent($data){
+		return EventParticipantStatusModel::where('schedule_id','<',$data['schedule_id'])->where('employee_id',$data['employee_id'])->where('status','Failed')->get();
+	}
 	public function getEventDetail($id){
 		$data = EventModel::select('*')->with('participants'
 					// ["participants" => function($q) use($user_id){
