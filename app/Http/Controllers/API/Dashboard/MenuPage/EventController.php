@@ -498,7 +498,7 @@ class EventController extends Controller
         }
         
         $validateDataStatus = $this->getDataServices->validateDataStatusEvent($request->all());
-        if (!empty($validateDataStatus)) {
+        if (!$validateDataStatus->isEmpty()) {
             return $this->actionServices->response(400,"You should change the failed data to change the next step status",array());
         }
 
