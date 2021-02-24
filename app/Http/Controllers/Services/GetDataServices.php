@@ -630,6 +630,30 @@ class GetDataServices extends BaseController
 	public function checkEventScheduleStatus($id,$user_id){
 		return EventParticipantStatusModel::select('*')->where('employee_id',$user_id)->where('schedule_id',$id)->where('status','Failed')->first();
 	}
+	public function checkEventPassedScheduleStatus($id,$user_id){
+		return EventParticipantStatusModel::select('*')->where('employee_id',$user_id)->where('schedule_id',$id)->where('status','Passed')->first();
+	}
+	public function getFailedStatusEvent($event_id,$user_id){
+		return EventParticipantStatusModel::select('*')
+		->LeftJoin('xin_event_schedule', 'xin_event_schedule.schedule_id', '=', 'xin_event_participant_status.schedule_id')
+		->where('xin_event_participant_status.employee_id',$user_id)->where('xin_event_schedule.event_id',$event_id)->where('status','Failed')->first();
+	}
+	public function getAllStatusEvent($event_id,$user_id){
+		return EventParticipantStatusModel::select('*')
+		->LeftJoin('xin_event_schedule', 'xin_event_schedule.schedule_id', '=', 'xin_event_participant_status.schedule_id')
+		->where('xin_event_participant_status.employee_id',$user_id)->where('xin_event_schedule.event_id',$event_id)
+		->where('status','!=','Pending')->get();
+	}
+	public function checkEventScheduleStatusState($id,$user_id){
+		return EventParticipantStatusModel::select('*')->where('employee_id',$user_id)->where('schedule_id',$id)->first();
+	}
+	public function geteventCurrentState($id){
+		$today = date('Y-m-d');
+		return EventScheduleModel::select('*')->where('schedule_id',$id)
+			->whereDate('schedule_start','<=', $today)
+            ->whereDate('schedule_end','>=', $today)
+			->first();
+	}
 	public function getNextSchedule($id){
 		return EventScheduleModel::select('*')->where('schedule_id','>',$id)->first();
 	}
@@ -1077,12 +1101,25 @@ class GetDataServices extends BaseController
 			'Des'
 		);
 		$pecahkan = explode('-', $tanggal);
-		
-		// variabel pecahkan 0 = tanggal
-		// variabel pecahkan 1 = bulan
-		// variabel pecahkan 2 = tahun
-	 
 		return $pecahkan[2] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[0];
+	}
+	public function tgl_indov2($tanggal){
+		$bulan = array (
+			1 =>   'Januari',
+			'Febuari',
+			'Maret',
+			'April',
+			'Mei',
+			'Juni',
+			'Juli',
+			'Agustus',
+			'Septtember',
+			'Oktober',
+			'November',
+			'Desember'
+		);
+		$pecahkan = explode('-', $tanggal);
+		return $pecahkan[0] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[2];
 	}
 	
 //================================Dashboard=======================================//

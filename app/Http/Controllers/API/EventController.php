@@ -123,11 +123,12 @@ class EventController extends Controller
 	// ================================================
 	public function HackathonSemester(){
 		$data['format1'] = array(1,2,3,4,5,6,7,8);
-		for ($i=1; $i <= 8; $i++) { 
-			$semester['semester'] = $i;
-			$array[] = $semester;
-		}
-		$data['format2'] = $array;
+		// for ($i=1; $i <= 8; $i++) { 
+		// 	$semester['semester'] = $i;
+		// 	$array[] = $semester;
+		// }
+		// $data['format2'] = $array;
+		$data['upload_icon_url'] = url('/')."/uploads/event/hackathon/general/upload.png";
 		return $this->services->response(200,"Semester Data",$data);
 	}
 	// Hackathon
@@ -151,19 +152,35 @@ class EventController extends Controller
 					return $raw;
 				});
 				$key['eventSchedules'] = collect($key['eventSchedules'])->map(function($row) use($checkUser){
+					$row['schedule_start'] = $this->getDataServices->tgl_indov2(date("d-m-Y", strtotime($row['schedule_start'])));
 					$today = date('Y-m-d');
 					$today=date('Y-m-d', strtotime($today));
 
 					$stratDate = date('Y-m-d', strtotime($row['schedule_start']));
 					$endDate = date('Y-m-d', strtotime($row['schedule_end']));
+					$getStatusState =  $this->getDataServices->checkEventScheduleStatusState($row['schedule_id'],$checkUser->user_id);
+					
 					$row['status']  = "Pending";
+					if($getStatusState!=null){
+						$row['status']  = $getStatusState->status;
+					}
 					$getStatus =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
-				
-					if (($today >= $stratDate) && ($today <= $endDate)){
+					$getPassedStatus =  $this->getDataServices->checkEventPassedScheduleStatus($row['schedule_id'],$checkUser->user_id);
+					$getCurrentState =  $this->getDataServices->geteventCurrentState($row['schedule_id']);
+					$getFailedState =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
+					
+					$row['icon_status_url']  = url('/')."/uploads/event/hackathon/".$row['status']."/".$row['icon'];
+					if($getCurrentState!=null){
 						$row['is_current_state'] = true;
+						$row['icon_status_url']  = url('/')."/uploads/event/hackathon/Passed/".$row['icon'];
 					}else{
 						$row['is_current_state'] = false;
 					}
+					// if (($today >= $stratDate) && ($today <= $endDate)){
+					// 	$row['is_current_state'] = true;
+					// }else{
+					// 	$row['is_current_state'] = false;
+					// }
 					
 					if($getStatus!=null){
 						$row['is_current_state'] = true;
@@ -174,17 +191,22 @@ class EventController extends Controller
 					$row['next_schedule_date'] = "";
 					if($getNextSchedule!=null){
 						$row['next_schedule_message'] = "Lorem Ipsum next schedule ".$getNextSchedule->name;
-						$row['next_schedule_date'] = $getNextSchedule->schedule_start;
+						$row['next_schedule_date'] = $this->getDataServices->tgl_indov2(date("d-m-Y", strtotime($getNextSchedule->schedule_start)));
 					}
 					
 					$row['icon_url']  = url('/')."/uploads/event/hackathon/Passed/".$row['icon'];
-					$row['icon_status_url']  = url('/')."/uploads/event/hackathon/".$row['status']."/".$row['icon'];
 					return $row;
 				});
-				$failedData = array_search('Failed', array_column($key['eventSchedules']->toArray(), 'status'));
+				// $failedData = array_search('Failed', array_column($key['eventSchedules']->toArray(), 'status'));
+				$failedData = $this->getDataServices->getFailedStatusEvent($getEvent[0]['event_id'],$checkUser->user_id);
+				$getAllState =  $this->getDataServices->getAllStatusEvent($getEvent[0]['event_id'],$checkUser->user_id);
+				if ($getAllState->isEmpty()) {
+					$key['eventSchedules'][0]['is_current_state'] = true;
+				}
+					
 				$key['failed_message'] = "";
 				if($failedData){
-					$key['current_state'] = $key['eventSchedules'][$failedData];
+					$key['current_state'] = $failedData;
 					$key['failed_message'] = "Maaf, Anda tidak lolos ke tahap berikutnya karena belum memenuhi kualifikasi yang tersedia. Terima kasih telah berpartisipasi.";
 				}else{
 
@@ -194,6 +216,9 @@ class EventController extends Controller
 				$key['event_category'] = "Hackathon";
 				$key->event_ongoing = true;
 				$key->event_joinable = true;
+				
+				$key->event_coming_soon = false;
+				$key->event_coming_soon_message = "Coming Soon";
 				if(count($key['participants'])>0){
 					$key->event_joinable = false;
 					if($key['participants'][0]['idcard_file'] == null || $key['participants'][0]['studentcard_file']==null || $key['participants'][0]['transcripts_file']==null)
@@ -316,4 +341,12 @@ class EventController extends Controller
 		}
 		$deletedata = $this->actionServices->deleteHackathonData($user_id,$event_id);
 	}
+	public function searcharray($value, $key, $array) {
+		foreach ($array as $k => $val) {
+			if ($val[$key] == $value) {
+				return $value;
+			}
+		}
+		return null;
+	 }
 }

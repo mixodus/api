@@ -359,7 +359,7 @@ class EventController extends Controller
                 }
             }
             $postData['event_prize'] = json_encode($dataReward);
-            $postData['event_terms_coditions'] = $request->event_terms_coditions;
+            $postData['event_terms_conditions'] = $request->event_terms_coditions;
         }
         $saved = EventModel::where('event_id', $request->byEventid)->update($postData); 
         if(!$saved){

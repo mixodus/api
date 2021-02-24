@@ -165,7 +165,7 @@ class AdminController extends Controller
         }
 
         $rules = [
-            'first_name' => "required|string|max:10|min:3",
+            'first_name' => "required|string|min:3",
             'company_name' => 'required',
             'role_id' => 'required',
             'is_active' => 'required|integer|max:1'
