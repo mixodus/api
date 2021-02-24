@@ -336,9 +336,9 @@ class EventController extends Controller
                         $createSchedule['event_id'] = $request->byEventid;
                         $createSchedule['schedule_start'] = date("Y-m-d H:i:s", strtotime($request['schedule_start'][$i]));
                         $createSchedule['schedule_end'] =  date("Y-m-d H:i:s", strtotime($request['schedule_end'][$i]));
-                        $createSchedule['icon'] = $icon_default[$i];
-                        $createSchedule['icon_failed'] = $icon_failed[$i];
-                        $createSchedule['icon_pending'] = $icon_pending[$i];
+                        $createSchedule['icon'] = $request->icon_schedule_default[$i];
+                        $createSchedule['icon_failed'] = $request->icon_schedule_failed[$i];
+                        $createSchedule['icon_pending'] = $request->icon_schedule_pending[$i];
                         $createSchedule['name'] = $request['name'][$i];
                         $createSchedule['desc'] = $request['desc'][$i];
                         $createSchedule['link'] = $request['link'][$i];
@@ -353,7 +353,7 @@ class EventController extends Controller
                     if($request->reward_name[$i]!=null){
                         $rewards['name'] = $request->reward_name[$i];
                         $rewards['reward_value'] = $request->reward_value[$i];
-                        $rewards['reward_icon'] = $icon[$i];
+                        $rewards['reward_icon'] = $request->reward_icon[$i];
                         $dataReward[]=$rewards;
                     }
                 }
@@ -496,6 +496,12 @@ class EventController extends Controller
 		if(!empty($checkValidate)){
 			return $checkValidate;
         }
+        
+        $validateDataStatus = $this->getDataServices->validateDataStatusEvent($request->all());
+        if (!empty($validateDataStatus)) {
+            return $this->actionServices->response(400,"You should change the failed data to change the next step status",array());
+        }
+
         $action = $this->actionServices->hacktownParticipantUpdate($request->all());
 
         return $this->actionServices->response(200,"Status updated",array());
