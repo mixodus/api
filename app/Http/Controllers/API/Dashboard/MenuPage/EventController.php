@@ -304,7 +304,7 @@ class EventController extends Controller
                     if(file_exists($request->reward_icon[$i])) {
                         if ($request->reward_icon[$i]->getClientOriginalName() != '') {
                             $image_name = '0icon_reward'.time().'-'.$i  .'.'.$request->reward_icon[$i]->getClientOriginalExtension();
-                            $request->reward_icon[$i]->move('uploads/event/hackathon/', $image_name);
+                            $request->reward_icon[$i]->move('uploads/event/', $image_name);
                         }
                     }
                     $icon[]        = $image_name;
@@ -359,7 +359,7 @@ class EventController extends Controller
                 }
             }
             $postData['event_prize'] = json_encode($dataReward);
-            $postData['event_terms_coditions'] = $request->event_terms_coditions;
+            $postData['event_terms_conditions'] = $request->event_terms_coditions;
         }
         $saved = EventModel::where('event_id', $request->byEventid)->update($postData); 
         if(!$saved){

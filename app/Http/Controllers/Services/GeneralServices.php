@@ -25,6 +25,12 @@ class GeneralServices extends BaseController
 			return response()->json($response, 406);
 		}
 	}
+	public function validate2($request, $rules){
+		$validator = Validator::make($request,$rules);
+		if ($validator->fails()) {
+			return $validator->errors()->first();
+		}
+	}
 	public function generateToken($dataUser,$key = false)
 	{
 		if (!$key) {

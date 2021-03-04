@@ -123,11 +123,12 @@ class EventController extends Controller
 	// ================================================
 	public function HackathonSemester(){
 		$data['format1'] = array(1,2,3,4,5,6,7,8);
-		for ($i=1; $i <= 8; $i++) { 
-			$semester['semester'] = $i;
-			$array[] = $semester;
-		}
-		$data['format2'] = $array;
+		// for ($i=1; $i <= 8; $i++) { 
+		// 	$semester['semester'] = $i;
+		// 	$array[] = $semester;
+		// }
+		// $data['format2'] = $array;
+		$data['upload_icon_url'] = url('/')."/uploads/event/hackathon/general/upload.png";
 		return $this->services->response(200,"Semester Data",$data);
 	}
 	// Hackathon
@@ -151,40 +152,75 @@ class EventController extends Controller
 					return $raw;
 				});
 				$key['eventSchedules'] = collect($key['eventSchedules'])->map(function($row) use($checkUser){
+					$row['schedule_start'] = $this->getDataServices->tgl_indov2(date("d-m-Y", strtotime($row['schedule_start'])));
 					$today = date('Y-m-d');
 					$today=date('Y-m-d', strtotime($today));
 
 					$stratDate = date('Y-m-d', strtotime($row['schedule_start']));
 					$endDate = date('Y-m-d', strtotime($row['schedule_end']));
+					$getStatusState =  $this->getDataServices->checkEventScheduleStatusState($row['schedule_id'],$checkUser->user_id);
+					
 					$row['status']  = "Pending";
+					if($getStatusState!=null){
+						$row['status']  = $getStatusState->status;
+					}
 					$getStatus =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
+					$getPassedStatus =  $this->getDataServices->checkEventPassedScheduleStatus($row['schedule_id'],$checkUser->user_id);
+					$getCurrentState =  $this->getDataServices->geteventCurrentState($row['schedule_id']);
+					$getFailedState =  $this->getDataServices->checkEventScheduleStatus($row['schedule_id'],$checkUser->user_id);
+					
+					$row['icon_status_url']  = url('/')."/uploads/event/hackathon/".$row['status']."/".$row['icon'];
 				
-					if (($today >= $stratDate) && ($today <= $endDate)){
+					if($getCurrentState!=null){
 						$row['is_current_state'] = true;
+						$row['is_current_state_backend'] = "true";
+						$row['icon_status_url']  = url('/')."/uploads/event/hackathon/Passed/".$row['icon'];
 					}else{
 						$row['is_current_state'] = false;
+						$row['is_current_state_backend'] = "false";
 					}
-					
 					if($getStatus!=null){
 						$row['is_current_state'] = true;
+						$row['is_current_state_backend'] = "true";
 					}
 					
 					$getNextSchedule =  $this->getDataServices->getNextSchedule($row['schedule_id']);
 					$row['next_schedule_message'] = "";
 					$row['next_schedule_date'] = "";
 					if($getNextSchedule!=null){
-						$row['next_schedule_message'] = "Lorem Ipsum next schedule ".$getNextSchedule->name;
-						$row['next_schedule_date'] = $getNextSchedule->schedule_start;
+						$row['next_schedule_message'] = "Jadwal berikutnya ".$getNextSchedule->name;
+						$row['next_schedule_date'] = $this->getDataServices->tgl_indov2(date("d-m-Y", strtotime($getNextSchedule->schedule_start)));
 					}
-					
 					$row['icon_url']  = url('/')."/uploads/event/hackathon/Passed/".$row['icon'];
-					$row['icon_status_url']  = url('/')."/uploads/event/hackathon/".$row['status']."/".$row['icon'];
 					return $row;
 				});
-				$failedData = array_search('Failed', array_column($key['eventSchedules']->toArray(), 'status'));
+				$array = $key['eventSchedules']->toArray();
+				$arrayTotal[] = array();
+				for ($i=0; $i < count($array); $i++) {
+					if($array[$i]['is_current_state'] === "true"){
+						$arrayTotal[] = "exist";
+					}	
+				}
+				if(count(array_filter($arrayTotal))==0){
+					$getCurrentStateBefore =  $this->getDataServices->getCurrentStateBefore($getEvent[0]['event_id'],$checkUser->user_id);
+				
+					if($getCurrentStateBefore){
+						$valueArray = intval($getCurrentStateBefore['schedule_id'])-1;
+						$key['eventSchedules'][$valueArray]['is_current_state'] = true;
+					}else{
+						$key['eventSchedules'][0]['is_current_state'] = true;
+					}
+				}
+				$failedData = $this->getDataServices->getFailedStatusEvent($getEvent[0]['event_id'],$checkUser->user_id);
+				$getAllState =  $this->getDataServices->getAllStatusEvent($getEvent[0]['event_id'],$checkUser->user_id);
+				if ($getAllState->isEmpty()) {
+					$key['eventSchedules'][0]['is_current_state'] = true;
+					$key['eventSchedules'][0]['is_current_state_backend'] = "true";
+				}
+					
 				$key['failed_message'] = "";
 				if($failedData){
-					$key['current_state'] = $key['eventSchedules'][$failedData];
+					$key['current_state'] = $failedData;
 					$key['failed_message'] = "Maaf, Anda tidak lolos ke tahap berikutnya karena belum memenuhi kualifikasi yang tersedia. Terima kasih telah berpartisipasi.";
 				}else{
 
@@ -194,6 +230,10 @@ class EventController extends Controller
 				$key['event_category'] = "Hackathon";
 				$key->event_ongoing = true;
 				$key->event_joinable = true;
+				
+				$key->event_coming_soon = false;
+				$key->event_coming_soon_message = "Pendaftaran dibuka tanggal ".$key['eventSchedules'][0]['schedule_start'];
+				$key->event_coming_soon_title = "Segera Hadir";
 				if(count($key['participants'])>0){
 					$key->event_joinable = false;
 					if($key['participants'][0]['idcard_file'] == null || $key['participants'][0]['studentcard_file']==null || $key['participants'][0]['transcripts_file']==null)
@@ -257,18 +297,34 @@ class EventController extends Controller
 
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 
+		
 		$rules = [
 			'event_id' => "required|integer",
 			'type' => "required|in:1,2,3",
-			'file' => "required|mimes:jpg,png,jpeg|max:5120",
+			'file' => "required|mimes:jpg,png,jpeg|max:5121"
 		];
-		$checkValidate = $this->services->validate($request->all(),$rules);
-
+		$image = $request->file('file');
+		if(!$request->hasFile('file')){ 
+			return $this->services->response(406,"File ".$message." tidak ditemukan");
+		}	
+		if($request->type =="1"){
+			$message = "KTP";
+		}
+		if($request->type =="2"){
+			$message = "Kartu Mahasiswa";
+		}
+		if($request->type =="3"){
+			$message = "Transkrip Nilai";
+		}
+		$checkValidate = $this->services->validate2($request->all(),$rules);
 		if(!empty($checkValidate)){
 			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
-			return $checkValidate;
+			if($checkValidate == "The file must be a file of type: jpg, png, jpeg."){
+				return $this->services->response(406,"File ".$message." harus menggunakan format jpg|jpeg|png");
+			}else{
+				return $this->services->response(406,$checkValidate);
+			}
 		}		
-		$image = $request->file('file');
 		if($request->type =="1"){
 			$imgname = "Hackathon_IDCARD_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
 			$postData['idcard_file'] = $imgname;
@@ -283,6 +339,11 @@ class EventController extends Controller
 			$imgname = "Hackathon_STUDENTTRANSCRIPT_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
 			$postData['transcripts_file'] = $imgname;
 			$message = "Transkrip Nilai";
+		}
+		if(strtolower($image->getClientOriginalExtension()) == "pdf" && strtolower($image->getClientOriginalExtension()) == "docx" && strtolower($image->getClientOriginalExtension()) == "xlsx"){
+
+			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
+			return $this->services->response(406,"File ".$message." harus menggunakan format jpg|jpeg|png");
 		}
 		$destinationPath = public_path('/uploads/event/hackathon/');
 		// try {
@@ -316,4 +377,12 @@ class EventController extends Controller
 		}
 		$deletedata = $this->actionServices->deleteHackathonData($user_id,$event_id);
 	}
+	public function searcharray($value, $key, $array) {
+		foreach ($array as $k => $val) {
+			if ($val[$key] == $value) {
+				return $value;
+			}
+		}
+		return null;
+	 }
 }
