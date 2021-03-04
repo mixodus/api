@@ -479,6 +479,15 @@ class GetDataServices extends BaseController
 			$key['idcard_file'] = url('/')."/uploads/event/hackathon/".$key['idcard_file'];
 			$key['studentcard_file'] = url('/')."/uploads/event/hackathon/".$key['studentcard_file'];
 			$key['transcripts_file'] = url('/')."/uploads/event/hackathon/".$key['transcripts_file'];
+			$key['scheduleStatus'] = $key['scheduleStatus']->map(function($row) {
+				if($row['schedule']['schedule_start'] < date('Y-m-d')){
+					$row['status_timeline']= 1;
+				}
+				else{
+					$row['status_timeline']= 2;
+				}
+				return $row;
+			});
 			return $key;
 	});
 
