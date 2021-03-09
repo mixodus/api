@@ -214,6 +214,11 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 		Route::post('/hacktown/participant/update-status', 'API\Dashboard\MenuPage\EventController@hacktownParticipantUpdate');
 	});
 	
+	//Referral Dashboard
+	Route::get('/dashboard/referral', 'API\Dashboard\ReferralController@getReferralMember');
+	Route::get('/dashboard/referral/success', 'API\Dashboard\ReferralController@getReferralMemberSuccess');
+	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember')->middleware('log.route:referral,Assign-Member,action');
+	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@UpdateReferralMember');
 	
 
 
