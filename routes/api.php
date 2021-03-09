@@ -218,10 +218,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/dashboard/referral', 'API\Dashboard\ReferralController@getReferralMember');
 	Route::get('/dashboard/referral/success', 'API\Dashboard\ReferralController@getReferralMemberSuccess');
 	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember')->middleware('log.route:referral,Assign-Member,action');
-	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@UpdateReferralMember');
-	
-
-
-
+	Route::post('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@UpdateReferralMember');
+	Route::post('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@UpdateReferralStatus');
 });
 

@@ -98,7 +98,7 @@ class ReferralController extends Controller
 			return $this->services->response(401,"Sorry, Your friend is already registered in referral!");
 		}
 		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
-		$saveReferral = $this->actionServices->saveReferral($request->all(),$checkUser->user_id,$status[0]);
+		$saveReferral = $this->actionServices->saveReferral($request->all(),$checkUser->user_id);
 		if(!$saveReferral){
 			return $this->services->response(503,"Server Error!");
 		}
@@ -116,18 +116,24 @@ class ReferralController extends Controller
 			'job_position' 			=> "nullable|string",
 			'referral_employee_id' 	=> "required"
 		];
-
 		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		/*$file = $request->file('file');
+		$imgname = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
+		$destinationPath = public_path('/uploads/referral_file/');
+		$file->move($destinationPath,$imgname);
+		$request['file'] = $imgname;*/
+
 		$getData = $this->getDataServices->getReferralMember($id);
 
 		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
-		$saveReferral = $this->actionServices->saveReferral($request->all(),$getData->referral_id,$status[0]);
+		$saveReferral = $this->actionServices->UpdateReferralMember($request->all(),$id);
 		if(!$saveReferral){
 			return $this->services->response(503,"Server Error!");
 		}
-		return $this->services->response(200,"You have successfully referral your friend.",$request->all());
+		return $this->services->response(200,"Referral Updated.",$request->all());
 	}
-	public function UpdateReferralStatus(Request $request)
+	public function UpdateReferralStatus(Request $request, $id)
 	{
 		$rules = [
 			'referral_status' => "required|string",
@@ -136,7 +142,7 @@ class ReferralController extends Controller
 		$getData = $this->getDataServices->getReferralMember($id);
 
 		$status = array('Successful', 'Failed', 'Pending', 'Waiting for Interview');
-		$saveReferral = $this->actionServices->saveReferral($request, $getData->referral_id, $status[0]);
+		$saveReferral = $this->actionServices->UpdateReferralStatus($request, $id);
 		if(!$saveReferral){
 			return $this->services->response(503,"Server Error!");
 		}

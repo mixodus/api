@@ -12,10 +12,14 @@ class ReferralModel extends Model
 	public $timestamps = true;
 	protected $fillable = [
 		'referral_id',
+		'source',
 		'referral_name',
 		'referral_email',
 		'referral_contact_no',
 		'referral_status',
+		'file',
+		'fee',
+		'job_position',
 		'referral_employee_id',
 		'created_at',
 		'modified_at',
