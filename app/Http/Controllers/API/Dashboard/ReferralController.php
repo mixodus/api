@@ -118,11 +118,11 @@ class ReferralController extends Controller
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
-		/*$file = $request->file('file');
+		$file = $request->file('file');
 		$imgname = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
-		$destinationPath = public_path('/uploads/referral_file/');
-		$file->move($destinationPath,$imgname);
-		$request['file'] = $imgname;*/
+		$destinationPath = public_path('/uploads/referral_file');
+		$file->move($destinationPath.$imgname);
+		$request['file'] = $imgname;
 
 		$getData = $this->getDataServices->getReferralMember($id);
 
@@ -138,13 +138,13 @@ class ReferralController extends Controller
 		$rules = [
 			'referral_status' => "required|string",
 		];
-		$checkValidate = $this->services->validate($request,$rules);
-		$getData = $this->getDataServices->getReferralMember($id);
+		$checkValidate = $this->services->validate($request->all(),$rules);
 
-		$status = array('Successful', 'Failed', 'Pending', 'Waiting for Interview');
-		$saveReferral = $this->actionServices->UpdateReferralStatus($request, $id);
+		//$status = array('Successful', 'Failed', 'Pending', 'Waiting for Interview');
+		$saveReferral = $this->actionServices->UpdateReferralStatus($request->all(), $id);
 		if(!$saveReferral){
 			return $this->services->response(503,"Server Error!");
 		}
+		return $this->services->response(200,"Referral Status Updated.",$request->all());
 	}
 }

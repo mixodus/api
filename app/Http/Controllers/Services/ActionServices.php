@@ -165,7 +165,7 @@ class ActionServices extends BaseController
     }
 	public function UpdateReferralStatus($data_input, $referral_id)
 	{
-        $postParam = array('referral_status'=>$data_input['refferral_status']);
+        $postParam = array('referral_status'=>$data_input['referral_status']);
 		return ReferralModel::where('referral_id',$referral_id)->update($postParam);
 	}
 	public function saveReferral($data,$user_id,$status){
