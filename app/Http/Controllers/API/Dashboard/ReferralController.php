@@ -154,10 +154,13 @@ class ReferralController extends Controller
 	}
 	public function UpdateReferralStatus(Request $request, $id)
 	{
-		$rules = [
-			'referral_status' => "required|string",
-		];
+		$rules = ['referral_status' => "required|string|in:Success,Pending,InReview,Failed"];
+
 		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+        }
 
 		//$status = array('Successful', 'Failed', 'Pending', 'Waiting for Interview');
 		$saveReferral = $this->actionServices->UpdateReferralStatus($request->all(), $id);
