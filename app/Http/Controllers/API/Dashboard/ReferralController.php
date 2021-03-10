@@ -118,16 +118,35 @@ class ReferralController extends Controller
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
-		$file = $request->file('file');
-		$imgname = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
-		$destinationPath = public_path('/uploads/referral_file');
-		$file->move($destinationPath.$imgname);
-		$request['file'] = $imgname;
+		if(!empty($checkValidate)){
+			return $checkValidate;
+        }
 
-		$getData = $this->getDataServices->getReferralMember($id);
+		$referralData = $this->actionServices->getReferralData($id);
 
-		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
-		$saveReferral = $this->actionServices->UpdateReferralMember($request->all(),$id);
+		if(!$referralData){
+            return $this->actionServices->response(404,"Referral doesnt exist!");
+        }
+
+		if(!empty($request->file)){
+            $file = $request->file('file');
+            $name_file = $file->getClientOriginalName();
+        }
+
+		if($request->file != '' && $name_file != $referralData->file){
+            $folder = public_path().'\uploads\referral_file\\';
+
+            if($referralData->file != '' && $referralData->file != null){
+                $file_old = $folder.$referralData->file;
+                unlink($file_old);
+            }  
+            $extension = $file->getClientOriginalExtension();
+            $filename = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
+            $file->move($folder, $filename);
+        }
+
+		//$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
+		$saveReferral = $this->actionServices->UpdateReferralMember($request->all(),$id, $filename);
 		if(!$saveReferral){
 			return $this->services->response(503,"Server Error!");
 		}

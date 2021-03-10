@@ -149,13 +149,13 @@ class ActionServices extends BaseController
 		);
 		return ReferralModel::where('referral_id',$refferal_id)->update($postParam);
 	}
-	public function UpdateReferralMember($data_input, $referral_id)
+	public function UpdateReferralMember($data_input, $referral_id, $filename)
     {
         $postParam = array(
             'referral_name' 		=> $data_input['referral_name'],
 			'referral_email' 		=> $data_input['referral_email'],
 			'referral_contact_no' 	=> $data_input['referral_contact_no'],
-			'file'					=> $data_input['file'],
+			'file'					=> $filename,
 			'fee' 					=> $data_input['fee'],
 			'job_position' 			=> $data_input['job_position'],
 			'referral_employee_id' 	=> $data_input['referral_employee_id']
@@ -167,6 +167,10 @@ class ActionServices extends BaseController
 	{
         $postParam = array('referral_status'=>$data_input['referral_status']);
 		return ReferralModel::where('referral_id',$referral_id)->update($postParam);
+	}
+	public function getReferralData($id)
+	{
+		return ReferralModel::where('referral_id',$id)->first();
 	}
 	public function saveReferral($data,$user_id,$status){
 		$postParam = array(
