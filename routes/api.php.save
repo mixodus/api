@@ -19,8 +19,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 require 'fase2/api.php';
 Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {
-	//check Version
-	Route::get('/home/check-version', 'API\MainController@checkVersion');
+	/site/apps/dev/laravel-oneapps/routes
 	//Home
 	Route::get('/home/check_session', 'API\MainController@checkSession');
 	Route::get('/home', 'API\MainController@index');
@@ -216,11 +215,9 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 		Route::post('/hacktown/participant/update-status', 'API\Dashboard\MenuPage\EventController@hacktownParticipantUpdate');
 	});
 	
-	//Referral Dashboard
-	Route::get('/dashboard/referral', 'API\Dashboard\ReferralController@getReferralMember');
-	Route::get('/dashboard/referral/success', 'API\Dashboard\ReferralController@getReferralMemberSuccess');
-	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember')->middleware('log.route:referral,Assign-Member,action');
-	Route::post('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@UpdateReferralMember');
-	Route::post('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@UpdateReferralStatus');
+	
+
+
+
 });
 
