@@ -45,7 +45,7 @@ class GeneralServices extends BaseController
 		$date = new DateTime();
 		$token['data'] = ['id' => $dataUser->user_id];
 		$token['iat'] = $date->getTimestamp();
-		$token['exp'] = $date->getTimestamp() + 86400*7; // a week 
+		$token['exp'] = $date->getTimestamp() + 86400*365; // a years 
 		
 		$data['token'] = JWT::encode($token, $key);
 		$data['expiration'] =  ["second"=>$exp,'hours' => $exp / (60 * 60 * 7)];

@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Services\GeneralServices;
 use App\Http\Controllers\Services\ActionServices;
-use App\Http\Controllers\Services\GetDataServices;
+use App\Http\Controllers\Services\GetDataServices;;
+use App\Models\AppVersionModel;
 
 class MainController extends Controller
 {
@@ -110,5 +111,27 @@ class MainController extends Controller
 		];
 		return response()->json($response, 200);
     }
+	public function checkVersion(Request $request){
+		$rules = [
+			'version' => "required|string",
+			'type' => "required|string",
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+		}
+		
+		$checkVersion = AppVersionModel::select('*')->orderBy('app_version_id','DESC')->first();
+		if($request->version != $checkVersion->version){
+			
+			return $this->services->response(406,"Segera update aplikasi ke version terbaru",$checkVersion);
+		}
+		
+		if($request->type == "android"){
+			$checkVersion->url_update = "https://play.google.com/store/apps/details?id=com.onetalents.mobile";
+		}
+		return $this->services->response(200,"Success",$checkVersion);
+	}
     
 }
