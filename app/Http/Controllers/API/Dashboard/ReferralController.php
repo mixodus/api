@@ -16,9 +16,37 @@ class ReferralController extends Controller
 		$this->actionServices = new ActionServices();
 		$this->getDataServices = new GetDataServices();
 	}
-	public function getAllReferral(){
+
+	public function getAllReferralMember(){
 		$getData = $this->getDataServices->getAllReferralMember();
 		return $this->services->response(200,"All Referral Member List", $getData);
+	}
+
+	public function getReferralMember(Request $request){
+		$rules = [
+			'start' => "nullable|integer",
+			'length' => "nullable|integer"
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate))
+			return $checkValidate;
+
+		$checkUser = $this->getDataServices->getAdminbyToken($request);
+
+		if(empty($request['start']))
+			$request['start'] = 0;
+
+		if(empty($request['length']))
+			$request['length'] = 25;
+
+		$getData = $this->getDataServices->getReferralMember($checkUser->user_id);
+
+		if (!$getData->isEmpty()) {
+			return $this->services->response(200,"Referral List",$getData);
+		}else{
+			return $this->services->response(200,"Referral not found!");
+		}
 	}
 	public function getReferralMemberSuccess(Request $request){
 		$checkUser = $this->getDataServices->getAdminbyToken($request);
