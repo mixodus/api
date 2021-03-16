@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Services\GeneralServices;
 use App\Http\Controllers\Services\ActionServices;
 use App\Http\Controllers\Services\Dashboard\GetDataServices;
+use App\Models\ReferralModel;
+use App\Models\AdminModel;
 use DB;
 
 class ReferralController extends Controller
@@ -17,8 +19,12 @@ class ReferralController extends Controller
 		$this->getDataServices = new GetDataServices();
 	}
 
-	public function getAllReferralMember(){
-		$getData = $this->getDataServices->getAllReferralMember();
+	public function getAllMobileReferralMember(){
+		$getData = ReferralModel::where('source','mobile')->with('AdminModel')->get();
+		return $this->services->response(200,"All Referral Member List", $getData);
+	}
+	public function getAllWebReferralMember(){
+		$getData = ReferralModel::where('source','web')->with('AdminModel')->get();
 		return $this->services->response(200,"All Referral Member List", $getData);
 	}
 
@@ -48,6 +54,7 @@ class ReferralController extends Controller
 			return $this->services->response(200,"Referral not found!");
 		}
 	}
+
 	public function getReferralMemberSuccess(Request $request){
 		$checkUser = $this->getDataServices->getAdminbyToken($request);
 		$getData = $this->getDataServices->ValidateReferralPoints($checkUser->user_id);
@@ -79,9 +86,12 @@ class ReferralController extends Controller
 	// kedepannya akan ada upload cv
 	public function AssignMember(Request $request){
 		$rules = [
+			'source' => "required|in:web,mobile",
 			'referral_name' => "required|string",
 			'referral_email' => "required|string|email|unique:xin_employees,email",
 			'referral_contact_no' => "required|string",
+			'referral_status' => "required|string|in:Success,Pending,InReview,Failed",
+			'referral_employee_id' => "required|string",
 			'file' => "required",
 			'fee' => "required|string",
 			'job_position' => "nullable|string"
@@ -89,26 +99,37 @@ class ReferralController extends Controller
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
 		if(!empty($checkValidate))
-			return $checkValidate;
-		
-		$file = $request->file('file');
-		$imgname = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
-		$destinationPath = public_path('/uploads/referral_file/');
-		$file->move($destinationPath,$imgname);
-		$request['file'] = $imgname;
+			return $checkValidate; 
 
-		$checkUser = $this->getDataServices->getAdminbyToken($request);
+		$file = $request->file('file');
+		$fileName = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
+		$destinationPath = public_path().'\uploads\referral_file\\';
+		$file->move($destinationPath,$fileName);
+
+		$request['file_name'] = $fileName;
+
+		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
 
 		$checkReferral = $this->getDataServices->ValidateReferralPoints(null,$request->referral_email);
 		if (!$checkReferral->isEmpty()) {
 			return $this->services->response(401,"Sorry, Your friend is already registered in referral!");
 		}
-		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
-		$saveReferral = $this->actionServices->saveReferral($request->all(),$checkUser->user_id);
-		if(!$saveReferral){
-			return $this->services->response(503,"Server Error!");
-		}
-		return $this->services->response(200,"You have successfully referral your friend.",$request->all());
+
+		$postParam = array(
+			'source' => $request['source'],
+			'referral_name' => $request['referral_name'],
+			'referral_email' => $request['referral_email'],
+			'referral_contact_no' => $request['referral_contact_no'],
+			'referral_status' => $request['referral_status'], 
+			'referral_employee_id' => $request['referral_employee_id'],
+			'file' => $request['file_name'],
+			'fee' => $request['fee'],
+			'job_position' => $request['job_position'],
+			'created_at' => date('Y-m-d h:i:s'),
+			'modified_at' => date('Y-m-d h:i:s')
+		);
+
+		return ReferralModel::create($postParam);
 	}
 
 	public function UpdateReferralMember(Request $request, $id)

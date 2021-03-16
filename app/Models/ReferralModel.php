@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Dashboard\AdminModel;
+//use App\Models\UserModel;
 
 class ReferralModel extends Model
 {
@@ -28,4 +30,12 @@ class ReferralModel extends Model
 		'updated_at'
 	];
 	protected $hidden = ['created_at','updated_at','modified_at'];
+
+	public function UserModel(){
+		return $this->belongsTo('App/Models/UserModels', 'user_id', 'referral_employee_id');
+	}
+	public function AdminModel(){
+		return $this->belongsTo(AdminModel::class, 'user_id', 'referral_employee_id');
+	}
+
 }

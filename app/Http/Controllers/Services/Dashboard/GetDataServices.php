@@ -701,9 +701,6 @@ class GetDataServices extends BaseController
 	public function getReferralMember($user_id,$offset =0,$limit=25){
 		return ReferralModel::select('*')->where('referral_employee_id',$user_id)->offset($offset)->limit($limit)->orderBy('referral_id', 'DESC')->get();
 	}
-	public function getAllReferralMember(){
-		return ReferralModel::all();
-	}
 	public function ValidateReferralPoints($user_id=null,$email=null){
 		$query = ReferralModel::select('referral_id','withdraw_reward','referral_name as name','referral_status as status','added_to_transaction_point as added_yet');
 				

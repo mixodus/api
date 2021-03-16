@@ -217,7 +217,8 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	});
 	
 	//Referral Dashboard
-	Route::get('/dashboard/referral/all', 'API\Dashboard\ReferralController@getAllReferralMember');
+	Route::get('/dashboard/referral/allMobile', 'API\Dashboard\ReferralController@getAllMobileReferralMember');
+	Route::get('/dashboard/referral/allWeb', 'API\Dashboard\ReferralController@getAllWebReferralMember');
 	Route::get('/dashboard/referral', 'API\Dashboard\ReferralController@getReferralMember');
 	Route::get('/dashboard/referral/success', 'API\Dashboard\ReferralController@getReferralMemberSuccess');
 	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember')->middleware('log.route:referral,Assign-Member,action');
