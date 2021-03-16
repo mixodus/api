@@ -8,6 +8,7 @@ use App\Http\Controllers\Services\GeneralServices;
 use App\Models\Dashboard\PermissionsModel;
 use App\Models\RolesModel;
 use App\Models\JobsModel;
+use App\Models\ReferralModel;
 use Symfony\Component\HttpFoundation\Response;
 use App\Models\ActivitiesPointModel;
 use App\Models\EventModel;
@@ -101,6 +102,8 @@ class ActionServices extends Controller
         
         return JobsModel::where('job_id',$jobs_id)->update($postParam);
     }
+    
+    
 
     public function deleteJobs($jobs_id)
     {        

@@ -4,6 +4,7 @@ namespace App\Models\dashboard;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\RolesModel;
+use App\Models\ReferralModel;
 
 class AdminModel extends Model
 {
@@ -39,5 +40,10 @@ class AdminModel extends Model
     {
         return $this->hasOne(RolesModel::class, 'user_id', 'role_id')
             ->select('access_role');
+	}
+
+	//referral
+	public function referral(){
+		return $this->hasMany(ReferralModel::class, 'referral_employee_id', 'user_id');
 	}
 }
