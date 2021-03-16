@@ -149,8 +149,32 @@ class ActionServices extends BaseController
 		);
 		return ReferralModel::where('referral_id',$refferal_id)->update($postParam);
 	}
+	public function UpdateReferralMember($data_input, $referral_id, $filename)
+    {
+        $postParam = array(
+            'referral_name' 		=> $data_input['referral_name'],
+			'referral_email' 		=> $data_input['referral_email'],
+			'referral_contact_no' 	=> $data_input['referral_contact_no'],
+			'file'					=> $filename,
+			'fee' 					=> $data_input['fee'],
+			'job_position' 			=> $data_input['job_position'],
+			'referral_employee_id' 	=> $data_input['referral_employee_id']
+        );
+
+        return ReferralModel::where('referral_id',$referral_id)->update($postParam);
+    }
+	public function UpdateReferralStatus($data_input, $referral_id)
+	{
+        $postParam = array('referral_status'=>$data_input['referral_status']);
+		return ReferralModel::where('referral_id',$referral_id)->update($postParam);
+	}
+	public function getReferralData($id)
+	{
+		return ReferralModel::where('referral_id',$id)->first();
+	}
 	public function saveReferral($data,$user_id,$status){
 		$postParam = array(
+			'source' => $data['source'],
 			'referral_name' => $data['referral_name'],
 			'referral_email' => $data['referral_email'],
 			'referral_contact_no' => $data['referral_contact_no'],

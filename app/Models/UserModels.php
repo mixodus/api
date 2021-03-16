@@ -63,6 +63,11 @@ class UserModels extends Model
 		return $this->hasMany('App\Models\EventParticipantModel', 'employee_id','user_id')->with('event');
 	}
 
+	//referral
+	public function referral(){
+		return $this->hasMany('App\Models\ReferralModel', 'referral_employee_id', 'user_id');
+	}
+
 	//belum ada model ke relasinya
 	public function assets() {
 		return $this->hasMany('App\Models\AssetsModel', 'employee_id','user_id');
