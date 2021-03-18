@@ -16,6 +16,16 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 	return $request->user();
 });
 
+//Referral Dashboard
+	Route::get('/dashboard/referral/allMobile', 'API\Dashboard\ReferralController@getAllMobileReferralMember');
+	Route::get('/dashboard/referral/allWeb', 'API\Dashboard\ReferralController@getAllWebReferralMember');
+	Route::get('/dashboard/referral', 'API\Dashboard\ReferralController@getReferralMember');
+	Route::get('/dashboard/referral/success', 'API\Dashboard\ReferralController@getReferralMemberSuccess');
+	Route::get('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@getReferralByID');
+	Route::get('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@getReferralStatusByID');
+	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember');
+	Route::post('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@UpdateReferralMember');
+	Route::post('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@UpdateReferralStatus');
 
 require 'fase2/api.php';
 Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {
@@ -216,13 +226,5 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 		Route::post('/hacktown/participant/update-status', 'API\Dashboard\MenuPage\EventController@hacktownParticipantUpdate');
 	});
 	
-	//Referral Dashboard
-	Route::get('/dashboard/referral/allMobile', 'API\Dashboard\ReferralController@getAllMobileReferralMember');
-	Route::get('/dashboard/referral/allWeb', 'API\Dashboard\ReferralController@getAllWebReferralMember');
-	Route::get('/dashboard/referral', 'API\Dashboard\ReferralController@getReferralMember');
-	Route::get('/dashboard/referral/success', 'API\Dashboard\ReferralController@getReferralMemberSuccess');
-	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember')->middleware('log.route:referral,Assign-Member,action');
-	Route::post('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@UpdateReferralMember');
-	Route::post('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@UpdateReferralStatus');
 });
 

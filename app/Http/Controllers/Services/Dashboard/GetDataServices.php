@@ -714,6 +714,15 @@ class GetDataServices extends BaseController
 		return $query->get();
 	
 	}
+	public function checkMemberReferral($user_id=null,$email=null){
+		$query = ReferralModel::select('referral_email','referral_id','withdraw_reward','referral_name as name','referral_status as status','added_to_transaction_point as added_yet');
+				
+		if($email != null && $email !=""){
+			$query->where('referral_email',$email);
+		}
+		return $query->get();
+	
+	}
 	//point
 	public function getActivityPoint($type){
 		return ActivitiesPointModel::select('*')->where('activity_point_code',$type)->first();
