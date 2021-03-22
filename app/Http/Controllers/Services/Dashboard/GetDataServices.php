@@ -61,7 +61,7 @@ class GetDataServices extends BaseController
 	// =========================================USER MODULE ===============================================================
 	function userData($id){
 		$data = AdminModel::select('user_id','email','first_name', 'gender',
-		'country','profile_photo', 'zipcode')->where('user_id',$id)->first();
+		'country','profile_photo', 'zipcode','role_id')->where('user_id',$id)->first();
 
 		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_photo'];
 

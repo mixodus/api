@@ -29,6 +29,10 @@ class ReferralController extends Controller
 		}
 		$collect = $getData->get();
 		if(!$collect->isEmpty()){
+			$collect = $collect->map(function($key){
+				$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
+				return $key;
+			});
 			return $this->services->response(200,"All Referral Member List", $collect);
 		}else{
 			return $this->services->response(200,"You Have No Referral!");
@@ -38,8 +42,8 @@ class ReferralController extends Controller
 		$getData = ReferralModel::select('*')->where('referral_id', $id)->with('AdminModel')->first();
 		if(empty($getData)){
 			return $this->services->response(404,"Referral Not Found");
-			
 		}
+		$getData['file_url'] = url('/')."/uploads/referral_file/".$getData['file'];
 		return $this->services->response(200,"Data Details By ID", $getData);	
 	}
 	public function getReferralStatusByID(Request $request, $id){
@@ -212,7 +216,6 @@ class ReferralController extends Controller
 			return $checkValidate;
         }
 
-		//$status = array('Successful', 'Failed', 'Pending', 'Waiting for Interview');
 		$saveReferral = $this->actionServices->UpdateReferralStatus($request->all(), $id);
 		if(!$saveReferral){
 			return $this->services->response(503,"Server Error!");
