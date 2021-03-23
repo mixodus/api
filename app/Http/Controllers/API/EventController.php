@@ -282,6 +282,20 @@ class EventController extends Controller
 		}
 		return $this->services->response(200,"Pendaftaran berhasil!", $request->all());
 	}
+	public function ResetRegisterHackathon(Request $request){
+		$rules = [
+			'event_id' => "required|integer"
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+		}
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+		
+		$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
+		return $this->services->response(200,"Pendaftaran berhasil direset!", $request->all());
+	}
 	public function HackathonUploadFile(Request $request){
 
 		$checkUser = $this->getDataServices->getUserbyToken($request);
