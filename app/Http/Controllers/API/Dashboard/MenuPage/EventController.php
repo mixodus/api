@@ -503,7 +503,13 @@ class EventController extends Controller
         }
 
         $action = $this->actionServices->hacktownParticipantUpdate($request->all());
-
+        if($request->status == 'Failed'){
+            $message = "ICStar Hackathon : Maaf anda memenuhi kriteria kami, cek status mu dihalaman status page Hackathon";
+        }else{
+            $message = "ICStar Hackathon : Selamat anda lolos ke tahap selanjutnya!";
+        }
+        $send_notif = $this->services->sendNotif($request->employee_id,$message);
+        return $send_notif;
         return $this->actionServices->response(200,"Status updated",array());
     }
 }

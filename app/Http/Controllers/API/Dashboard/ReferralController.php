@@ -27,7 +27,7 @@ class ReferralController extends Controller
 		if($request->referral_employee_id != null && $request->referral_employee_id !=""){
 			$getData->where('referral_employee_id', $request->referral_employee_id);
 		}
-		$collect = $getData->get();
+		$collect = $getData->orderBy('referral_id','DESC')->get();
 		if(!$collect->isEmpty()){
 			$collect = $collect->map(function($key){
 				$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
