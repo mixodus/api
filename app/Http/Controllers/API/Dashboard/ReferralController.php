@@ -18,16 +18,42 @@ class ReferralController extends Controller
 		$this->actionServices = new ActionServices();
 		$this->getDataServices = new GetDataServices();
 	}
-
 	public function getAllMobileReferralMember(){
 		$getData = ReferralModel::where('source','mobile')->with('AdminModel')->get();
 		return $this->services->response(200,"All Referral Member List", $getData);
 	}
-	public function getAllWebReferralMember(){
-		$getData = ReferralModel::where('source','web')->with('AdminModel')->get();
-		return $this->services->response(200,"All Referral Member List", $getData);
+	public function getAllWebReferralMember(Request $request){
+		$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
+		if($request->referral_employee_id != null && $request->referral_employee_id !=""){
+			$getData->where('referral_employee_id', $request->referral_employee_id);
+		}
+		$collect = $getData->get();
+		if(!$collect->isEmpty()){
+			$collect = $collect->map(function($key){
+				$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
+				return $key;
+			});
+			return $this->services->response(200,"All Referral Member List", $collect);
+		}else{
+			return $this->services->response(200,"You Have No Referral!");
+		}
 	}
-
+	public function getReferralByID($id){
+		$getData = ReferralModel::select('*')->where('referral_id', $id)->with('AdminModel')->first();
+		if(empty($getData)){
+			return $this->services->response(404,"Referral Not Found");
+		}
+		$getData['file_url'] = url('/')."/uploads/referral_file/".$getData['file'];
+		return $this->services->response(200,"Data Details By ID", $getData);	
+	}
+	public function getReferralStatusByID(Request $request, $id){
+		$getData = ReferralModel::select('*')->where('referral_id', $id)->with('AdminModel')->first();
+		if(!empty($getData)){
+			return $this->services->response(200,"Status By ID", $getData);
+		}else{
+			return $this->services->response(404,"Referral Not Found");
+		}
+	}
 	public function getReferralMember(Request $request){
 		$rules = [
 			'start' => "nullable|integer",
@@ -103,14 +129,14 @@ class ReferralController extends Controller
 
 		$file = $request->file('file');
 		$fileName = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
-		$destinationPath = public_path().'\uploads\referral_file\\';
+		$destinationPath = public_path().'/uploads/referral_file/';
 		$file->move($destinationPath,$fileName);
 
 		$request['file_name'] = $fileName;
 
 		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
 
-		$checkReferral = $this->getDataServices->ValidateReferralPoints(null,$request->referral_email);
+		$checkReferral = $this->getDataServices->checkMemberReferral(null,$request->referral_email);
 		if (!$checkReferral->isEmpty()) {
 			return $this->services->response(401,"Sorry, Your friend is already registered in referral!");
 		}
@@ -129,48 +155,49 @@ class ReferralController extends Controller
 			'modified_at' => date('Y-m-d h:i:s')
 		);
 
-		return ReferralModel::create($postParam);
+		ReferralModel::create($postParam);
+		return $this->services->response(200,"Member Assigned",$request->all()); 
 	}
 
 	public function UpdateReferralMember(Request $request, $id)
 	{
 		$rules = [
-			'referral_name' 		=> "required|string",
-			'referral_email' 		=> "required|string|email|unique:xin_employees,email",
+			'referral_name' 	=> "required|string",
+			'referral_email' 	=> "required|string|email|unique:xin_employees,email",
 			'referral_contact_no' 	=> "required|string",
-			'file'					=> "required",
-			'fee' 					=> "required|string",
-			'job_position' 			=> "nullable|string",
+			'fee' 			=> "required|string",
+			'job_position' 		=> "nullable|string",
 			'referral_employee_id' 	=> "required"
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
 		if(!empty($checkValidate)){
 			return $checkValidate;
-        }
+		}
 
 		$referralData = $this->actionServices->getReferralData($id);
 
 		if(!$referralData){
-            return $this->actionServices->response(404,"Referral doesnt exist!");
-        }
+           		return $this->actionServices->response(404,"Referral doesnt exist!");
+        	}
 
 		if(!empty($request->file)){
-            $file = $request->file('file');
-            $name_file = $file->getClientOriginalName();
-        }
+            		$file = $request->file('file');
+            		$name_file = $file->getClientOriginalName();
+        	}
+		$filename = $referralData->file;
 
 		if($request->file != '' && $name_file != $referralData->file){
-            $folder = public_path().'\uploads\referral_file\\';
+            		$folder = public_path().'/uploads/referral_file/';
 
-            if($referralData->file != '' && $referralData->file != null){
-                $file_old = $folder.$referralData->file;
-                unlink($file_old);
-            }  
-            $extension = $file->getClientOriginalExtension();
-            $filename = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
-            $file->move($folder, $filename);
-        }
+            		if($referralData->file != '' && $referralData->file != null){
+                		$file_old = $folder.$referralData->file;
+                		unlink($file_old);
+            		}  
+            		$extension = $file->getClientOriginalExtension();
+            		$filename = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
+            		$file->move($folder, $filename);
+        	}
 
 		//$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
 		$saveReferral = $this->actionServices->UpdateReferralMember($request->all(),$id, $filename);
@@ -189,7 +216,6 @@ class ReferralController extends Controller
 			return $checkValidate;
         }
 
-		//$status = array('Successful', 'Failed', 'Pending', 'Waiting for Interview');
 		$saveReferral = $this->actionServices->UpdateReferralStatus($request->all(), $id);
 		if(!$saveReferral){
 			return $this->services->response(503,"Server Error!");

@@ -61,7 +61,7 @@ class GetDataServices extends BaseController
 	// =========================================USER MODULE ===============================================================
 	function userData($id){
 		$data = AdminModel::select('user_id','email','first_name', 'gender',
-		'country','profile_photo', 'zipcode')->where('user_id',$id)->first();
+		'country','profile_photo', 'zipcode','role_id')->where('user_id',$id)->first();
 
 		$data['profile_picture_url']  = url('/')."/uploads/profile/".$data['profile_photo'];
 
@@ -710,6 +710,15 @@ class GetDataServices extends BaseController
 			$query->where('referral_email',$email);
 		}else{
 			$query->where('added_to_transaction_point',0)->where('referral_status', 'Successful');
+		}
+		return $query->get();
+	
+	}
+	public function checkMemberReferral($user_id=null,$email=null){
+		$query = ReferralModel::select('referral_email','referral_id','withdraw_reward','referral_name as name','referral_status as status','added_to_transaction_point as added_yet');
+				
+		if($email != null && $email !=""){
+			$query->where('referral_email',$email);
 		}
 		return $query->get();
 	

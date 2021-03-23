@@ -230,16 +230,19 @@ class EventController extends Controller
 				$key['event_category'] = "Hackathon";
 				$key->event_ongoing = true;
 				$key->event_joinable = true;
+				$key->button_wording = "Daftar Hackathon";
 				
 				$key->event_coming_soon = false;
 				$key->event_coming_soon_message = "Pendaftaran dibuka tanggal ".$key['eventSchedules'][0]['schedule_start'];
 				$key->event_coming_soon_title = "Segera Hadir";
 				if(count($key['participants'])>0){
 					$key->event_joinable = false;
+					$key->button_wording = "Cek Status Anda";
 					if($key['participants'][0]['idcard_file'] == null || $key['participants'][0]['studentcard_file']==null || $key['participants'][0]['transcripts_file']==null)
 					{
 						$deletData = $this->deleteHackathonData($checkUser->user_id,$getEvent[0]['event_id']);
 						$key->event_joinable = true;
+						$key->button_wording = "Daftar Hackathon";
 					}	
 				}
 				return $key;

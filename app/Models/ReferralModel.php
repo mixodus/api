@@ -32,10 +32,10 @@ class ReferralModel extends Model
 	protected $hidden = ['created_at','updated_at','modified_at'];
 
 	public function UserModel(){
-		return $this->belongsTo('App/Models/UserModels', 'user_id', 'referral_employee_id');
+		return $this->belongsTo('App/Models/UserModels', 'referral_employee_id', 'user_id');
 	}
 	public function AdminModel(){
-		return $this->belongsTo(AdminModel::class, 'user_id', 'referral_employee_id');
+		return $this->belongsTo(AdminModel::class, 'referral_employee_id', 'user_id');
 	}
 
 }
