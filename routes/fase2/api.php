@@ -14,14 +14,12 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 	Route::get('/news/comment', 'API\NewsController@getComment');
 
 	//hackathon
-	
 	Route::get('/event/hackathon', 'API\EventController@Hackathon');
 	Route::get('/event/hackathon/terms-condition', 'API\EventController@HackathonTerms');
 	Route::get('/event/hackathon/semester', 'API\EventController@HackathonSemester');
 });
 Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($router) {
 	//hackathon
-	
 	Route::post('/event/hackathon', 'API\EventController@RegisterHackathon');
 	Route::post('/event/hackathon/file', 'API\EventController@HackathonUploadFile');
 	Route::get('/event/hackathon/reset', 'API\EventController@ResetRegisterHackathon');
@@ -46,4 +44,8 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 
 	//referral
 	Route::post('/referral/upload-cv/{id}', 'API\ReferralController@uploadCV');
+
+	
+	//device token - notification
+	Route::post('/user/device-token', 'API\UserController@DeviceToken');
 });
