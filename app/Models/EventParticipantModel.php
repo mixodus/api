@@ -28,7 +28,8 @@ class EventParticipantModel extends Model
 		'semester',
 		'created_at',
 		'modified_at',
-		'updated_at'
+		'updated_at',
+		'cv_file'
 	];
     protected $hidden = ['created_at','modified_at','updated_at'];
     

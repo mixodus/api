@@ -282,20 +282,6 @@ class EventController extends Controller
 		}
 		return $this->services->response(200,"Pendaftaran berhasil!", $request->all());
 	}
-	public function ResetRegisterHackathon(Request $request){
-		$rules = [
-			'event_id' => "required|integer"
-		];
-		$checkValidate = $this->services->validate($request->all(),$rules);
-
-		if(!empty($checkValidate)){
-			return $checkValidate;
-		}
-		$checkUser = $this->getDataServices->getUserbyToken($request);
-		
-		$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
-		return $this->services->response(200,"Pendaftaran berhasil direset!", $request->all());
-	}
 	public function HackathonUploadFile(Request $request){
 
 		$checkUser = $this->getDataServices->getUserbyToken($request);
@@ -303,7 +289,7 @@ class EventController extends Controller
 		
 		$rules = [
 			'event_id' => "required|integer",
-			'type' => "required|in:1,2,3",
+			'type' => "required|in:1,2,3,4",
 			'file' => "required|mimes:jpg,png,jpeg|max:5121"
 		];
 		$image = $request->file('file');
@@ -318,6 +304,9 @@ class EventController extends Controller
 		}
 		if($request->type =="3"){
 			$message = "Transkrip Nilai";
+		}
+		if($request->type =="4"){
+			$message = "CV";
 		}
 		$checkValidate = $this->services->validate2($request->all(),$rules);
 		if(!empty($checkValidate)){
@@ -343,6 +332,11 @@ class EventController extends Controller
 			$postData['transcripts_file'] = $imgname;
 			$message = "Transkrip Nilai";
 		}
+		if($request->type =="4"){
+			$imgname = "Hackathon_CV_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
+			$postData['cv_file'] = $imgname;
+			$message = "CV";
+		}
 		if(strtolower($image->getClientOriginalExtension()) == "pdf" && strtolower($image->getClientOriginalExtension()) == "docx" && strtolower($image->getClientOriginalExtension()) == "xlsx"){
 
 			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
@@ -359,6 +353,7 @@ class EventController extends Controller
 		
 		$postData['employee_id'] = $checkUser->user_id;
 		$postData['event_id'] = $request->event_id;
+		
 		$upload = $this->actionServices->updateHackathonfile($postData,$checkUser->user_id);
 		if(!$upload){
 			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
