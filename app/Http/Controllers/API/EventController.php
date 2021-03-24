@@ -304,7 +304,7 @@ class EventController extends Controller
 		$rules = [
 			'event_id' => "required|integer",
 			'type' => "required|in:1,2,3,4",
-			'file' => "required|max:5121"
+			'file' => "required|mimes:jpg,png,jpeg|max:5121"
 		];
 		$image = $request->file('file');
 		if(!$request->hasFile('file')){ 
@@ -325,7 +325,36 @@ class EventController extends Controller
 		$checkValidate = $this->services->validate2($request->all(),$rules);
 		if(!empty($checkValidate)){
 			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
-			return $this->services->response(406,$checkValidate);
+			if($checkValidate == "The file must be a file of type: jpg, png, jpeg." && $request->type =="4"){
+				if($request->type =="4"){
+					$imgname = "Hackathon_CV_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
+					$postData['cv_file'] = $imgname;
+					$message = "CV";
+					$destinationPath = public_path('/uploads/event/hackathon/');
+					// try {
+					$upload = $image->move($destinationPath, $imgname);
+					// } catch (Exception $e) {
+					// 	return $this->services->response(406,"Terjadi Kesalahan Dalam Proses Upload!");
+					// } catch (\Throwable $e) {
+
+					// }
+					
+					$postData['employee_id'] = $checkUser->user_id;
+					$postData['event_id'] = $request->event_id;
+					
+					$upload = $this->actionServices->updateHackathonfile($postData,$checkUser->user_id);
+					if(!$upload){
+						$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
+					} 
+					return $this->services->response(200,"File berhasil ".$message." diunggah",$request->all());
+				}
+			}
+			elseif($checkValidate == "The file must be a file of type: jpg, png, jpeg."){
+				return $this->services->response(406,"File ".$message." harus menggunakan format jpg|jpeg|png");
+			}
+			else{
+				return $this->services->response(406,$checkValidate);
+			}
 		}	
 		if($request->type =="1"){
 			$imgname = "Hackathon_IDCARD_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
@@ -342,10 +371,10 @@ class EventController extends Controller
 			$postData['transcripts_file'] = $imgname;
 			$message = "Transkrip Nilai";
 		}
-		if($request->type =="4"){
-			$imgname = "Hackathon_CV_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
-			$postData['cv_file'] = $imgname;
-			$message = "CV";
+		if(strtolower($image->getClientOriginalExtension()) == "pdf" && strtolower($image->getClientOriginalExtension()) == "docx" && strtolower($image->getClientOriginalExtension()) == "xlsx"){
+
+			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
+			return $this->services->response(406,"File ".$message." harus menggunakan format jpg|jpeg|png");
 		}
 		$destinationPath = public_path('/uploads/event/hackathon/');
 		// try {
@@ -376,6 +405,9 @@ class EventController extends Controller
 			}
 			if($checkData['transcripts_file'] != "" && !empty($checkData['transcripts_file'])){
 				unlink(public_path('uploads/event/hackathon/'.$checkData['transcripts_file']));
+			}
+			if($checkData['cv_file'] != "" && !empty($checkData['cv_file'])){
+				unlink(public_path('uploads/event/hackathon/'.$checkData['cv_file']));
 			}
 		}
 		$deletedata = $this->actionServices->deleteHackathonData($user_id,$event_id);
