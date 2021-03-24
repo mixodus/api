@@ -587,4 +587,25 @@ class UserController extends BaseController
 		}
 		return $this->services->response(200,"NPWP telah ditambahkan!", $request->all());
 	}
+	public function DeviceToken(Request $request){
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+		if(empty($checkUser)){
+			return $this->services->response(406,"Anda harus login untuk mengakases API ini!");
+		}
+		$rules = [
+			'device_token' => "required|string"
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+		}
+		$postUpdate['device_token'] = $request->device_token;
+		$updateProfile = $this->users->where('user_id', $checkUser->user_id)->update($postUpdate); 
+
+		if(!$updateProfile){
+			return $this->services->response(406,"Koneksi jaringan bermasalah!");
+		}
+		return $this->services->response(200,"Device Token telah ditambahkan!", $request->all());
+	}
 }

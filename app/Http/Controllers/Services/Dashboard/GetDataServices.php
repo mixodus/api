@@ -79,6 +79,9 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
+	function getUserDeviceToken($user_id){
+		return UserModels::select('device_token')->where('user_id',$user_id)->first();
+	}
 	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null){
 		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
 		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp');
