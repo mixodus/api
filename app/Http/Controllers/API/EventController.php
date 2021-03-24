@@ -304,7 +304,7 @@ class EventController extends Controller
 		$rules = [
 			'event_id' => "required|integer",
 			'type' => "required|in:1,2,3,4",
-			'file' => "required|mimes:jpg,png,jpeg|max:5121"
+			'file' => "required|max:5121"
 		];
 		$image = $request->file('file');
 		if(!$request->hasFile('file')){ 
@@ -325,12 +325,8 @@ class EventController extends Controller
 		$checkValidate = $this->services->validate2($request->all(),$rules);
 		if(!empty($checkValidate)){
 			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
-			if($checkValidate == "The file must be a file of type: jpg, png, jpeg."){
-				return $this->services->response(406,"File ".$message." harus menggunakan format jpg|jpeg|png");
-			}else{
-				return $this->services->response(406,$checkValidate);
-			}
-		}		
+			return $this->services->response(406,$checkValidate);
+		}	
 		if($request->type =="1"){
 			$imgname = "Hackathon_IDCARD_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
 			$postData['idcard_file'] = $imgname;
@@ -350,11 +346,6 @@ class EventController extends Controller
 			$imgname = "Hackathon_CV_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
 			$postData['cv_file'] = $imgname;
 			$message = "CV";
-		}
-		if(strtolower($image->getClientOriginalExtension()) == "pdf" && strtolower($image->getClientOriginalExtension()) == "docx" && strtolower($image->getClientOriginalExtension()) == "xlsx"){
-
-			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
-			return $this->services->response(406,"File ".$message." harus menggunakan format jpg|jpeg|png");
 		}
 		$destinationPath = public_path('/uploads/event/hackathon/');
 		// try {
