@@ -224,6 +224,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 		Route::post('/hacktown', 'API\Dashboard\MenuPage\EventController@hacktownCreateEdit');
 		Route::get('/hacktown/participant', 'API\Dashboard\MenuPage\EventController@hacktownParticipant');
 		Route::post('/hacktown/participant/update-status', 'API\Dashboard\MenuPage\EventController@hacktownParticipantUpdate');
+		//api send mail
 		Route::post('/hacktown/participant/update-statusv2', 'API\Dashboard\MenuPage\EventController@hacktownParticipantUpdateV2');
 	});
 	
