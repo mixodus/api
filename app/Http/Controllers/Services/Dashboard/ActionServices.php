@@ -15,9 +15,22 @@ use App\Models\EventModel;
 use App\Models\EventScheduleModel;
 use App\Models\EventParticipantStatusModel;
 use App\Models\EventParticipantModel;
+use App\Models\NotifModel;
 
 class ActionServices extends Controller
 {
+    public function postNotif($type,$detail_id,$user_id,$desc){
+		$data_notif = array(
+			'notif_type_id' => $type,
+			'notif_detail_id' => $detail_id,
+			'user_id' => $user_id,
+			'title' => $desc,
+			'description' => $desc,
+			'created_at' => date('Y-m-d h:i:s'),
+			'modified_at' => date('Y-m-d h:i:s')
+		);	
+		NotifModel::create($data_notif);
+	}
     public function __construct(){
 		$this->services = new GeneralServices();
     }

@@ -183,10 +183,11 @@ class GeneralServices extends BaseController
 	}
 	public static function sendNotif($user_id,$message){
 		$deviceToken = UserModels::select('device_token')->where('user_id',$user_id)->first();
-        if(!empty($deviceToken['device_token'])){
+        // if(!empty($deviceToken['device_token'])){
 			
             $data = [
-				'to'=> $deviceToken['device_token'],
+				// 'to'=> $deviceToken['device_token'],
+				'to'=> 'c7l-GSlZSpWd7vOiumvfzp:APA91bE6NCNjJecaYkSvLN6fhrLogxRWRGU1HeWWvd0b98eWN2qmfUentE37D2E62AVuCtxcKXM7MkDsiDCU6G8RndZcicYWmYdlRx5nFCBuvnNzI6xJ0mapY66ez-qzhkdGKWeVQOs0',
 				'notification'=>[
 					'title' => 'One Apps | Hackathon',
 					'body'  =>$message,
@@ -200,7 +201,8 @@ class GeneralServices extends BaseController
 				'priority'=>10
 			];
 			$client = new Client();
-			$firebase_key = env('SERVER_KEY');
+			// $firebase_key = env('SERVER_KEY');
+			$firebase_key ='AAAAMgNaniI:APA91bFND0eaAyhHcAh7UhaIpW8ZkA2nEKnmXgZKJfoege9ysI2KccblUTjUIUlLPcA4YQQ-JHRJIapJQfhZe1n2_OTlwu63aPWzZXJJW1RLvOsESCY-YYuuRID8JGstDc6x5zlj9vCM';
        		$url = 'https://fcm.googleapis.com/fcm/send';
 			   $headers = [
 				'Authorization' => 'key='.$firebase_key,
@@ -216,18 +218,18 @@ class GeneralServices extends BaseController
 				]);
 			}
 			catch (ClientException $e) {
-				return response()->json([
+				return $response =[
 					'status' =>false,
 					'message' => 'Invalid Device Token ('.$e->getMessage().')',
-				], 406);
+				];
 		
 		   }
-		   	$save_notif = $this->actionServices->postNotif(5,0,$user_id,$message);
-			return json_decode($response->getBody(),true);
+		   return $response =[
+			'status' =>true,
+			'message' => $response->getBody(),
+		];
 	
-        }else{
-			return "Device Token Not Found";
-		}
+        // }
     }
 
 }
