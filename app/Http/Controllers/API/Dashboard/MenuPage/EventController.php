@@ -9,6 +9,7 @@ use App\Http\Controllers\Services\Dashboard\ActionServices;
 use App\Http\Controllers\Services\GeneralServices;
 use App\Models\EventModel;
 use App\Models\EventScheduleModel;
+use App\Models\UserModels;
 
 class EventController extends Controller
 {
@@ -509,7 +510,52 @@ class EventController extends Controller
             $message = "ICStar Hackathon : Selamat anda lolos ke tahap selanjutnya!";
         }
         $send_notif = $this->services->sendNotif($request->employee_id,$message);
-        return $send_notif;
+        if($send_notif['status'] == "true"){
+            //notif
+		    $save_notif = $this->actionServices->postNotif(1,$request->event_id,$request->employee_id,$message);
+		
+        }
+        return $this->actionServices->response(200,"Status updated",array());
+    }
+    public function hacktownParticipantUpdateV2(Request $request)
+    {
+        $checkUser = $this->getDataServices->getAdminbyToken($request);
+        if (!$checkUser) {
+            return $this->actionServices->response(406, "User doesnt exist!");
+        }
+        $rules = [
+            'event_id' => "required|integer",
+            'employee_id' => "required|integer",
+            'schedule_id' => "required|integer",
+            'status' => "required|in:Pending,Failed,Passed",
+        ];
+        
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate)){
+			return $checkValidate;
+        }
+        
+        // $validateDataStatus = $this->getDataServices->validateDataStatusEvent($request->all());
+        // if (!$validateDataStatus->isEmpty()) {
+        //     return $this->actionServices->response(400,"You should change the failed data to change the next step status",array());
+        // }
+
+        // $action = $this->actionServices->hacktownParticipantUpdate($request->all());
+        
+		$userData = UserModels::where('user_id',$request->employee_id)->first();
+
+        $user['email'] = $userData->email;
+        $user['fullname'] = $userData->fullname;
+
+        if($request->status == 'Failed'){
+            $view_blade = 'failed_email_hackathon';
+        }else{
+            $view_blade = 'success_email_hackathon';
+        }
+	
+		$sendEmail = $this->services->sendmail('Hackathon | Participant Status', $user, $view_blade, $user);
+
         return $this->actionServices->response(200,"Status updated",array());
     }
 }

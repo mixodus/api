@@ -322,34 +322,35 @@ class EventController extends Controller
 		if($request->type =="4"){
 			$message = "CV";
 		}
+		
+		if($request->type =="4"){
+			if($request->type =="4"){
+				$imgname = "Hackathon_CV_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
+				$postData['cv_file'] = $imgname;
+				$message = "CV";
+				$destinationPath = public_path('/uploads/event/hackathon/');
+				// try {
+				$upload = $image->move($destinationPath, $imgname);
+				// } catch (Exception $e) {
+				// 	return $this->services->response(406,"Terjadi Kesalahan Dalam Proses Upload!");
+				// } catch (\Throwable $e) {
+
+				// }
+				
+				$postData['employee_id'] = $checkUser->user_id;
+				$postData['event_id'] = $request->event_id;
+				
+				$upload = $this->actionServices->updateHackathonfile($postData,$checkUser->user_id);
+				if(!$upload){
+					$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
+				} 
+				return $this->services->response(200,"File berhasil ".$message." diunggah",$request->all());
+			}
+		}
 		$checkValidate = $this->services->validate2($request->all(),$rules);
 		if(!empty($checkValidate)){
 			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
-			if($checkValidate == "The file must be a file of type: jpg, png, jpeg." && $request->type =="4"){
-				if($request->type =="4"){
-					$imgname = "Hackathon_CV_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
-					$postData['cv_file'] = $imgname;
-					$message = "CV";
-					$destinationPath = public_path('/uploads/event/hackathon/');
-					// try {
-					$upload = $image->move($destinationPath, $imgname);
-					// } catch (Exception $e) {
-					// 	return $this->services->response(406,"Terjadi Kesalahan Dalam Proses Upload!");
-					// } catch (\Throwable $e) {
-
-					// }
-					
-					$postData['employee_id'] = $checkUser->user_id;
-					$postData['event_id'] = $request->event_id;
-					
-					$upload = $this->actionServices->updateHackathonfile($postData,$checkUser->user_id);
-					if(!$upload){
-						$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
-					} 
-					return $this->services->response(200,"File berhasil ".$message." diunggah",$request->all());
-				}
-			}
-			elseif($checkValidate == "The file must be a file of type: jpg, png, jpeg."){
+			if($checkValidate == "The file must be a file of type: jpg, png, jpeg."){
 				return $this->services->response(406,"File ".$message." harus menggunakan format jpg|jpeg|png");
 			}
 			else{
