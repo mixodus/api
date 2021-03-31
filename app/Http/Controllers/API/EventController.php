@@ -262,7 +262,9 @@ class EventController extends Controller
 			'event_id' => "required|integer",
 			'university' => "required|string",
 			'major' => "required|string",
-			'semester' => "required|integer"
+			'semester' => "required|integer",
+			'country' => "required|string",
+			'city' => "required|string",
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 

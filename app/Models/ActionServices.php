@@ -119,8 +119,8 @@ class ActionServices extends BaseController
 			'fullname' => $user->fullname,
 			'date_of_birth' => $user->date_of_birth,
 			'address' => $user->date_of_birth,
-			'country' => $user->country,
-			'city' => $user->province,
+			'country' => $data['country'],
+			'city' => $data['city'],
 			'gender' => $user->gender,
 			'university' => $data['university'],
 			'major' => $data['major'],
@@ -396,7 +396,7 @@ class ActionServices extends BaseController
 	}
 	public function saveEventParticipantStatus($data){
 		$schedule =  EventScheduleModel::where('event_id',$data['event_id'])->get();
-		if (!$eventDetail->isEmpty()) {
+		if (!$schedule->isEmpty()) {
 			foreach($schedule as $key){
 				EventParticipantStatusModel::where('employee_id',$data['user_id'])->where('schedule_id',$key['schedule_id'])->delete();
 
