@@ -29,7 +29,8 @@ class EventParticipantModel extends Model
 		'created_at',
 		'modified_at',
 		'updated_at',
-		'cv_file'
+		'cv_file',
+		'link_drive',
 	];
     protected $hidden = ['created_at','modified_at','updated_at'];
     

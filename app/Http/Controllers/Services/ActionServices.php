@@ -112,6 +112,7 @@ class ActionServices extends BaseController
 		return $save;
 	}
 	public function postParticipantHackathon($data,$user){
+		
 		$data = array(
 			'event_id' => $data['event_id'],
 			'employee_id' => $user->user_id,
@@ -126,6 +127,7 @@ class ActionServices extends BaseController
 			'major' => $data['major'],
 			'semester' => $data['semester'],
 			'status' => 'Approved',
+			'link_drive' => $data['link_drive'],
 			'modified_at' => date('Y-m-d h:i:s')
 		);
 		$save = EventParticipantModel::create($data);
