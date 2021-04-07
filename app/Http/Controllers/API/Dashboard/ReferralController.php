@@ -55,29 +55,44 @@ class ReferralController extends Controller
 		}
 	}
 	public function getReferralMember(Request $request){
-		$rules = [
-			'start' => "nullable|integer",
-			'length' => "nullable|integer"
-		];
-		$checkValidate = $this->services->validate($request->all(),$rules);
+		$getUser = $this->getDataServices->getAdminbyToken($request);
+		if($this->getDataServices->getProperty($getUser, 'role_id')==false){
+			$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
+		
+			if($request->referral_employee_id != null && $request->referral_employee_id !=""){
+				$getData->where('referral_employee_id', $request->referral_employee_id);
+			}
+			
+			$collect = $getData->orderBy('referral_id','DESC')->get();
 
-		if(!empty($checkValidate))
-			return $checkValidate;
-
-		$checkUser = $this->getDataServices->getAdminbyToken($request);
-
-		if(empty($request['start']))
-			$request['start'] = 0;
-
-		if(empty($request['length']))
-			$request['length'] = 25;
-
-		$getData = $this->getDataServices->getReferralMember($checkUser->user_id);
-
-		if (!$getData->isEmpty()) {
-			return $this->services->response(200,"Referral List",$getData);
-		}else{
-			return $this->services->response(200,"Referral not found!");
+			if(!$collect->isEmpty()){
+				$collect = $collect->map(function($key){
+					$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
+					return $key;
+				});
+				return $this->services->response(200,"All Referral Member List", $collect);
+			}else{
+				return $this->services->response(200,"You Have No Referral!");
+			}
+		}
+		elseif($getUser->role_id == 1 || $getUser->role_id == 0){
+			$getData = ReferralModel::select('*')->with('AdminModel');
+			if(!empty($getData)){
+				$collect = $getData->orderBy('referral_id','DESC')->get();
+				if(!$collect->isEmpty()){
+					$collect = $collect->map(function($key){
+						$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
+						return $key;
+					});
+					return $this->services->response(200,"All Referral Member List", $collect);
+				}
+			}
+			else{
+				return $this->services->response(404,"Referral Not Found");
+			}
+		}
+		else{
+			return $this->services->response(404,"You have no access");
 		}
 	}
 

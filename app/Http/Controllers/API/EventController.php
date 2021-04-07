@@ -374,6 +374,11 @@ class EventController extends Controller
 			$postData['transcripts_file'] = $imgname;
 			$message = "Transkrip Nilai";
 		}
+		if($request->type =="4"){
+			$imgname = "Hackathon_CV_".round(microtime(true)).'.'.$image->getClientOriginalExtension();
+			$postData['transcripts_file'] = $imgname;
+			$message = "CV";
+		}
 		if(strtolower($image->getClientOriginalExtension()) == "pdf" && strtolower($image->getClientOriginalExtension()) == "docx" && strtolower($image->getClientOriginalExtension()) == "xlsx"){
 
 			$deletData = $this->deleteHackathonData($checkUser->user_id,$request->event_id);
