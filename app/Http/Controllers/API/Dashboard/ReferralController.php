@@ -56,7 +56,7 @@ class ReferralController extends Controller
 	}
 	public function getReferralMember(Request $request){
 		$getUser = $this->getDataServices->getAdminbyToken($request);
-		if($this->getDataServices->getProperty($getUser, 'role_id')==false){
+		if($this->getDataServices->getProperty($getUser, 'role_id')==3){
 			$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
 		
 			if($request->referral_employee_id != null && $request->referral_employee_id !=""){
