@@ -58,6 +58,24 @@ class GetDataServices extends BaseController
 	function getCountryList(){
 		return CountryModel::select('*')->get();
 	}
+	function getProperty($object, $propertyName, $defaultValue = false)
+	{
+		$returnValue = $defaultValue;
+
+		if (!empty($object)) {
+			if (is_array($object)) {
+				if (isset($object[$propertyName])) {
+					$returnValue = $object[$propertyName];
+				}
+			} else {
+				if (isset($object->$propertyName)) {
+					$returnValue = $object->$propertyName;
+				}
+			}
+		}
+
+		return $returnValue;
+	}
 	// =========================================USER MODULE ===============================================================
 	function userData($id){
 		$data = AdminModel::select('user_id','email','first_name', 'gender',

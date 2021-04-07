@@ -52,6 +52,7 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 	Route::get('/event/event_type/{id}', 'API\EventController@EventType');
 	Route::get('/event/detail/{id}', 'API\EventController@detail');
 	Route::get('/event/countries', 'API\GeneralController@getCountryList');
+	Route::post('/event/hackathon/file', 'API\EventController@HackathonUploadFile');
 
 	//Challenge
 	Route::get('/challenge', 'API\ChallengeController@index');
