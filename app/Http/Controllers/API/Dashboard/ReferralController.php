@@ -56,11 +56,11 @@ class ReferralController extends Controller
 	}
 	public function getReferralMember(Request $request){
 		$getUser = $this->getDataServices->getAdminbyToken($request);
-		if($this->getDataServices->getProperty($getUser, 'role_id')===false){
+		if($this->getDataServices->getProperty($getUser, 'role_id') !== 1 || $this->getDataServices->getProperty($getUser, 'role_id') == false){
 			$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
-		
-			if($request->referral_employee_id != null && $request->referral_employee_id !=""){
-				$getData->where('referral_employee_id', $request->referral_employee_id);
+
+			if($getUser->user_id != null && $getUser->user_id !=""){
+				$getData->where('referral_employee_id', $getUser->user_id);
 			}
 			
 			$collect = $getData->orderBy('referral_id','DESC')->get();
@@ -126,13 +126,14 @@ class ReferralController extends Controller
 	}
 	// kedepannya akan ada upload cv
 	public function AssignMember(Request $request){
+		$checkUser = $this->getDataServices->getAdminbyToken($request);
+
 		$rules = [
 			'source' => "required|in:web,mobile",
 			'referral_name' => "required|string",
 			'referral_email' => "required|string|email|unique:xin_employees,email",
 			'referral_contact_no' => "required|string",
 			'referral_status' => "required|string|in:Success,Pending,InReview,Failed",
-			'referral_employee_id' => "required|string",
 			'file' => "required",
 			'fee' => "required|string",
 			'job_position' => "nullable|string"
@@ -162,7 +163,7 @@ class ReferralController extends Controller
 			'referral_email' => $request['referral_email'],
 			'referral_contact_no' => $request['referral_contact_no'],
 			'referral_status' => $request['referral_status'], 
-			'referral_employee_id' => $request['referral_employee_id'],
+			'referral_employee_id' => $checkUser->user_id,
 			'file' => $request['file_name'],
 			'fee' => $request['fee'],
 			'job_position' => $request['job_position'],
@@ -171,7 +172,7 @@ class ReferralController extends Controller
 		);
 
 		ReferralModel::create($postParam);
-		return $this->services->response(200,"Member Assigned",$request->all()); 
+		return $this->services->response(200,"Member Assigned",$postParam); 
 	}
 
 	public function UpdateReferralMember(Request $request, $id)
