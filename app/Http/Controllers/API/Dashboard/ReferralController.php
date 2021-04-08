@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API\Dashboard;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Services\GeneralServices;
-use App\Http\Controllers\Services\ActionServices;
+use App\Http\Controllers\Services\Dashboard\ActionServices;
 use App\Http\Controllers\Services\Dashboard\GetDataServices;
 use App\Models\ReferralModel;
 use App\Models\AdminModel;
@@ -44,7 +44,7 @@ class ReferralController extends Controller
 			return $this->services->response(404,"Referral Not Found");
 		}
 		$getData['file_url'] = url('/')."/uploads/referral_file/".$getData['file'];
-		return $this->services->response(200,"Data Details By ID", $getData);	
+		return $this->services->response(200,"Data Details By ID", $getData);
 	}
 	public function getReferralStatusByID(Request $request, $id){
 		$getData = ReferralModel::select('*')->where('referral_id', $id)->with('AdminModel')->first();
@@ -70,7 +70,8 @@ class ReferralController extends Controller
 					$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
 					return $key;
 				});
-				return $this->services->response(200,"All Referral Member List", $collect);
+				$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
+				return $this->services->response(200,"All Referral Member List", $collect, $action);
 			}else{
 				return $this->services->response(200,"You Have No Referral!");
 			}
@@ -79,12 +80,13 @@ class ReferralController extends Controller
 			$getData = ReferralModel::select('*')->with('AdminModel');
 			if(!empty($getData)){
 				$collect = $getData->orderBy('referral_id','DESC')->get();
+				$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
 				if(!$collect->isEmpty()){
 					$collect = $collect->map(function($key){
 						$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
 						return $key;
 					});
-					return $this->services->response(200,"All Referral Member List", $collect);
+					return $this->services->response(200,"Admin: All Referral Member List", $collect, $action);
 				}
 			}
 			else{
@@ -135,10 +137,10 @@ class ReferralController extends Controller
 			'referral_contact_no' => "required|string",
 			'referral_status' => "required|string|in:Success,Pending,InReview,Failed",
 			'file' => "required",
-			'fee' => "required|string",
 			'job_position' => "nullable|string"
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
+		$postParam = array();
 
 		if(!empty($checkValidate))
 			return $checkValidate; 
@@ -150,26 +152,43 @@ class ReferralController extends Controller
 
 		$request['file_name'] = $fileName;
 
-		$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
-
 		$checkReferral = $this->getDataServices->checkMemberReferral(null,$request->referral_email);
 		if (!$checkReferral->isEmpty()) {
-			return $this->services->response(401,"Sorry, Your friend is already registered in referral!");
+			return $this->services->response(401,"Sorry, Your friend is already registered in referral! Or registered at other Hunters!");
 		}
 
-		$postParam = array(
-			'source' => $request['source'],
-			'referral_name' => $request['referral_name'],
-			'referral_email' => $request['referral_email'],
-			'referral_contact_no' => $request['referral_contact_no'],
-			'referral_status' => $request['referral_status'], 
-			'referral_employee_id' => $checkUser->user_id,
-			'file' => $request['file_name'],
-			'fee' => $request['fee'],
-			'job_position' => $request['job_position'],
-			'created_at' => date('Y-m-d h:i:s'),
-			'modified_at' => date('Y-m-d h:i:s')
-		);
+		if($this->getDataServices->getProperty($checkUser, 'role_id') !== 1 || $this->getDataServices->getProperty($checkUser, 'role_id') == false){
+			$postParam =
+				['source' => $request['source'],
+				'referral_name' => $request['referral_name'],
+				'referral_email' => $request['referral_email'],
+				'referral_contact_no' => $request['referral_contact_no'],
+				'referral_status' => $request['referral_status'], 
+				'referral_employee_id' => $checkUser->user_id,
+				'file' => $request['file_name'],
+				'job_position' => $request['job_position'],
+				'created_at' => date('Y-m-d h:i:s'),
+				'modified_at' => date('Y-m-d h:i:s')]
+			;
+		}
+		elseif($checkUser->role_id == 1 || $checkUsers->role_id == 0){
+			$postParam =
+				['source' => $request['source'],
+				'referral_name' => $request['referral_name'],
+				'referral_email' => $request['referral_email'],
+				'referral_contact_no' => $request['referral_contact_no'],
+				'referral_status' => $request['referral_status'], 
+				'referral_employee_id' => $checkUser->user_id,
+				'file' => $request['file_name'],
+				'fee' => $request['fee'],
+				'job_position' => $request['job_position'],
+				'created_at' => date('Y-m-d h:i:s'),
+				'modified_at' => date('Y-m-d h:i:s')]
+			;
+		}
+		else{
+			return $this->services->response(404,"You have no access");
+		}
 
 		ReferralModel::create($postParam);
 		return $this->services->response(200,"Member Assigned",$postParam); 
@@ -181,7 +200,7 @@ class ReferralController extends Controller
 			'referral_name' 	=> "required|string",
 			'referral_email' 	=> "required|string|email|unique:xin_employees,email",
 			'referral_contact_no' 	=> "required|string",
-			'fee' 			=> "required|string",
+			'fee' 			=> "string",
 			'job_position' 		=> "nullable|string",
 			'referral_employee_id' 	=> "required"
 		];
