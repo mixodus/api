@@ -196,6 +196,7 @@ class ReferralController extends Controller
 
 	public function UpdateReferralMember(Request $request, $id)
 	{
+		$checkUser = $this->getDataServices->getAdminbyToken($request);
 		$rules = [
 			'referral_name' 	=> "required|string",
 			'referral_email' 	=> "required|string|email|unique:xin_employees,email",
