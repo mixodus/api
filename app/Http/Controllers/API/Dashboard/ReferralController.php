@@ -234,12 +234,23 @@ class ReferralController extends Controller
             		$file->move($folder, $filename);
         	}
 
-		//$status = array('Successful', 'Failed', 'Validating Application', 'Waiting for Interview', 'Under Review');
-		$saveReferral = $this->actionServices->UpdateReferralMember($request->all(),$id, $filename);
-		if(!$saveReferral){
-			return $this->services->response(503,"Server Error!");
-		}
-		return $this->services->response(200,"Referral Updated.",$request->all());
+			if($this->getDataServices->getProperty($checkUser, 'role_id') !== 1 || $this->getDataServices->getProperty($checkUser, 'role_id') == false){
+				$saveReferral = $this->actionServices->UpdateReferralMember($request->all(),$id, $filename);
+				if(!$saveReferral){
+					return $this->services->response(503,"Server Error!");
+				}
+				return $this->services->response(200,"Referral Updated.",$request->all());
+			}
+			elseif($checkUser->role_id == 1 || $checkUsers->role_id == 0){
+				$saveReferral = $this->actionServices->AdminUpdateReferralMember($request->all(),$id, $filename);
+				if(!$saveReferral){
+					return $this->services->response(503,"Server Error!");
+				}
+				return $this->services->response(200,"Referral Updated.",$request->all());
+			}
+			else{
+				return $this->services->response(404,"You have no access");
+			}
 	}
 	public function UpdateReferralStatus(Request $request, $id)
 	{

@@ -166,7 +166,7 @@ class ActionServices extends Controller
 		);
 		return ReferralModel::where('referral_id',$refferal_id)->update($postParam);
 	}
-	public function UpdateReferralMember($data_input, $referral_id, $filename)
+	public function AdminUpdateReferralMember($data_input, $referral_id, $filename)
     {
         $postParam = array(
             'referral_name' 		=> $data_input['referral_name'],
@@ -174,6 +174,18 @@ class ActionServices extends Controller
 			'referral_contact_no' 	=> $data_input['referral_contact_no'],
 			'file'					=> $filename,
 			'fee' 					=> $data_input['fee'],
+			'job_position' 			=> $data_input['job_position'],
+        );
+
+        return ReferralModel::where('referral_id',$referral_id)->update($postParam);
+    }
+    public function UpdateReferralMember($data_input, $referral_id, $filename)
+    {
+        $postParam = array(
+            'referral_name' 		=> $data_input['referral_name'],
+			'referral_email' 		=> $data_input['referral_email'],
+			'referral_contact_no' 	=> $data_input['referral_contact_no'],
+			'file'					=> $filename,
 			'job_position' 			=> $data_input['job_position'],
         );
 
