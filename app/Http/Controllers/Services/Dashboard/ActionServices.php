@@ -175,7 +175,6 @@ class ActionServices extends Controller
 			'file'					=> $filename,
 			'fee' 					=> $data_input['fee'],
 			'job_position' 			=> $data_input['job_position'],
-			'referral_employee_id' 	=> $data_input['referral_employee_id']
         );
 
         return ReferralModel::where('referral_id',$referral_id)->update($postParam);
