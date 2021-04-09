@@ -71,9 +71,9 @@ class ReferralController extends Controller
 					return $key;
 				});
 				$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
-				return $this->services->response(200,"All Referral Member List", $collect, $action);
+				return $this->actionServices->response(200,"All Referral Member List", $collect, $action);
 			}else{
-				return $this->services->response(200,"You Have No Referral!");
+				return $this->actionServices->response(200,"You Have No Referral!");
 			}
 		}
 		elseif($getUser->role_id == 1 || $getUser->role_id == 0){
@@ -86,11 +86,11 @@ class ReferralController extends Controller
 						$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
 						return $key;
 					});
-					return $this->services->response(200,"Admin: All Referral Member List", $collect, $action);
+					return $this->actionServices->response(200,"Admin: All Referral Member List", $collect, $action);
 				}
 			}
 			else{
-				return $this->services->response(404,"Referral Not Found");
+				return $this->actionServices->response(404,"Referral Not Found");
 			}
 		}
 		else{
