@@ -722,6 +722,62 @@ class GetDataServices extends BaseController
 	public function getReferralMember($user_id,$offset =0,$limit=25){
 		return ReferralModel::select('*')->where('referral_employee_id',$user_id)->offset($offset)->limit($limit)->orderBy('referral_id', 'DESC')->get();
 	}
+	public function ReferralSortByStatus($status){
+		if($status == null){
+			$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
+			$results = ReferralModel::select('*')->where('source','web')->with('AdminModel')->first();
+			if(!$results==null){
+				return $getData;
+			}else{
+				return null;
+			}
+		}
+		if($status == "All"){
+			$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
+			$results = ReferralModel::select('*')->where('source','web')->with('AdminModel')->first();
+			if(!$results==null){
+				return $getData;
+			}else{
+				return null;
+			}
+		}
+		if($status == "Pending"){
+			$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','Pending')->with('AdminModel');
+			$results = ReferralModel::select('*')->where('source','web')->where('referral_status','Pending')->with('AdminModel')->first();
+			if($results==null){
+				return null;
+			}else{
+				return $getData;
+			}
+		}
+		if($status == "Failed"){
+			$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','Failed')->with('AdminModel');
+			$results = ReferralModel::select('*')->where('source','web')->where('referral_status','Failed')->with('AdminModel')->first();
+			if(!$results==null){
+				return $getData;
+			}else{
+				return null;
+			}
+		}
+		if($status == "InReview"){
+			$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','InReview')->with('AdminModel');
+			$results = ReferralModel::select('*')->where('source','web')->where('referral_status','InReview')->with('AdminModel')->first();
+			if(!$results==null){
+				return $getData;
+			}else{
+				return null;
+			}
+		}
+		if($status == "Success"){
+			$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','Success')->with('AdminModel');
+			$results = ReferralModel::select('*')->where('source','web')->where('referral_status','Success')->with('AdminModel')->first();
+			if(!$results==null){
+				return $getData;
+			}else{
+				return null;
+			}
+		}
+	}
 	public function ValidateReferralPoints($user_id=null,$email=null){
 		$query = ReferralModel::select('referral_id','withdraw_reward','referral_name as name','referral_status as status','added_to_transaction_point as added_yet');
 				
