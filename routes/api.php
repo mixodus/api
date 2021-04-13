@@ -77,7 +77,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/profile/check-npwp', 'API\UserController@checkNpwp');
 	Route::post('/profile/npwp', 'API\UserController@updateNpwp')->middleware('log.route:user,Update-NPWP,action');
 
-	Route::post('/device_id/{id}', 'API\UserController@postDeviceID');
+	Route::post('/device_id/{id}', 'API\UserController@postDeviceID')->middleware('log.route:user,Post-DeviceID,action');
 
 	//Jobs
 	Route::get('/job_post/progress', 'API\JobsController@userJobsApplication');

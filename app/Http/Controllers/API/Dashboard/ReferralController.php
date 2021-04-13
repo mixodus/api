@@ -58,48 +58,7 @@ class ReferralController extends Controller
 		$getUser = $this->getDataServices->getAdminbyToken($request);
 		if($this->getDataServices->getProperty($getUser, 'role_id') !== 1 || $this->getDataServices->getProperty($getUser, 'role_id') == false){
 			$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
-			if($request->header('SortByStatus') == null){
-				$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('source','web')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "All"){
-				$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('source','web')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "Pending"){
-				$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','Pending')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('source','web')->where('referral_status','Pending')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "Failed"){
-				$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','Failed')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('source','web')->where('referral_status','Failed')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "InReview"){
-				$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','InReview')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('source','web')->where('referral_status','InReview')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "Success"){
-				$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','Success')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('source','web')->where('referral_status','Success')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
+			$result = $this->getDataServices->ReferralSortByStatus($request->header('SortByStatus'));
 
 			if($getUser->user_id != null && $getUser->user_id !=""){
 				$getData->where('referral_employee_id', $getUser->user_id);
@@ -119,50 +78,9 @@ class ReferralController extends Controller
 		}
 		elseif($getUser->role_id == 1 || $getUser->role_id == 0){
 			$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
-			if($request->header('SortByStatus') == null){
-				$getData = ReferralModel::select('*')->with('AdminModel');
-				$results = ReferralModel::select('*')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "All"){
-				$getData = ReferralModel::select('*')->with('AdminModel');
-				$results = ReferralModel::select('*')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "Pending"){
-				$getData = ReferralModel::select('*')->where('referral_status','Pending')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('referral_status','Pending')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "Failed"){
-				$getData = ReferralModel::select('*')->where('referral_status','Failed')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('referral_status','Failed')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "InReview"){
-				$getData = ReferralModel::select('*')->where('referral_status','InReview')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('referral_status','InReview')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if($request->header('SortByStatus') == "Success"){
-				$getData = ReferralModel::select('*')->where('referral_status','Success')->with('AdminModel');
-				$results = ReferralModel::select('*')->where('referral_status','Success')->with('AdminModel')->first();
-				if($results==null){
-					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
-				}
-			}
-			if(!empty($getData)){
-				$collect = $getData->orderBy('referral_id','DESC')->get();
+			$result = $this->getDataServices->ReferralSortByStatus($request->header('SortByStatus'));
+			if(!empty($result)){
+				$collect = $result->orderBy('referral_id','DESC')->get();
 				if(!$collect->isEmpty()){
 					$collect = $collect->map(function($key){
 						$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
@@ -172,11 +90,11 @@ class ReferralController extends Controller
 				}
 			}
 			else{
-				return $this->actionServices->response(404,"Referral Not Found");
+				return $this->actionServices->response(200,"You Have No Referral!",$result, $action);
 			}
 		}
 		else{
-			return $this->services->response(404,"You have no access");
+			return $this->services->response(406,"You have no access");
 		}
 	}
 
