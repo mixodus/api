@@ -58,7 +58,7 @@ class ReferralController extends Controller
 		$getUser = $this->getDataServices->getAdminbyToken($request);
 		if($this->getDataServices->getProperty($getUser, 'role_id') !== 1 || $this->getDataServices->getProperty($getUser, 'role_id') == false){
 			$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
-			$result = $this->getDataServices->ReferralSortByStatus($request->header('SortByStatus'));
+			$result = $this->getDataServices->ReferralSortByStatus($request->SortByStatus);
 
 			if($getUser->user_id != null && $getUser->user_id !=""){
 				$getData->where('referral_employee_id', $getUser->user_id);
@@ -78,7 +78,7 @@ class ReferralController extends Controller
 		}
 		elseif($getUser->role_id == 1 || $getUser->role_id == 0){
 			$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
-			$result = $this->getDataServices->ReferralSortByStatus($request->header('SortByStatus'));
+			$result = $this->getDataServices->ReferralSortByStatus($request->SortByStatus);
 			if(!empty($result)){
 				$collect = $result->orderBy('referral_id','DESC')->get();
 				if(!$collect->isEmpty()){
