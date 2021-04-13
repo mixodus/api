@@ -132,14 +132,15 @@ class UserController extends BaseController
 		return $this->services->response(200,"Permintaan Reset Password telah dikirim ke email Anda");
 	}
 
-	public function postDeviceID(Request $request, $id){
+	public function postDeviceID(Request $request){
+		$getUser = $this->getDataServices->getUserbyToken($request);
 		$rules = ['device_id' => 'required|string'];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
 		if(!empty($checkValidate)){
 			return $this->services->response(404,"Device ID!");
 		}
-		$postUpdate = $this->actionServices->postDeviceID($request->all(), $id);
+		$postUpdate = $this->actionServices->postDeviceID($request->all(), $getUser->user_id);
 		if (!$postUpdate)
 			return $this->services->response(400,"User tidak ditemukan!",null,1);
 
