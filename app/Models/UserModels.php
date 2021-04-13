@@ -12,6 +12,7 @@ class UserModels extends Model
 	public $primarykey = 'user_id';
 	protected $fillable = [
 			'user_id',
+			'device_id',
 			'email',
 			'fullname',
 			'date_of_birth',
