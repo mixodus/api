@@ -57,7 +57,49 @@ class ReferralController extends Controller
 	public function getReferralMember(Request $request){
 		$getUser = $this->getDataServices->getAdminbyToken($request);
 		if($this->getDataServices->getProperty($getUser, 'role_id') !== 1 || $this->getDataServices->getProperty($getUser, 'role_id') == false){
-			$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
+			$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
+			if($request->header('SortByStatus') == null){
+				$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('source','web')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "All"){
+				$getData = ReferralModel::select('*')->where('source','web')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('source','web')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "Pending"){
+				$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','Pending')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('source','web')->where('referral_status','Pending')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "Failed"){
+				$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','Failed')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('source','web')->where('referral_status','Failed')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "InReview"){
+				$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','InReview')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('source','web')->where('referral_status','InReview')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "Success"){
+				$getData = ReferralModel::select('*')->where('source','web')->where('referral_status','Success')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('source','web')->where('referral_status','Success')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
 
 			if($getUser->user_id != null && $getUser->user_id !=""){
 				$getData->where('referral_employee_id', $getUser->user_id);
@@ -70,17 +112,57 @@ class ReferralController extends Controller
 					$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];
 					return $key;
 				});
-				$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
 				return $this->actionServices->response(200,"All Referral Member List", $collect, $action);
 			}else{
-				return $this->actionServices->response(200,"You Have No Referral!");
+				return $this->actionServices->response(200,"You Have No Referral!",$collect, $action);
 			}
 		}
 		elseif($getUser->role_id == 1 || $getUser->role_id == 0){
-			$getData = ReferralModel::select('*')->with('AdminModel');
+			$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
+			if($request->header('SortByStatus') == null){
+				$getData = ReferralModel::select('*')->with('AdminModel');
+				$results = ReferralModel::select('*')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "All"){
+				$getData = ReferralModel::select('*')->with('AdminModel');
+				$results = ReferralModel::select('*')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "Pending"){
+				$getData = ReferralModel::select('*')->where('referral_status','Pending')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('referral_status','Pending')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "Failed"){
+				$getData = ReferralModel::select('*')->where('referral_status','Failed')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('referral_status','Failed')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "InReview"){
+				$getData = ReferralModel::select('*')->where('referral_status','InReview')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('referral_status','InReview')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
+			if($request->header('SortByStatus') == "Success"){
+				$getData = ReferralModel::select('*')->where('referral_status','Success')->with('AdminModel');
+				$results = ReferralModel::select('*')->where('referral_status','Success')->with('AdminModel')->first();
+				if($results==null){
+					return $this->actionServices->response(200,"You Have No Referral!",$results,$action);
+				}
+			}
 			if(!empty($getData)){
 				$collect = $getData->orderBy('referral_id','DESC')->get();
-				$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
 				if(!$collect->isEmpty()){
 					$collect = $collect->map(function($key){
 						$key['file_url']  = url('/')."/uploads/referral_file/".$key['file'];

@@ -145,6 +145,10 @@ class ActionServices extends BaseController
 	public function WithdrawRewardModel($refferal_id){
 		
 	}
+	public function postDeviceID($request, $id){
+		$postParam = array('device_id' => $request['device_id']);
+		return UserModels::where('user_id', $id)->update($postParam);
+	}
 	public function updateReferral($refferal_id){
 		$postParam = array(
 			'added_to_transaction_point' => 1
