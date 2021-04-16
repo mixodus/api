@@ -122,7 +122,7 @@ class EventController extends Controller
 	}
 	// ================================================
 	public function HackathonSemester(){
-		$data['format1'] = array(6,7,8,9,10);
+		$data['format1'] = array(6,7,8,9,10,'Fresh Graduate');
 		// for ($i=1; $i <= 8; $i++) { 
 		// 	$semester['semester'] = $i;
 		// 	$array[] = $semester;
