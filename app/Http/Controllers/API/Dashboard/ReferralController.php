@@ -76,7 +76,7 @@ class ReferralController extends Controller
 				return $this->actionServices->response(200,"You Have No Referral!",$collect, $action);
 			}
 		}
-		elseif($getUser->role_id == 1 || $getUser->role_id == 0){
+		elseif($getUser->role_id == 1 || $getUser->role_id == 5){
 			$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
 			$result = $this->getDataServices->ReferralSortByStatus($request->SortByStatus);
 			if(!empty($result)){
