@@ -56,15 +56,15 @@ class ReferralController extends Controller
 	}
 	public function getReferralMember(Request $request){
 		$getUser = $this->getDataServices->getAdminbyToken($request);
-		if($this->getDataServices->getProperty($getUser, 'role_id') !== 1 || $this->getDataServices->getProperty($getUser, 'role_id') == false){
+		if($getUser->role_id == 3){
 			$action = $this->actionServices->getactionrole($getUser->role_id, 'freelancer');
 			$result = $this->getDataServices->ReferralSortByStatus($request->SortByStatus);
 
 			if($getUser->user_id != null && $getUser->user_id !=""){
-				$getData->where('referral_employee_id', $getUser->user_id);
+				$result->where('referral_employee_id', $getUser->user_id);
 			}
 			
-			$collect = $getData->orderBy('referral_id','DESC')->get();
+			$collect = $result->orderBy('referral_id','DESC')->get();
 
 			if(!$collect->isEmpty()){
 				$collect = $collect->map(function($key){
@@ -73,7 +73,7 @@ class ReferralController extends Controller
 				});
 				return $this->actionServices->response(200,"All Referral Member List", $collect, $action);
 			}else{
-				return $this->actionServices->response(200,"You Have No Referral!",$collect, $action);
+				return $this->actionServices->response(200,"No Referral exist in this status!",$collect, $action);
 			}
 		}
 		elseif($getUser->role_id == 1 || $getUser->role_id == 5){
@@ -90,7 +90,7 @@ class ReferralController extends Controller
 				}
 			}
 			else{
-				return $this->actionServices->response(200,"You Have No Referral!",$result, $action);
+				return $this->actionServices->response(200,"No Referral exist in this status!",$result, $action);
 			}
 		}
 		else{
