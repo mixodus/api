@@ -262,7 +262,7 @@ class EventController extends Controller
 			'event_id' => "required|integer",
 			'university' => "required|string",
 			'major' => "required|string",
-			'semester' => "required|integer",
+			'semester' => "required|string",
 			'country' => "required|string",
 			'city' => "required|string",
 		];
