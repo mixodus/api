@@ -43,6 +43,10 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 	Route::get('/news', 'API\NewsController@index');
 	Route::get('/news/detail/{id}', 'API\NewsController@detail');
 
+	//city by country
+	Route::get('/city/country', 'API\CityController@getCityByCountry');
+
+
 	//Jobs
 	Route::get('/job_post', 'API\JobsController@index');
 	Route::get('/job_post/detail/{id}', 'API\JobsController@detail');
