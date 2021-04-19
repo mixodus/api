@@ -44,7 +44,7 @@ Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($rou
 	Route::get('/news/detail/{id}', 'API\NewsController@detail');
 
 	//city by country
-	Route::get('/city/country', 'API\CityController@getCityByCountry');
+	Route::get('/country/city', 'API\CityController@getCityByCountry');
 
 
 	//Jobs
