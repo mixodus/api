@@ -26,6 +26,7 @@ use App\Models\ChallengeModel;
 use App\Models\ChallengeParticipants;
 use App\Models\ChallengeQuiz;
 use App\Models\NewsModel;
+use App\Models\Fase2\CityModel;
 use App\Models\JobsModel;
 use App\Models\JobsApplicationModel;
 use App\Models\SettingModel;
@@ -338,6 +339,17 @@ class GetDataServices extends BaseController
 			}]);
 		}])->first(); 
 	}
+
+	public function CityByCountry($request){
+		$id = $request->id_negara;
+		$name = $request->nama;
+		$city = CityModel::select('*')->where('id_negara', $id)->where('nama','like', '%'.$name.'%');
+		if($city->first()==null){
+			return null;
+		}
+		return $city->limit(10)->get();
+	}
+
 	
 	// =========================================Jobs MODULE ==============================================================
 	public function getJobs($id=null,$user_id=null,$filtering=null){

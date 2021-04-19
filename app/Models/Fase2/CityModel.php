@@ -11,7 +11,8 @@ class CityModel extends Model
 	protected $fillable = [
 		'id_prov',
         'nama',
-        'id_jenis'
+        'id_jenis',
+		'id_negara'
 	];
 	protected $hidden = ['id_jenis'];
 }
