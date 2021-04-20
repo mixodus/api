@@ -144,7 +144,7 @@ class UserController extends BaseController
 		if (!$postUpdate)
 			return $this->services->response(400,"User tidak ditemukan!",null,1);
 
-		return $this->services->response(200,"Device ID berhasil di taruh!",$request->all());
+		return $this->services->response(200,"Device ID berhasil di input!",$request->all());
 	}
 
 	public function resetPasswordAction(Request $request){
