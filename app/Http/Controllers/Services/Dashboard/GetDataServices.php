@@ -750,9 +750,9 @@ class GetDataServices extends BaseController
 				return $getData;
 			}
 		}
-		if($status == "Failed"){
-			$getData = ReferralModel::select('*')->where('referral_status','Failed')->with('AdminModel');
-			$results = ReferralModel::select('*')->where('referral_status','Failed')->with('AdminModel')->first();
+		if($status == "NotPassed"){
+			$getData = ReferralModel::select('*')->where('referral_status','NotPassed')->with('AdminModel');
+			$results = ReferralModel::select('*')->where('referral_status','NotPassed')->with('AdminModel')->first();
 			if(!$results==null){
 				return $getData;
 			}else{
@@ -768,9 +768,18 @@ class GetDataServices extends BaseController
 				return null;
 			}
 		}
-		if($status == "Success"){
-			$getData = ReferralModel::select('*')->where('referral_status','Success')->with('AdminModel');
-			$results = ReferralModel::select('*')->where('referral_status','Success')->with('AdminModel')->first();
+		if($status == "Passed"){
+			$getData = ReferralModel::select('*')->where('referral_status','Passed')->with('AdminModel');
+			$results = ReferralModel::select('*')->where('referral_status','Passed')->with('AdminModel')->first();
+			if(!$results==null){
+				return $getData;
+			}else{
+				return null;
+			}
+		}
+		if($status == "Complete"){
+			$getData = ReferralModel::select('*')->where('referral_status','Complete')->with('AdminModel');
+			$results = ReferralModel::select('*')->where('referral_status','Complete')->with('AdminModel')->first();
 			if(!$results==null){
 				return $getData;
 			}else{
