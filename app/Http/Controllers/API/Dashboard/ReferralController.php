@@ -157,7 +157,7 @@ class ReferralController extends Controller
 			return $this->services->response(401,"Sorry, Your friend is already registered in referral! Or registered at other Hunters!");
 		}
 
-		if($this->getDataServices->getProperty($checkUser, 'role_id') !== 1 || $this->getDataServices->getProperty($checkUser, 'role_id') == false){
+		if($checkUser->role_id == 3){
 			$postParam =
 				['source' => $request['source'],
 				'referral_name' => $request['referral_name'],
@@ -171,7 +171,7 @@ class ReferralController extends Controller
 				'modified_at' => date('Y-m-d h:i:s')]
 			;
 		}
-		elseif($checkUser->role_id == 1 || $checkUsers->role_id == 0){
+		elseif($checkUser->role_id == 1 || $checkUsers->role_id == 5){
 			$postParam =
 				['source' => $request['source'],
 				'referral_name' => $request['referral_name'],
@@ -228,21 +228,23 @@ class ReferralController extends Controller
 
             		if($referralData->file != '' && $referralData->file != null){
                 		$file_old = $folder.$referralData->file;
-                		unlink($file_old);
+                		if(file_exists($file_old)){
+							unlink($file_old);
+						}
             		}  
             		$extension = $file->getClientOriginalExtension();
             		$filename = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
             		$file->move($folder, $filename);
         	}
 
-			if($this->getDataServices->getProperty($checkUser, 'role_id') !== 1 || $this->getDataServices->getProperty($checkUser, 'role_id') == false){
+			if($checkUser->role_id == 3){
 				$saveReferral = $this->actionServices->UpdateReferralMember($request->all(),$id, $filename);
 				if(!$saveReferral){
 					return $this->services->response(503,"Server Error!");
 				}
 				return $this->services->response(200,"Referral Updated.",$request->all());
 			}
-			elseif($checkUser->role_id == 1 || $checkUsers->role_id == 0){
+			elseif($checkUser->role_id == 1 || $checkUsers->role_id == 5){
 				$saveReferral = $this->actionServices->AdminUpdateReferralMember($request->all(),$id, $filename);
 				if(!$saveReferral){
 					return $this->services->response(503,"Server Error!");
@@ -255,7 +257,7 @@ class ReferralController extends Controller
 	}
 	public function UpdateReferralStatus(Request $request, $id)
 	{
-		$rules = ['referral_status' => "required|string|in:Success,Pending,InReview,Failed"];
+		$rules = ['referral_status' => "required|string|in:Pending,InReview,Passed,NotPassed,Complete"];
 
 		$checkValidate = $this->services->validate($request->all(),$rules);
 
