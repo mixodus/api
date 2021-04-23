@@ -715,76 +715,36 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
-	public function totalAwardsbyUserId($user_id){
-		return AwardModel::select('*')->where('employee_id',$user_id)->count();
-	}
-	//Referral
-	public function getReferralMember($user_id,$offset =0,$limit=25){
-		return ReferralModel::select('*')->where('referral_employee_id',$user_id)->offset($offset)->limit($limit)->orderBy('referral_id', 'DESC')->get();
-	}
 	public function ReferralSortByStatus($status){
 		if($status == null){
 			$getData = ReferralModel::select('*')->with('AdminModel');
-			$results = ReferralModel::select('*')->with('AdminModel')->first();
-			if(!$results==null){
-				return $getData;
-			}else{
-				return null;
-			}
+			return $getData;
 		}
 		if($status == "All"){
 			$getData = ReferralModel::select('*')->with('AdminModel');
-			$results = ReferralModel::select('*')->with('AdminModel')->first();
-			if(!$results==null){
-				return $getData;
-			}else{
-				return null;
-			}
+			return $getData;
+
 		}
 		if($status == "Pending"){
 			$getData = ReferralModel::select('*')->where('referral_status','Pending')->with('AdminModel');
-			$results = ReferralModel::select('*')->where('referral_status','Pending')->with('AdminModel')->first();
-			if($results==null){
-				return null;
-			}else{
-				return $getData;
-			}
+			return $getData;
 		}
 		if($status == "NotPassed"){
 			$getData = ReferralModel::select('*')->where('referral_status','NotPassed')->with('AdminModel');
-			$results = ReferralModel::select('*')->where('referral_status','NotPassed')->with('AdminModel')->first();
-			if(!$results==null){
-				return $getData;
-			}else{
-				return null;
-			}
+			return $getData;
+
 		}
 		if($status == "InReview"){
 			$getData = ReferralModel::select('*')->where('referral_status','InReview')->with('AdminModel');
-			$results = ReferralModel::select('*')->where('referral_status','InReview')->with('AdminModel')->first();
-			if(!$results==null){
-				return $getData;
-			}else{
-				return null;
-			}
+			return $getData;
 		}
 		if($status == "Passed"){
 			$getData = ReferralModel::select('*')->where('referral_status','Passed')->with('AdminModel');
-			$results = ReferralModel::select('*')->where('referral_status','Passed')->with('AdminModel')->first();
-			if(!$results==null){
-				return $getData;
-			}else{
-				return null;
-			}
+			return $getData;
 		}
 		if($status == "Complete"){
 			$getData = ReferralModel::select('*')->where('referral_status','Complete')->with('AdminModel');
-			$results = ReferralModel::select('*')->where('referral_status','Complete')->with('AdminModel')->first();
-			if(!$results==null){
-				return $getData;
-			}else{
-				return null;
-			}
+			return $getData;
 		}
 	}
 	public function ValidateReferralPoints($user_id=null,$email=null){
