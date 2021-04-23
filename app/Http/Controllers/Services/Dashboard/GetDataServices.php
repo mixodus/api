@@ -723,7 +723,6 @@ class GetDataServices extends BaseController
 		if($status == "All"){
 			$getData = ReferralModel::select('*')->with('AdminModel');
 			return $getData;
-
 		}
 		if($status == "Pending"){
 			$getData = ReferralModel::select('*')->where('referral_status','Pending')->with('AdminModel');
