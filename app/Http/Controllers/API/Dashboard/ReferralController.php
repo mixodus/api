@@ -172,8 +172,8 @@ class ReferralController extends Controller
 			;
 		}
 		elseif($checkUser->role_id == 1 || $checkUsers->role_id == 5){
-			$postParam =
-				['source' => $request['source'],
+			$postParam =[
+				'source' => $request['source'],
 				'referral_name' => $request['referral_name'],
 				'referral_email' => $request['referral_email'],
 				'referral_contact_no' => $request['referral_contact_no'],
@@ -183,8 +183,8 @@ class ReferralController extends Controller
 				'fee' => $request['fee'],
 				'job_position' => $request['job_position'],
 				'created_at' => date('Y-m-d h:i:s'),
-				'modified_at' => date('Y-m-d h:i:s')]
-			;
+				'modified_at' => date('Y-m-d h:i:s')
+			];
 		}
 		else{
 			return $this->services->response(404,"You have no access");
@@ -236,7 +236,6 @@ class ReferralController extends Controller
             		$filename = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
             		$file->move($folder, $filename);
         	}
-
 			if($checkUser->role_id == 3){
 				$saveReferral = $this->actionServices->UpdateReferralMember($request->all(),$id, $filename);
 				if(!$saveReferral){
@@ -244,7 +243,7 @@ class ReferralController extends Controller
 				}
 				return $this->services->response(200,"Referral Updated.",$request->all());
 			}
-			elseif($checkUser->role_id == 1 || $checkUsers->role_id == 5){
+			elseif($checkUser->role_id == 1 || $checkUser->role_id == 5){
 				$saveReferral = $this->actionServices->AdminUpdateReferralMember($request->all(),$id, $filename);
 				if(!$saveReferral){
 					return $this->services->response(503,"Server Error!");
