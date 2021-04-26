@@ -172,6 +172,9 @@ class ReferralController extends Controller
 			;
 		}
 		elseif($checkUser->role_id == 1 || $checkUsers->role_id == 5){
+			if($request['fee']=="" || $request['fee']==null){
+				$request['fee'] == null;
+			}
 			$postParam =[
 				'source' => $request['source'],
 				'referral_name' => $request['referral_name'],
@@ -201,7 +204,6 @@ class ReferralController extends Controller
 			'referral_name' 	=> "required|string",
 			'referral_email' 	=> "required|string|email|unique:xin_employees,email",
 			'referral_contact_no' 	=> "required|string",
-			'fee' 			=> "string",
 			'job_position' 		=> "nullable|string",
 			'referral_employee_id' 	=> "required"
 		];
