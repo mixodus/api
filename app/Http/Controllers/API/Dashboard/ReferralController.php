@@ -89,7 +89,7 @@ class ReferralController extends Controller
 					return $this->actionServices->response(200,"Admin: All Referral Member List", $collect, $action);
 				}
 				else{
-					return $this->actionServices->response(200,"No Referral exist in this status!",$result, $action);
+					return $this->actionServices->response(200,"No Referral exist in this status!",$collect, $action);
 				}
 			}
 		}
