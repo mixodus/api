@@ -14,12 +14,20 @@ use App\Http\Controllers\Services\Dashboard\GetDataServices;
 use App\Models\UserModels;
 use GuzzleHttp\Exception\ClientException;
 use App\Http\Controllers\Services\ActionServices;
+use Ladumor\OneSignal\OneSignal;
 
 class GeneralServices extends BaseController
 {
 	public function __construct(){
         $this->getDataServices = new GetDataServices();
 		$this->actionServices = new ActionServices();
+	}
+
+	public function oneSignalNotification($checkUser, $text=''){
+		$fields['include_player_ids'] = [$checkUser->device_id];
+		$data = OneSignal::sendPush($fields, $text);
+		$data['message'] = [$text];
+		return $data;
 	}
 
 	public function validate($request, $rules){

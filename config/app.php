@@ -176,6 +176,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
+        Ladumor\OneSignal\OneSignalServiceProvider::class,
+
     ],
 
     /*
@@ -225,6 +227,7 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+        'OneSignal' => \Ladumor\OneSignal\OneSignal::class,
 
     ],
 
