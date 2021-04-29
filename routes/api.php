@@ -110,6 +110,11 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/notif/new_notif', 'API\NotifController@newNotif');
 	Route::put('/notif', 'API\NotifController@update');
 
+	//OneSignal
+	Route::get('/onesignal/pushnotification', 'API\OneSignalController@pushNotification');
+	Route::get('/onesignal/getnotification', 'API\OneSignalController@getNotification');
+	Route::get('/onesignal/push', 'API\OneSignalController@pushNotificationManual');
+
 	//employee project experience
 	Route::get('/project', 'API\ProjectExperienceController@index');
 	Route::post('/project', 'API\ProjectExperienceController@create');
