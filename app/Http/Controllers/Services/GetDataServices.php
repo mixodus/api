@@ -39,6 +39,9 @@ use App\Models\FriendModel;
 use App\Models\UserBankModel;
 use App\Models\UserWithdrawModel;
 use App\Models\UserWithdrawHistoryModel;
+use App\Models\VoteChoiceModel;
+use App\Models\VoteChoiceSubmit;
+use App\Models\VoteThemeModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -1150,5 +1153,12 @@ class GetDataServices extends BaseController
 		$credentials = JWT::decode($token, 'X-Api-Key', array('HS256'));
 		$checkAuth = AdminModel::select('*')->where('user_id',$credentials->data->id)->first();
 		return $checkAuth;
+	}
+//Voting//
+	public function getParticipant(){
+
+	}
+	public function assignVote(){
+		
 	}
 }

@@ -27,6 +27,9 @@ use App\Models\FriendModel;
 use App\Models\UserBankModel;
 use App\Models\UserWithdrawModel;
 use App\Models\UserWithdrawHistoryModel;
+use App\Models\VoteChoiceModel;
+use App\Models\VoteChoiceSubmit;
+use App\Models\VoteThemeModel;
 use Firebase\JWT\JWT;
 //fase2
 use App\Models\Fase2\NewsCommentModel;
