@@ -752,6 +752,18 @@ class GetDataServices extends BaseController
 			$getData = ReferralModel::select('*')->where('referral_status','Complete')->with('AdminModel');
 			return $getData;
 		}
+		if($status == "Paid-1"){
+			$getData = ReferralModel::select('*')->where('referral_status','Paid-1')->with('AdminModel');
+			return $getData;
+		}
+		if($status == "Paid-2"){
+			$getData = ReferralModel::select('*')->where('referral_status','Paid-2')->with('AdminModel');
+			return $getData;
+		}
+		if($status == "OnProcess"){
+			$getData = ReferralModel::select('*')->where('referral_status','OnProcess')->with('AdminModel');
+			return $getData;
+		}
 	}
 	public function ValidateReferralPoints($user_id=null,$email=null){
 		$query = ReferralModel::select('referral_id','withdraw_reward','referral_name as name','referral_status as status','added_to_transaction_point as added_yet');
