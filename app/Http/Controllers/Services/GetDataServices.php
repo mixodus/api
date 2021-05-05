@@ -40,7 +40,7 @@ use App\Models\UserBankModel;
 use App\Models\UserWithdrawModel;
 use App\Models\UserWithdrawHistoryModel;
 use App\Models\VoteChoiceModel;
-use App\Models\VoteChoiceSubmit;
+use App\Models\VoteChoiceSubmitModel;
 use App\Models\VoteThemeModel;
 use Firebase\JWT\JWT;
 use DateTime;
@@ -1156,9 +1156,19 @@ class GetDataServices extends BaseController
 	}
 //Voting//
 	public function getParticipant(){
+		//$data = VoteChoiceModel::with('theme')->get();
+		$data = VoteThemeModel::with('choice')->get();
+		return $data;
+	}
+	public function getVoteResult($id){
+		$temp = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $id)->get();
+		$temp_ = VoteChoiceModel::select('*')->where('id', $id)->first();
+		$data = array('name' => $temp_->name, 'Result' => count($temp));
+		return $data;
+	}
+	public function getThemes(){
+		$data = VoteThemeModel::select('*')->get();
+		return $data;
+	}
 
-	}
-	public function assignVote(){
-		
-	}
 }

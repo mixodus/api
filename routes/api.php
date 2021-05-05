@@ -16,17 +16,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 	return $request->user();
 });
 
-//Referral Dashboard
-	Route::get('/dashboard/referral/allMobile', 'API\Dashboard\ReferralController@getAllMobileReferralMember');
-	Route::get('/dashboard/referral/allWeb', 'API\Dashboard\ReferralController@getAllWebReferralMember');
-	Route::get('/dashboard/referral', 'API\Dashboard\ReferralController@getReferralMember');
-	Route::get('/dashboard/referral/success', 'API\Dashboard\ReferralController@getReferralMemberSuccess');
-	Route::get('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@getReferralByID');
-	Route::get('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@getReferralStatusByID');
-	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember');
-	Route::post('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@UpdateReferralMember');
-	Route::post('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@UpdateReferralStatus');
-
 require 'fase2/api.php';
 Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {
 	//check Version
@@ -90,6 +79,14 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	//Events
 	Route::post('/event/join', 'API\EventController@joinEvent')->middleware('log.route:join_event,action');
 	Route::get('/event/history/{id}', 'API\EventController@HistoryEvent'); //belum ditest dummy data
+
+	//Voting
+	Route::get('/votes/candidates', 'API\VoteController@showCandidates');
+	Route::post('/votes/assign-candidate', 'API\VoteController@assignCandidate');
+	Route::get('/votes', 'API\VoteController@voteResult');
+	Route::post('/votes', 'API\VoteController@assignVote');
+	Route::get('/votes/themes', 'API\VoteController@themes');
+	Route::post('/votes/themes', 'API\VoteController@assignTheme');
 
 	//Challenge
 	Route::get('/challenge/history', 'API\ChallengeController@history');
@@ -230,6 +227,17 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::delete('/event-delete', 'API\Dashboard\MenuPage\EventController@destroy')->middleware('log.dashboard:comment,Admin,remove-data');
 	Route::get('/event-type', 'API\Dashboard\MenuPage\EventController@eventType');
 	Route::put('/event/participant-status/update', 'API\Dashboard\MenuPage\EventController@registerStatus')->middleware('log.dashboard:comment,Admin,action');
+
+	//Referral Dashboard
+	Route::get('/dashboard/referral/allMobile', 'API\Dashboard\ReferralController@getAllMobileReferralMember');
+	Route::get('/dashboard/referral/allWeb', 'API\Dashboard\ReferralController@getAllWebReferralMember');
+	Route::get('/dashboard/referral', 'API\Dashboard\ReferralController@getReferralMember');
+	Route::get('/dashboard/referral/success', 'API\Dashboard\ReferralController@getReferralMemberSuccess');
+	Route::get('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@getReferralByID');
+	Route::get('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@getReferralStatusByID');
+	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember');
+	Route::post('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@UpdateReferralMember');
+	Route::post('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@UpdateReferralStatus');
 
 	Route::group(['prefix' => 'dashboard'], function () {
 		Route::get('/hacktown', 'API\Dashboard\MenuPage\EventController@hacktown');

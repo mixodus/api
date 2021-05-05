@@ -1,21 +1,20 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class VoteChoiceModel extends Model
+class VoteChoiceSubmitModel extends Model
 {
-    protected $table = 'vote_themes';
+    protected $table = 'vote_choice_submit';
 	public $primarykey = 'vote_themes_id';
 	
 	public $timestamps = true;
 	protected $fillable = [
-		'vote_choice_submit_id',
-		'vote_choice_id',
+		'id',
 		'vote_themes_id',
+		'vote_choice_id',
 		'employee_id',
-		'vote_status',
 		'created_at',
 		'updated_at',
 	];
