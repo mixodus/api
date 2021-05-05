@@ -12,7 +12,7 @@ class AppVersionController extends Controller
 		$this->services = new GeneralServices();
 	}
     public function version(){
-        $version['android-app-version'] = "20505";
-        return $this->services->response(200, "Android App Version!", $version);
+        $version['app-version'] = "20505";
+        return $this->services->response(200, "App Version!", $version);
     }
 }
