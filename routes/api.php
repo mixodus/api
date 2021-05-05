@@ -27,6 +27,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 	Route::post('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@UpdateReferralMember');
 	Route::post('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@UpdateReferralStatus');
 
+//getVersion
+	Route::get('/app-version', 'API\AppVersionController@version');
+
+
 require 'fase2/api.php';
 Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {
 	//check Version
@@ -142,9 +146,6 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::post('/work_experience', 'API\WorkExperienceController@create');
 	Route::put('/work_experience', 'API\WorkExperienceController@update');
 	Route::delete('/work_experience', 'API\WorkExperienceController@delete');
-
-	//getVersion
-	Route::get('/app-version', 'API\AppVersionController@version');
 
 	//dashboard===========================
 	//Admin Dashboard
