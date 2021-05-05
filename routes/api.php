@@ -143,6 +143,9 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::put('/work_experience', 'API\WorkExperienceController@update');
 	Route::delete('/work_experience', 'API\WorkExperienceController@delete');
 
+	//getVersion
+	Route::get('/app-version', 'API\AppVersionController@version');
+
 	//dashboard===========================
 	//Admin Dashboard
 	Route::get('/admin', 'API\Dashboard\AuthUser\AdminController@index');
