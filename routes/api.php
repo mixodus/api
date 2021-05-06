@@ -16,6 +16,21 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 	return $request->user();
 });
 
+//Referral Dashboard
+	Route::get('/dashboard/referral/allMobile', 'API\Dashboard\ReferralController@getAllMobileReferralMember');
+	Route::get('/dashboard/referral/allWeb', 'API\Dashboard\ReferralController@getAllWebReferralMember');
+	Route::get('/dashboard/referral', 'API\Dashboard\ReferralController@getReferralMember');
+	Route::get('/dashboard/referral/success', 'API\Dashboard\ReferralController@getReferralMemberSuccess');
+	Route::get('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@getReferralByID');
+	Route::get('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@getReferralStatusByID');
+	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember');
+	Route::post('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@UpdateReferralMember');
+	Route::post('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@UpdateReferralStatus');
+
+//getVersion
+	Route::get('/app-version', 'API\AppVersionController@version');
+
+
 require 'fase2/api.php';
 Route::group(['middleware' => ['app.token', 'cors','log.route']], function ($router) {
 	//check Version
@@ -83,10 +98,13 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	//Voting
 	Route::get('/votes/candidates', 'API\VoteController@showCandidates');
 	Route::post('/votes/assign-candidate', 'API\VoteController@assignCandidate');
+	Route::post('/votes/update-candidate/{id}', 'API\VoteController@updateCandidate');
+	Route::get('/votes/delete-candidate', 'API\VoteController@deleteCandidate');
 	Route::get('/votes', 'API\VoteController@voteResult');
 	Route::post('/votes', 'API\VoteController@assignVote');
-	Route::get('/votes/themes', 'API\VoteController@themes');
-	Route::post('/votes/themes', 'API\VoteController@assignTheme');
+	Route::get('/votes/theme', 'API\VoteController@themes');
+	Route::post('/votes/theme', 'API\VoteController@assignTheme');
+	Route::post('/votes/update-theme/{id}', 'API\VoteController@updateTheme');
 
 	//Challenge
 	Route::get('/challenge/history', 'API\ChallengeController@history');

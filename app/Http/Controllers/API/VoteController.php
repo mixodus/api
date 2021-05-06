@@ -15,21 +15,21 @@ class VoteController extends Controller
 		$this->actionServices = new ActionServices();
 		$this->getDataServices = new GetDataServices();
 	}
-	public function showCandidates(){
-		$data = $this->getDataServices->getParticipant();
+	public function showCandidates(Request $request){
+		$data = $this->getDataServices->getCandidate($request);
         return $this->services->response(200, "All Participant", $data);
     }
 	public function assignCandidate(Request $request){
 		$rules = [
 			'vote_themes_id' 	=> "required|integer",
 			'name' 	=> "required|string",
-			'icon' 	=> "required|string",
+			'icon' 	=> "required|mimes:jpg,png,jpeg|max:5121",
 		];
 		$checkValidate = $this->services->validate($request->all(),$rules);
 		if(!empty($checkValidate))
 			return $checkValidate; 
 			
-		$file = $request->file('banner');
+		$file = $request->file('icon');
 		$fileName = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
 		$destinationPath = public_path().'/uploads/candidate_icon/';
 		$file->move($destinationPath,$fileName);
@@ -38,6 +38,30 @@ class VoteController extends Controller
 
 		$data = $this->actionServices->assignCandidate($request);
 		return $this->services->response(200, "Participant Assigned", $data);
+	}
+	public function updateCandidate(Request $request, $id){
+		$rules = [
+			'vote_themes_id' 	=> "required|integer",
+			'name' 	=> "required|string",
+			'icon' 	=> "required|mimes:jpg,png,jpeg|max:5121",
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+		if(!empty($checkValidate))
+			return $checkValidate; 
+			
+		$file = $request->file('icon');
+		$fileName = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
+		$destinationPath = public_path().'/uploads/candidate_icon/';
+		$file->move($destinationPath,$fileName);
+
+		$request['file_name'] = $fileName;
+
+		$data = $this->actionServices->updateCandidate($request, $id);
+		return $this->services->response(200, "Participant Updated", $data);
+	}
+	public function deleteCandidate(Request $request){
+		$data = $this->actionServices->deleteCandidate($request);
+		return $this->services->response(200, "Participant Deleted", $data);
 	}
 	public function assignVote(Request $request){
 		$getUser = $this->getDataServices->getUserbyToken($request);
@@ -79,6 +103,25 @@ class VoteController extends Controller
 		$request['file_name'] = $fileName;
 
 		$data = $this->actionServices->assignTheme($request);
+        return $this->services->response(200, "Theme Assigned!", $data);
+    }
+	public function updateTheme(Request $request, $id){
+		$rules = [
+			'name' 	=> "required|string",
+			'banner' 	=> "required|mimes:jpg,png,jpeg|max:5121",
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+		if(!empty($checkValidate))
+			return $checkValidate; 
+
+		$file = $request->file('banner');
+		$fileName = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
+		$destinationPath = public_path().'/uploads/theme_banner/';
+		$file->move($destinationPath,$fileName);
+
+		$request['file_name'] = $fileName;
+
+		$data = $this->actionServices->updateTheme($request, $id);
         return $this->services->response(200, "Theme Assigned!", $data);
     }
 }

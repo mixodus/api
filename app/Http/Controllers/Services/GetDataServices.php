@@ -1155,10 +1155,11 @@ class GetDataServices extends BaseController
 		return $checkAuth;
 	}
 //Voting//
-	public function getParticipant(){
-		//$data = VoteChoiceModel::with('theme')->get();
-		$data = VoteThemeModel::with('choice')->get();
-		return $data;
+	public function getCandidate($topic_id){
+		$theme = VoteThemeModel::where('id', $topic_id->id)->first();
+		$choice = VoteChoiceModel::select('*')->where('vote_themes_id', $topic_id->id)->get();
+		$theme->choices = $choice;
+		return $theme;
 	}
 	public function getVoteResult($id){
 		$temp = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $id)->get();

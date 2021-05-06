@@ -450,9 +450,23 @@ class ActionServices extends BaseController
 			'name' => $data->name,
 			'icon' => $data['file_name'],
 			'created_at' => date('Y-m-d h:i:s'),
-			'modified_at' => date('Y-m-d h:i:s')
 		);
 		return VoteChoiceModel::create($postParam);
+	}
+	public function updateCandidate($data, $id){
+		$postParam = array(
+			'vote_themes_id' => $data->vote_themes_id,
+			'name' => $data->name,
+			'icon' => $data['file_name'],
+			'updated_at' => date('Y-m-d h:i:s'),
+		);
+		VoteChoiceModel::where('id', $id)->update($postParam);
+		return $postParam;
+	}
+	public function deleteCandidate($choice_id){
+		$getCandidate = VoteChoiceModel::where('id', $choice_id->id)->first();
+		VoteChoiceModel::where('id', $choice_id->id)->delete();
+		return $getCandidate;
 	}
 	public function assignVote($data, $user){
 		$getCandidate = VoteChoiceModel::select('*')->where('id', $data->id)->first();
@@ -460,7 +474,7 @@ class ActionServices extends BaseController
 			return $getCandidate;
 		}
 		$temp = VoteChoiceSubmitModel::select('*')->where('employee_id', $user->user_id)->first();
-		if($temp->employee_id == $user->user_id){
+		if($temp['employee_id'] == $user->user_id){
 			return "false";
 		}
 		$postParam = array(
@@ -468,7 +482,6 @@ class ActionServices extends BaseController
 			'vote_choice_id' => $getCandidate->id,
 			'employee_id' => $user->user_id,
 			'created_at' => date('Y-m-d h:i:s'),
-			'modified_at' => date('Y-m-d h:i:s')
 		);
 		return VoteChoiceSubmitModel::create($postParam);
 	}
@@ -477,10 +490,20 @@ class ActionServices extends BaseController
 			'name' => $data->name,
 			'banner' => $data['file_name'],
 			'created_at' => date('Y-m-d h:i:s'),
-			'modified_at' => date('Y-m-d h:i:s')
 		);
 		return VoteThemeModel::create($postParam);
 	}
+	public function updateTheme($data, $theme_id){
+		$postParam = array(
+			'name' => $data->name,
+			'banner' => $data['file_name'],
+			'updated_at' => date('Y-m-d h:i:s'),
+		);
+		VoteThemeModel::where('id', $theme_id)->update($postParam);
+		return $postParam; 
+	}
+	
+	
 	
 
 }
