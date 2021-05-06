@@ -68,6 +68,10 @@ class UserModels extends Model
 	public function referral(){
 		return $this->hasMany('App\Models\ReferralModel', 'referral_employee_id', 'user_id');
 	}
+	//vote
+	public function vote(){
+		return $this->belongsTo('App\Models\VoteChoiceSubmitModel', 'user_id', 'vote_choice_submit_id');
+	}
 
 	//belum ada model ke relasinya
 	public function assets() {
