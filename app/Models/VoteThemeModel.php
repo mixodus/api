@@ -17,7 +17,7 @@ class VoteThemeModel extends Model
 		'created_at',
 		'updated_at',
 	];
-    protected $hidden = ['id','created_at','updated_at','deleted_at'];
+    protected $hidden = ['created_at','updated_at','deleted_at'];
 
     public function Choice(){
 		return $this->hasMany('App\Models\VoteChoiceModel', 'id', 'vote_themes_id');
