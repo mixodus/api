@@ -474,6 +474,9 @@ class ActionServices extends BaseController
 			return $getCandidate;
 		}
 		$temp = VoteChoiceSubmitModel::select('*')->where('employee_id', $user->user_id)->first();
+		if(empty($temp)){
+			return $temp;
+		}
 		if($temp['employee_id'] == $user->user_id){
 			return "false";
 		}
