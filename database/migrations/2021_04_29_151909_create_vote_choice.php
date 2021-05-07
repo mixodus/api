@@ -13,9 +13,9 @@ class CreateVoteChoice extends Migration
      */
     public function up()
     {
-        Schema::create('vote_choice', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->unsignedBigInteger('vote_themes_id');
+        Schema::create('vote_choices', function (Blueprint $table) {
+            $table->bigIncrements('choice_id');
+            $table->unsignedBigInteger('vote_topic_id');
             $table->string('name', 100)->nullable();
             $table->string('icon', 100)->nullable();
             $table->timestamps();

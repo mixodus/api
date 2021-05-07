@@ -13,8 +13,8 @@ class CreateVoteThemes extends Migration
      */
     public function up()
     {
-        Schema::create('vote_themes', function (Blueprint $table) {
-            $table->bigIncrements('id');
+        Schema::create('vote_topics', function (Blueprint $table) {
+            $table->bigIncrements('topic_id');
             $table->string('name', 50)->nullable();
             $table->string('banner', 200)->nullable();
             $table->timestamps();

@@ -21,7 +21,7 @@ class VoteController extends Controller
     }
 	public function assignCandidate(Request $request){
 		$rules = [
-			'vote_themes_id' 	=> "required|integer",
+			'vote_topic_id' 	=> "required|integer",
 			'name' 	=> "required|string",
 			'icon' 	=> "required|mimes:jpg,png,jpeg|max:5121",
 		];
@@ -41,7 +41,7 @@ class VoteController extends Controller
 	}
 	public function updateCandidate(Request $request, $id){
 		$rules = [
-			'vote_themes_id' 	=> "required|integer",
+			'vote_topic_id' 	=> "required|integer",
 			'name' 	=> "required|string",
 			'icon' 	=> "required|mimes:jpg,png,jpeg|max:5121",
 		];
@@ -124,4 +124,21 @@ class VoteController extends Controller
 		$data = $this->actionServices->updateTheme($request, $id);
         return $this->services->response(200, "Theme Assigned!", $data);
     }
+	public function voteStatus(Request $request){
+		$getUser = $this->getDataServices->getUserbyToken($request);
+		if(!$getUser){
+			return $this->services->response(406, "User Not Found!");
+		}
+
+		$rules = [
+			'topic_id' 	=> "required|string",
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+		if(!empty($checkValidate))
+			return $checkValidate; 
+
+		$temp = $this->actionServices->checkVote($request, $getUser);
+		$data['exist'] = $temp;
+		return $this->services->response(200, "Vote Status", $data); 
+	}
 }

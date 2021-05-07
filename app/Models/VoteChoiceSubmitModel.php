@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class VoteChoiceSubmitModel extends Model
 {
     protected $table = 'vote_choice_submit';
-	public $primarykey = 'vote_themes_id';
+	public $primarykey = 'submit_id';
 	
 	public $timestamps = true;
 	protected $fillable = [
-		'id',
-		'vote_themes_id',
+		'submit_id',
+		'vote_topic_id',
 		'vote_choice_id',
 		'employee_id',
 		'created_at',
@@ -24,6 +24,6 @@ class VoteChoiceSubmitModel extends Model
 		return $this->belongsTo('App\Models\VoteChoiceModel', 'vote_choice_submit_id', 'vote_choice_id');
 	}
 	public function Theme(){
-		return $this->belongsTo('App\Models\VoteThemeModel', 'vote_choice_submit_id', 'vote_themes_id');
+		return $this->belongsTo('App\Models\VoteTopicModel', 'vote_choice_submit_id', 'vote_topic_id');
 	}
 }
