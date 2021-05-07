@@ -41,7 +41,7 @@ use App\Models\UserWithdrawModel;
 use App\Models\UserWithdrawHistoryModel;
 use App\Models\VoteChoiceModel;
 use App\Models\VoteChoiceSubmitModel;
-use App\Models\VoteThemeModel;
+use App\Models\VoteTopicModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -1155,20 +1155,23 @@ class GetDataServices extends BaseController
 		return $checkAuth;
 	}
 //Voting//
-	public function getCandidate($topic_id){
-		$theme = VoteThemeModel::where('id', $topic_id->id)->first();
-		$choice = VoteChoiceModel::select('*')->where('vote_themes_id', $topic_id->id)->get();
+	public function getCandidate($request){
+		$theme = VoteTopicModel::where('topic_id', $request->topic_id)->first();
+		$choice = VoteChoiceModel::select('*')->where('vote_topic_id', $request->topic_id)->get();
 		$theme->choices = $choice;
 		return $theme;
 	}
 	public function getVoteResult($id){
+		if($id==null || $id == ""){
+			return null;
+		}
 		$temp = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $id)->get();
-		$temp_ = VoteChoiceModel::select('*')->where('id', $id)->first();
+		$temp_ = VoteChoiceModel::select('*')->where('choice_id', $id)->first();
 		$data = array('name' => $temp_->name, 'Result' => count($temp));
 		return $data;
 	}
 	public function getThemes(){
-		$data = VoteThemeModel::select('*')->get();
+		$data = VoteTopicModel::select('*')->get();
 		return $data;
 	}
 
