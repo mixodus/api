@@ -1157,7 +1157,12 @@ class GetDataServices extends BaseController
 //Voting//
 	public function getCandidate($request){
 		$theme = VoteTopicModel::where('topic_id', $request->topic_id)->first();
+		$theme['banner_url'] = url('/')."/uploads/theme_banner/".$theme['banner'];
 		$choice = VoteChoiceModel::select('*')->where('vote_topic_id', $request->topic_id)->get();
+		$choice = $choice->map(function($key){
+			$key['icon_url']  = url('/')."/uploads/candidate_icon/".$key['icon'];
+			return $key;
+		});
 		$theme->choices = $choice;
 		return $theme;
 	}
