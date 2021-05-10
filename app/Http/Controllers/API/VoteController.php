@@ -37,6 +37,9 @@ class VoteController extends Controller
 		$request['file_name'] = $fileName;
 
 		$data = $this->actionServices->assignCandidate($request);
+		if(empty($data)){
+			return $this->services->response(406, "Assigned Topic not Found!");
+		}
 		return $this->services->response(200, "Participant Assigned", $data);
 	}
 	public function updateCandidate(Request $request, $id){
@@ -57,10 +60,16 @@ class VoteController extends Controller
 		$request['file_name'] = $fileName;
 
 		$data = $this->actionServices->updateCandidate($request, $id);
+		if(empty($data)){
+			return $this->services->response(406, "Assigned Topic not Found!");
+		}
 		return $this->services->response(200, "Participant Updated", $data);
 	}
 	public function deleteCandidate(Request $request){
 		$data = $this->actionServices->deleteCandidate($request);
+		if(empty($data)){
+			return $this->services->response(406, "Participant not Found!");
+		}
 		return $this->services->response(200, "Participant Deleted", $data);
 	}
 	public function assignVote(Request $request){
@@ -79,14 +88,17 @@ class VoteController extends Controller
 		return $this->services->response(200, "Vote Success!", $data);
 	}
 	public function voteResult(Request $request){
-		$data = $this->getDataServices->getVoteResult($request->id);
+		$data = $this->getDataServices->getVoteResult($request->vote_topic_id);
+		if(empty($data)){
+			return $this->services->response(406, "Vote Result not found!");
+		}
         return $this->services->response(200, "Candidate's vote result", $data);
     }
-	public function themes(){
-		$data = $this->getDataServices->getThemes();
-        return $this->services->response(200, "All Themes", $data);
+	public function topics(){
+		$data = $this->getDataServices->getTopics();
+        return $this->services->response(200, "All Topics", $data);
     }
-	public function assignTheme(Request $request){
+	public function assignTopic(Request $request){
 		$rules = [
 			'name' 	=> "required|string",
 			'banner' 	=> "required|mimes:jpg,png,jpeg|max:5121",
@@ -97,15 +109,15 @@ class VoteController extends Controller
 
 		$file = $request->file('banner');
 		$fileName = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
-		$destinationPath = public_path().'/uploads/theme_banner/';
+		$destinationPath = public_path().'/uploads/topic_banner/';
 		$file->move($destinationPath,$fileName);
 
 		$request['file_name'] = $fileName;
 
-		$data = $this->actionServices->assignTheme($request);
-        return $this->services->response(200, "Theme Assigned!", $data);
+		$data = $this->actionServices->assignTopic($request);
+        return $this->services->response(200, "Topic Assigned!", $data);
     }
-	public function updateTheme(Request $request, $id){
+	public function updateTopic(Request $request, $id){
 		$rules = [
 			'name' 	=> "required|string",
 			'banner' 	=> "required|mimes:jpg,png,jpeg|max:5121",
@@ -116,13 +128,13 @@ class VoteController extends Controller
 
 		$file = $request->file('banner');
 		$fileName = '-'.round(microtime(true)).'-'.$file->getClientOriginalName();
-		$destinationPath = public_path().'/uploads/theme_banner/';
+		$destinationPath = public_path().'/uploads/topic_banner/';
 		$file->move($destinationPath,$fileName);
 
 		$request['file_name'] = $fileName;
 
-		$data = $this->actionServices->updateTheme($request, $id);
-        return $this->services->response(200, "Theme Assigned!", $data);
+		$data = $this->actionServices->updateTopic($request, $id);
+        return $this->services->response(200, "Topic Assigned!", $data);
     }
 	public function voteStatus(Request $request){
 		$getUser = $this->getDataServices->getUserbyToken($request);

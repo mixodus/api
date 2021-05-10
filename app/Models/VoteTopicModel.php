@@ -14,6 +14,7 @@ class VoteTopicModel extends Model
 	protected $fillable = [
 		'topic_id',
 		'name',
+		'title',
 		'banner', 
 		'created_at',
 		'updated_at',

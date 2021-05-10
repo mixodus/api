@@ -1156,27 +1156,34 @@ class GetDataServices extends BaseController
 	}
 //Voting//
 	public function getCandidate($request){
-		$theme = VoteTopicModel::where('topic_id', $request->topic_id)->first();
-		$theme['banner_url'] = url('/')."/uploads/theme_banner/".$theme['banner'];
+		$topic = VoteTopicModel::where('topic_id', $request->topic_id)->first();
+		$topic['banner_url'] = url('/')."/uploads/topic_banner/".$topic['banner'];
 		$choice = VoteChoiceModel::select('*')->where('vote_topic_id', $request->topic_id)->get();
 		$choice = $choice->map(function($key){
 			$key['icon_url']  = url('/')."/uploads/candidate_icon/".$key['icon'];
 			return $key;
 		});
-		$theme->choices = $choice;
-		return $theme;
+		$topic->choices = $choice;
+		return $topic;
 	}
-	public function getVoteResult($id){
-		if($id==null || $id == ""){
+	public function getVoteResult($topic_id){
+		if($topic_id==null || $topic_id == ""){
 			return null;
 		}
-		$temp = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $id)->get();
-		$temp_ = VoteChoiceModel::select('*')->where('choice_id', $id)->first();
-		$data = array('name' => $temp_->name, 'Result' => count($temp));
+		$topic = VoteTopicModel::select('*')->where('topic_id', $topic_id)->first();
+		$choice = VoteChoiceModel::select('choice_id', 'name')->where('vote_topic_id', $topic_id)->get();
+
+		foreach($choice as $choices){
+				$choices['count_result'] = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $choices->choice_id)->count();
+		}
+		$data = array('topic_id' => $topic_id, 'topic_name' => $topic->name, 'topic_title' => $topic->title, 'choice' => $choice);
 		return $data;
 	}
-	public function getThemes(){
+	public function getTopics(){
 		$data = VoteTopicModel::select('*')->get();
+		foreach($data as $datas){
+			$datas['banner_url'] = url('/')."/uploads/topic_banner/".$datas['banner'];
+		}
 		return $data;
 	}
 

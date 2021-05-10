@@ -445,6 +445,10 @@ class ActionServices extends BaseController
 
 	//voting
 	public function assignCandidate($data){
+		$getTopic = VoteTopicModel::where('topic_id', $data->vote_topic_id)->first();
+		if(empty($getTopic)){
+			return null;
+		}
 		$postParam = array(
 			'vote_topic_id' => $data->vote_topic_id,
 			'name' => $data->name,
@@ -454,6 +458,10 @@ class ActionServices extends BaseController
 		return VoteChoiceModel::create($postParam);
 	}
 	public function updateCandidate($data, $choice_id){
+		$getTopic = VoteTopicModel::where('topic_id', $data->vote_topic_id)->first();
+		if(empty($getTopic)){
+			return null;
+		}
 		$postParam = array(
 			'vote_topic_id' => $data->vote_topic_id,
 			'name' => $data->name,
@@ -489,21 +497,22 @@ class ActionServices extends BaseController
 		);
 		return VoteChoiceSubmitModel::create($postParam);
 	}
-	public function assignTheme($data){
+	public function assignTopic($data){
 		$postParam = array(
 			'name' => $data->name,
 			'banner' => $data['file_name'],
+			'title' => $data->title,
 			'created_at' => date('Y-m-d h:i:s'),
 		);
 		return VoteTopicModel::create($postParam);
 	}
-	public function updateTheme($data, $theme_id){
+	public function updateTopic($data, $topic_id){
 		$postParam = array(
 			'name' => $data->name,
 			'banner' => $data['file_name'],
 			'updated_at' => date('Y-m-d h:i:s'),
 		);
-		VoteTopicModel::where('id', $theme_id)->update($postParam);
+		VoteTopicModel::where('topic_id', $topic_id)->update($postParam);
 		return $postParam; 
 	}
 	public function checkVote($request, $user){
