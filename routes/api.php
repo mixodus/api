@@ -91,9 +91,9 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/votes/delete-candidate', 'API\VoteController@deleteCandidate');
 	Route::get('/votes', 'API\VoteController@voteResult');
 	Route::post('/votes', 'API\VoteController@assignVote');
-	Route::get('/votes/topic', 'API\VoteController@themes');
-	Route::post('/votes/topic', 'API\VoteController@assignTheme');
-	Route::post('/votes/update-topic/{id}', 'API\VoteController@updateTheme');
+	Route::get('/votes/topic', 'API\VoteController@topics');
+	Route::post('/votes/topic', 'API\VoteController@assignTopic');
+	Route::post('/votes/update-topic/{id}', 'API\VoteController@updateTopic');
 	Route::post('/employee-votes', 'API\VoteController@voteStatus');
 	
 
