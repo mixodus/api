@@ -23,7 +23,7 @@ class VoteController extends Controller
 
 		$temp_0 = $this->getDataServices->checkVote($request, $getUser);
 		$temp_1 = $this->getDataServices->getCandidate($request);
-		$data = array("vote_status" => $temp_0, "choices" => $temp_1);
+		$data = array("is_already_vote" => $temp_0, "choices" => $temp_1);
         return $this->services->response(200, "All Participant", $data);
     }
 	public function assignCandidate(Request $request){
