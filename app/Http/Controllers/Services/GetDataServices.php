@@ -1155,7 +1155,7 @@ class GetDataServices extends BaseController
 		return $checkAuth;
 	}
 //Voting//
-	public function getCandidate($request){
+	public function getCandidate($request, $user){
 		$topic = VoteTopicModel::where('topic_id', $request->topic_id)->first();
 		$topic['banner_url'] = url('/')."/uploads/topic_banner/".$topic['banner'];
 		$choice = VoteChoiceModel::select('*')->where('vote_topic_id', $request->topic_id)->get();
@@ -1166,7 +1166,17 @@ class GetDataServices extends BaseController
 		if(sizeof($choice) == 0){
 			$choice = null;
 		}
+
+		$temp = VoteChoiceSubmitModel::select('*')->where('vote_topic_id', $request->topic_id)->where('employee_id', $user->user_id)->first();
+		$status = true;
+		if(!empty($temp)){
+			$status = true;
+		}else{
+			$status = false;
+		}
+		$topic->is_already_vote = $status;
 		$topic->choices = $choice;
+		
 		return $topic;
 	}
 	public function getVoteResult($topic_id){
@@ -1210,15 +1220,6 @@ class GetDataServices extends BaseController
 			$datas['banner_url'] = url('/')."/uploads/topic_banner/".$datas['banner'];
 		}
 		return $data;
-	}
-
-	public function checkVote($request, $user){
-		$choice = VoteChoiceSubmitModel::select('*')->where('vote_topic_id', $request->topic_id)->where('employee_id', $user->user_id)->first();
-		if(!empty($choice)){
-			return true;
-		}else{
-			return false;
-		}
 	}
 
 }

@@ -21,9 +21,7 @@ class VoteController extends Controller
 			return $this->services->response(406, "User Not Found!");
 		}
 
-		$temp_0 = $this->getDataServices->checkVote($request, $getUser);
-		$temp_1 = $this->getDataServices->getCandidate($request);
-		$data = array("is_already_vote" => $temp_0, "choices" => $temp_1);
+		$data = $this->getDataServices->getCandidate($request, $getUser);
         return $this->services->response(200, "All Participant", $data);
     }
 	public function assignCandidate(Request $request){
