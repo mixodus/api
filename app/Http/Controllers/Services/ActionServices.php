@@ -515,16 +515,5 @@ class ActionServices extends BaseController
 		VoteTopicModel::where('topic_id', $topic_id)->update($postParam);
 		return $postParam; 
 	}
-	public function checkVote($request, $user){
-		$choice = VoteChoiceSubmitModel::select('*')->where('vote_topic_id', $request->topic_id)->where('employee_id', $user->user_id)->first();
-		if(!empty($choice)){
-			return true;
-		}else{
-			return false;
-		}
-	}
 	
-	
-	
-
 }

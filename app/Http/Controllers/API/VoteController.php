@@ -16,7 +16,14 @@ class VoteController extends Controller
 		$this->getDataServices = new GetDataServices();
 	}
 	public function showCandidates(Request $request){
-		$data = $this->getDataServices->getCandidate($request);
+		$getUser = $this->getDataServices->getUserbyToken($request);
+		if(!$getUser){
+			return $this->services->response(406, "User Not Found!");
+		}
+
+		$temp_0 = $this->getDataServices->checkVote($request, $getUser);
+		$temp_1 = $this->getDataServices->getCandidate($request);
+		$data = array("vote_status" => $temp_0, "choices" => $temp_1);
         return $this->services->response(200, "All Participant", $data);
     }
 	public function assignCandidate(Request $request){
@@ -136,21 +143,4 @@ class VoteController extends Controller
 		$data = $this->actionServices->updateTopic($request, $id);
         return $this->services->response(200, "Topic Assigned!", $data);
     }
-	public function voteStatus(Request $request){
-		$getUser = $this->getDataServices->getUserbyToken($request);
-		if(!$getUser){
-			return $this->services->response(406, "User Not Found!");
-		}
-
-		$rules = [
-			'topic_id' 	=> "required|string",
-		];
-		$checkValidate = $this->services->validate($request->all(),$rules);
-		if(!empty($checkValidate))
-			return $checkValidate; 
-
-		$temp = $this->actionServices->checkVote($request, $getUser);
-		$data['exist'] = $temp;
-		return $this->services->response(200, "Vote Status", $data); 
-	}
 }

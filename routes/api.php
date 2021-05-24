@@ -94,7 +94,6 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/votes/topic', 'API\VoteController@topics');
 	Route::post('/votes/topic', 'API\VoteController@assignTopic');
 	Route::post('/votes/update-topic/{id}', 'API\VoteController@updateTopic');
-	Route::post('/employee-votes', 'API\VoteController@voteStatus');
 	
 
 	//Challenge
