@@ -1163,6 +1163,9 @@ class GetDataServices extends BaseController
 			$key['icon_url']  = url('/')."/uploads/candidate_icon/".$key['icon'];
 			return $key;
 		});
+		if(sizeof($choice) == 0){
+			$choice = null;
+		}
 		$topic->choices = $choice;
 		return $topic;
 	}
@@ -1207,6 +1210,15 @@ class GetDataServices extends BaseController
 			$datas['banner_url'] = url('/')."/uploads/topic_banner/".$datas['banner'];
 		}
 		return $data;
+	}
+
+	public function checkVote($request, $user){
+		$choice = VoteChoiceSubmitModel::select('*')->where('vote_topic_id', $request->topic_id)->where('employee_id', $user->user_id)->first();
+		if(!empty($choice)){
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 }
