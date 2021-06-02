@@ -450,6 +450,12 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
+	public function usersByJobID($id){
+		$data = JobsApplicationModel::select('xin_employees.fullname','xin_job_applications.*')
+		->join('xin_employees', 'xin_employees.user_id', '=', 'xin_job_applications.user_id')
+		->where('job_id', $id)->get();
+		return $data;
+	}
 	///====Jobs Fase 2
 	
 	public function getJobTypeList(){
@@ -1157,6 +1163,9 @@ class GetDataServices extends BaseController
 //Voting//
 	public function getCandidate($request, $user){
 		$topic = VoteTopicModel::where('topic_id', $request->topic_id)->first();
+		if($topic == null || $topic == ''){
+			return null;
+		}
 		$topic['banner_url'] = url('/')."/uploads/topic_banner/".$topic['banner'];
 		$choice = VoteChoiceModel::select('*')->where('vote_topic_id', $request->topic_id)->get();
 		$choice = $choice->map(function($key){

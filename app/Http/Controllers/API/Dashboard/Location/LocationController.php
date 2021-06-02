@@ -21,15 +21,29 @@ class LocationController extends Controller
         $data = CountryModel::select('*')->get();
 		return $this->services->response(200,"Country List",$data);
     }
+    public function get_countryByID($code){
+        $data = CountryModel::select('*')->where('country_code', $code)->first();
+		return $this->services->response(200,"Country List",$data);
+    }
 
     public function get_province(){
         $data = ProvinceModel::select('id_prov','nama as name')->get();
 		return $this->services->response(200,"Province List",$data);
     }
 
+    public function get_provinceByID($id){
+        $data = ProvinceModel::select('id_prov','nama as name')->where('id_prov', $id)->first();
+		return $this->services->response(200,"Province List",$data);
+    }
+
     public function get_city($id){
         $data = CityModel::select('id_kab as city_id','nama as name')->where('id_prov', $id)->get();
 		return $this->services->response(200,"City List",$data);
+    }
+
+    public function get_cityByID($id){
+        $data = CityModel::select('id_kab as city_id','nama as name')->where('id_kab', $id)->first();
+		return $this->services->response(200,"City",$data);
     }
 
     public function get_district($id){
