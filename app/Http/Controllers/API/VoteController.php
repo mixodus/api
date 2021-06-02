@@ -49,4 +49,8 @@ class VoteController extends Controller
 		}
         return $this->services->response(200, "Candidate's vote result", $data);
     }
+	public function resetVote(){
+		$this->actionServices->resetVote();
+        return $this->services->response(200, "Vote reset!");
+	}
 }

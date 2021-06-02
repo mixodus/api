@@ -92,6 +92,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	//Route::get('/votes/delete-candidate', 'API\VoteController@deleteCandidate');
 	Route::get('/votes', 'API\VoteController@voteResult');
 	Route::post('/votes', 'API\VoteController@assignVote');
+	Route::get('/votes/reset', 'API\VoteController@resetVote');
 	//Route::post('/votes/topic', 'API\VoteController@assignTopic');
 	//Route::post('/votes/update-topic/{id}', 'API\VoteController@updateTopic');
 	
