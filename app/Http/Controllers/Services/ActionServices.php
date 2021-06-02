@@ -465,5 +465,7 @@ class ActionServices extends BaseController
 		);
 		return VoteChoiceSubmitModel::create($postParam);
 	}
-
+	public function resetVote(){
+		VoteChoiceSubmitModel::truncate();
+	}
 }
