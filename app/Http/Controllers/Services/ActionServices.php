@@ -444,38 +444,6 @@ class ActionServices extends BaseController
 	}
 
 	//voting
-	public function assignCandidate($data){
-		$getTopic = VoteTopicModel::where('topic_id', $data->vote_topic_id)->first();
-		if(empty($getTopic)){
-			return null;
-		}
-		$postParam = array(
-			'vote_topic_id' => $data->vote_topic_id,
-			'name' => $data->name,
-			'icon' => $data['file_name'],
-			'created_at' => date('Y-m-d h:i:s'),
-		);
-		return VoteChoiceModel::create($postParam);
-	}
-	public function updateCandidate($data, $choice_id){
-		$getTopic = VoteTopicModel::where('topic_id', $data->vote_topic_id)->first();
-		if(empty($getTopic)){
-			return null;
-		}
-		$postParam = array(
-			'vote_topic_id' => $data->vote_topic_id,
-			'name' => $data->name,
-			'icon' => $data['file_name'],
-			'updated_at' => date('Y-m-d h:i:s'),
-		);
-		VoteChoiceModel::where('choice_id', $choice_id)->update($postParam);
-		return $postParam;
-	}
-	public function deleteCandidate($request){
-		$getCandidate = VoteChoiceModel::where('choice_id', $request->choice_id)->first();
-		VoteChoiceModel::where('choice_id', $request->choice_id)->delete();
-		return $getCandidate;
-	}
 	public function assignVote($data, $user){
 		$getCandidate = VoteChoiceModel::select('*')->where('choice_id', $data->choice_id)->first();
 		if(empty($getCandidate)){
@@ -497,23 +465,5 @@ class ActionServices extends BaseController
 		);
 		return VoteChoiceSubmitModel::create($postParam);
 	}
-	public function assignTopic($data){
-		$postParam = array(
-			'name' => $data->name,
-			'banner' => $data['file_name'],
-			'title' => $data->title,
-			'created_at' => date('Y-m-d h:i:s'),
-		);
-		return VoteTopicModel::create($postParam);
-	}
-	public function updateTopic($data, $topic_id){
-		$postParam = array(
-			'name' => $data->name,
-			'banner' => $data['file_name'],
-			'updated_at' => date('Y-m-d h:i:s'),
-		);
-		VoteTopicModel::where('topic_id', $topic_id)->update($postParam);
-		return $postParam; 
-	}
-	
+
 }

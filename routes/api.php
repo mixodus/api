@@ -78,6 +78,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 
 	//Jobs
 	Route::get('/job_post/progress', 'API\JobsController@userJobsApplication');
+	Route::get('/job_post/{id}/users', 'API\JobsController@getUsersByJobID');
 	Route::post('/job_post/apply', 'API\JobsController@applyJobsApplication')->middleware('log.route:jobs,Apply-Job,action');
 
 	//Events
@@ -86,14 +87,13 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 
 	//Voting
 	Route::get('/votes/candidates', 'API\VoteController@showCandidates');
-	Route::post('/votes/assign-candidate', 'API\VoteController@assignCandidate');
-	Route::post('/votes/update-candidate/{id}', 'API\VoteController@updateCandidate');
-	Route::get('/votes/delete-candidate', 'API\VoteController@deleteCandidate');
+	//Route::post('/votes/assign-candidate', 'API\VoteController@assignCandidate');
+	//Route::post('/votes/update-candidate/{id}', 'API\VoteController@updateCandidate');
+	//Route::get('/votes/delete-candidate', 'API\VoteController@deleteCandidate');
 	Route::get('/votes', 'API\VoteController@voteResult');
 	Route::post('/votes', 'API\VoteController@assignVote');
-	Route::get('/votes/topic', 'API\VoteController@topics');
-	Route::post('/votes/topic', 'API\VoteController@assignTopic');
-	Route::post('/votes/update-topic/{id}', 'API\VoteController@updateTopic');
+	//Route::post('/votes/topic', 'API\VoteController@assignTopic');
+	//Route::post('/votes/update-topic/{id}', 'API\VoteController@updateTopic');
 	
 
 	//Challenge
@@ -195,12 +195,16 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	//Location Dashboard
 	Route::get('/location/country', 'API\Dashboard\Location\LocationController@get_country');
 	Route::get('/location/province', 'API\Dashboard\Location\LocationController@get_province');
+	Route::get('/location/country/{id}', 'API\Dashboard\Location\LocationController@get_countryByID');
+	Route::get('/location/province/{id}', 'API\Dashboard\Location\LocationController@get_provinceByID');
 	Route::get('/location/city/{id}', 'API\Dashboard\Location\LocationController@get_city');
+	Route::get('/location/city/id/{id}', 'API\Dashboard\Location\LocationController@get_cityByID');
 	Route::get('/location/district/{id}', 'API\Dashboard\Location\LocationController@get_district');
 	Route::get('/location/subdistrict/{id}', 'API\Dashboard\Location\LocationController@get_subDistrict');
 
 	//Company Dashboard
 	Route::get('/company', 'API\Dashboard\MenuPage\CompanyController@index');
+	Route::get('/company/{id}', 'API\Dashboard\MenuPage\CompanyController@getCompanyByID');
 
 	//Employee Level Dashboard
 	Route::get('/user-management/employee-level', 'API\Dashboard\UserManagement\LevelController@index');
@@ -246,6 +250,18 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::post('/dashboard/referral', 'API\Dashboard\ReferralController@AssignMember');
 	Route::post('/dashboard/referral/update/{id}', 'API\Dashboard\ReferralController@UpdateReferralMember');
 	Route::post('/dashboard/referral/update/{id}/status', 'API\Dashboard\ReferralController@UpdateReferralStatus');
+
+	//voting dashboard
+	Route::get('/votes/candidate', 'API\Dashboard\VoteController@showCandidates');
+	Route::get('/votes/candidate/{id}', 'API\Dashboard\VoteController@showCandidateByID');
+	Route::post('/votes/assign-candidate', 'API\Dashboard\VoteController@assignCandidate');
+	Route::post('/votes/update-candidate/{id}', 'API\Dashboard\VoteController@updateCandidate');
+	Route::get('/votes/delete-candidate/{id}', 'API\Dashboard\VoteController@deleteCandidate');
+	Route::get('/votes/topic', 'API\Dashboard\VoteController@topics');
+	Route::get('/votes/topic/{id}', 'API\Dashboard\VoteController@topicByID');
+	Route::post('/votes/create-topic', 'API\Dashboard\VoteController@assignTopic');
+	Route::get('/votes/delete-topic/{id}', 'API\Dashboard\VoteController@deleteTopic');
+	Route::post('/votes/update-topic/{id}', 'API\Dashboard\VoteController@updateTopic');
 
 	Route::group(['prefix' => 'dashboard'], function () {
 		Route::get('/hacktown', 'API\Dashboard\MenuPage\EventController@hacktown');

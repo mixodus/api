@@ -40,6 +40,9 @@ use App\Models\UserWithdrawHistoryModel;
 use App\Models\Dashboard\LogActivity;
 use App\Models\Dashboard\EventTypeModel;
 use App\Models\Fase2\LogModel;
+use App\Models\VoteChoiceModel;
+use App\Models\VoteChoiceSubmitModel;
+use App\Models\VoteTopicModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -363,6 +366,7 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
+
 	///====Jobs Fase 2
 	
 	public function getJobTypeList(){
@@ -983,5 +987,83 @@ class GetDataServices extends BaseController
 	public function getEventType(){
 
 		return EventTypeModel::select('event_type_id', 'event_type_name')->get();
+	}
+
+	//voting
+	public function getCandidate($request, $user){
+		$topic = VoteTopicModel::where('topic_id', $request->topic_id)->first();
+		$topic['banner_url'] = url('/')."/uploads/topic_banner/".$topic['banner'];
+		$choice = VoteChoiceModel::select('*')->where('vote_topic_id', $request->topic_id)->get();
+		$choice = $choice->map(function($key){
+			$key['icon_url']  = url('/')."/uploads/candidate_icon/".$key['icon'];
+			return $key;
+		});
+		if(sizeof($choice) == 0){
+			$choice = null;
+		}
+
+		$temp = VoteChoiceSubmitModel::select('*')->where('vote_topic_id', $request->topic_id)->where('employee_id', $user->user_id)->first();
+		$status = true;
+		if(!empty($temp)){
+			$status = true;
+		}else{
+			$status = false;
+		}
+		$topic->is_already_vote = $status;
+		$topic->choices = $choice;
+		
+		return $topic;
+	}
+	public function getCandidateByID($id){
+		$choice = VoteChoiceModel::select('*')->where('choice_id', $id)->first();
+		$choice->icon_url = url('/')."/uploads/candidate_icon/".$choice['icon'];
+		return $choice;
+	}
+	public function getVoteResult($topic_id){
+		if($topic_id==null || $topic_id == ""){
+			return null;
+		}
+		$topic = VoteTopicModel::select('*')->where('topic_id', $topic_id)->first();
+		$choice = VoteChoiceModel::select('choice_id', 'name')->where('vote_topic_id', $topic_id)->get();
+
+		$arr_choice = array();
+
+		foreach($choice as $choices){
+			array_push($arr_choice, $choices->name);
+			//$choices['count_result'] = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $choices->choice_id)->count();
+		}
+
+		$count = count($arr_choice);
+		$temp_count = 1;
+
+		$str_query = "SELECT vote_choices.name, vote_choice_submit.vote_choice_id, vote_choice_submit.created_at,\n";
+		foreach ($arr_choice as $choice) {
+			if($temp_count == $count){
+				$str_query .= "SUM(CASE WHEN `name` = '".$choice."' THEN 1 ELSE 0 END)\n";
+			}else{
+				$str_query .= "SUM(CASE WHEN `name` = '".$choice."' THEN 1 ELSE 0 END)+\n";
+			}
+			$temp_count++;
+		}
+		$str_query .= "AS 'total_vote'\n";
+		$str_query .= "FROM vote_choice_submit\nINNER JOIN vote_choices ON vote_choice_submit.vote_choice_id=vote_choices.choice_id\n";
+		$str_query .= "GROUP by name\nORDER by created_at DESC;";
+
+		$result = DB::select($str_query);
+
+		$data = array('topic_id' => $topic_id, 'topic_name' => $topic->name, 'topic_title' => $topic->title, 'choice' => $result);
+		return $data;
+	}
+	public function getTopics(){
+		$data = VoteTopicModel::select('*')->orderBy('topic_id','DESC')->get();
+		foreach($data as $datas){
+			$datas['banner_url'] = url('/')."/uploads/topic_banner/".$datas['banner'];
+		}
+		return $data;
+	}
+	public function getTopicsByID($id){
+		$data = VoteTopicModel::select('*')->where('topic_id', $id)->first();
+		$data['banner_url'] = url('/')."/uploads/topic_banner/".$data['banner'];
+		return $data;
 	}
 }

@@ -40,6 +40,21 @@ class CompanyController extends Controller
             return $this->services->response(404,"Get Jobs list failed !");
         }
     }
+    public function getCompanyByID(Request $request, $id){
+        $checkUser = $this->getDataServices->getAdminbyToken($request);
+
+		if (!$checkUser){
+            return $this->getAction->response(406,"User doesnt exist!");
+        }
+        $data_company = CompanyModel::select('*')->where('company_id', $id)->first();
+
+        if ($data_company) {
+            // $action = $this->getAction->getactionrole($checkUser->role_id, 'jobs');
+            return $this->getAction->response(200, "Company", $data_company);
+        } else {
+            return $this->services->response(404,"Get Company failed !");
+        }
+    }
 
     /**
      * Show the form for creating a new resource.

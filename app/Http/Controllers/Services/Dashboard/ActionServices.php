@@ -16,6 +16,9 @@ use App\Models\EventScheduleModel;
 use App\Models\EventParticipantStatusModel;
 use App\Models\EventParticipantModel;
 use App\Models\NotifModel;
+use App\Models\VoteChoiceModel;
+use App\Models\VoteChoiceSubmitModel;
+use App\Models\VoteTopicModel;
 
 class ActionServices extends Controller
 {
@@ -217,5 +220,84 @@ class ActionServices extends Controller
 	public function updateReferralfile($data){
 		$postParam['file'] = $data['file'];
 		return ReferralModel::where('referral_id',$data['id'])->update($postParam);
+	}
+
+    //voting
+    public function assignCandidate($data){
+		$getTopic = VoteTopicModel::where('topic_id', $data->vote_topic_id)->first();
+		if(empty($getTopic)){
+			return null;
+		}
+		$postParam = array(
+			'vote_topic_id' => $data->vote_topic_id,
+			'name' => $data->name,
+			'icon' => $data['file_name'],
+			'created_at' => date('Y-m-d h:i:s'),
+		);
+		return VoteChoiceModel::create($postParam);
+	}
+	public function updateCandidate($data, $choice_id, $filename){
+		$getTopic = VoteTopicModel::where('topic_id', $data->vote_topic_id)->first();
+		if(empty($getTopic)){
+			return null;
+		}
+		$postParam = array(
+			'vote_topic_id' => $data->vote_topic_id,
+			'name' => $data->name,
+			'icon' => $filename,
+			'updated_at' => date('Y-m-d h:i:s'),
+		);
+		VoteChoiceModel::where('choice_id', $choice_id)->update($postParam);
+		return $postParam;
+	}
+	public function deleteCandidate($id){
+		$getCandidate = VoteChoiceModel::where('choice_id', $id)->first();
+		VoteChoiceModel::where('choice_id', $id)->delete();
+		return $getCandidate;
+	}
+	public function assignVote($data, $user){
+		$getCandidate = VoteChoiceModel::select('*')->where('choice_id', $data->choice_id)->first();
+		if(empty($getCandidate)){
+			return $getCandidate;
+		}
+		$temp = VoteChoiceSubmitModel::select('*')->where('employee_id', $user->user_id)->get();
+		if(!empty($temp)){
+			foreach($temp as $datas){
+				if($datas['employee_id'] == $user->user_id && $datas['vote_topic_id'] == $getCandidate->vote_topic_id){
+					return "false";
+				}
+			}
+		}
+		$postParam = array(
+			'vote_topic_id' => $getCandidate->vote_topic_id,
+			'vote_choice_id' => $getCandidate->choice_id,
+			'employee_id' => $user->user_id,
+			'created_at' => date('Y-m-d h:i:s'),
+		);
+		return VoteChoiceSubmitModel::create($postParam);
+	}
+	public function assignTopic($data){
+		$postParam = array(
+			'name' => $data->name,
+			'banner' => $data['file_name'],
+			'title' => $data->title,
+			'created_at' => date('Y-m-d h:i:s'),
+		);
+		return VoteTopicModel::create($postParam);
+	}
+	public function updateTopic($data, $topic_id, $filename){
+		$postParam = array(
+			'name' => $data->name,
+			'title' => $data->title,
+			'banner' => $filename,
+			'updated_at' => date('Y-m-d h:i:s'),
+		);
+		VoteTopicModel::where('topic_id', $topic_id)->update($postParam);
+		return $postParam; 
+	}
+	public function deleteTopic($id){
+		$getTopic = VoteTopicModel::where('topic_id', $id)->first();
+		VoteTopicModel::where('topic_id', $id)->delete();
+		return $getTopic;
 	}
 }
