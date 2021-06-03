@@ -1193,30 +1193,35 @@ class GetDataServices extends BaseController
 			return null;
 		}
 		$topic = VoteTopicModel::select('*')->where('topic_id', $topic_id)->first();
-		$choice = VoteChoiceModel::select('choice_id', 'name')->where('vote_topic_id', $topic_id)->get();
+		$str_query = "
+			SELECT vc.name, count(vcs.vote_choice_id) AS 'total_vote' 
+			FROM vote_choices vc 
+			LEFT OUTER JOIN vote_choice_submit vcs ON vcs.vote_choice_id = vc.choice_id WHERE vc.vote_topic_id = ".$topic_id." 
+			GROUP by vc.name ORDER BY vc.created_at
+		";
 
-		$arr_choice = array();
+		// $arr_choice = array();
 
-		foreach($choice as $choices){
-			array_push($arr_choice, $choices->name);
-			//$choices['count_result'] = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $choices->choice_id)->count();
-		}
+		// foreach($choice as $choices){
+		// 	array_push($arr_choice, $choices->name);
+		// 	//$choices['count_result'] = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $choices->choice_id)->count();
+		// }
 
-		$count = count($arr_choice);
-		$temp_count = 1;
+		// $count = count($arr_choice);
+		// $temp_count = 1;
 
-		$str_query = "SELECT vote_choices.name, vote_choice_submit.vote_choice_id, vote_choice_submit.created_at,\n";
-		foreach ($arr_choice as $choice) {
-			if($temp_count == $count){
-				$str_query .= "SUM(CASE WHEN `name` = '".$choice."' THEN 1 ELSE 0 END)\n";
-			}else{
-				$str_query .= "SUM(CASE WHEN `name` = '".$choice."' THEN 1 ELSE 0 END)+\n";
-			}
-			$temp_count++;
-		}
-		$str_query .= "AS 'total_vote'\n";
-		$str_query .= "FROM vote_choice_submit\nINNER JOIN vote_choices ON vote_choice_submit.vote_choice_id=vote_choices.choice_id\n";
-		$str_query .= "GROUP by name\nORDER by created_at DESC;";
+		// $str_query = "SELECT vote_choices.name, vote_choice_submit.vote_choice_id, vote_choice_submit.created_at,\n";
+		// foreach ($arr_choice as $choice) {
+		// 	if($temp_count == $count){
+		// 		$str_query .= "SUM(CASE WHEN `name` = '".$choice."' THEN 1 ELSE 0 END)\n";
+		// 	}else{
+		// 		$str_query .= "SUM(CASE WHEN `name` = '".$choice."' THEN 1 ELSE 0 END)+\n";
+		// 	}
+		// 	$temp_count++;
+		// }
+		// $str_query .= "AS 'total_vote'\n";
+		// $str_query .= "FROM vote_choice_submit\nINNER JOIN vote_choices ON vote_choice_submit.vote_choice_id=vote_choices.choice_id\n";
+		// $str_query .= "GROUP by name\nORDER by created_at DESC;";
 
 		$result = DB::select($str_query);
 
