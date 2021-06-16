@@ -86,7 +86,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/event/history/{id}', 'API\EventController@HistoryEvent'); //belum ditest dummy data
 
 	//Voting
-	Route::get('/votes/topic', 'API\VoteController@topics');
+	Route::get('/votes/topics', 'API\VoteController@topics');
 	Route::get('/votes/candidates', 'API\VoteController@showCandidates');
 	//Route::post('/votes/assign-candidate', 'API\VoteController@assignCandidate');
 	//Route::post('/votes/update-candidate/{id}', 'API\VoteController@updateCandidate');
