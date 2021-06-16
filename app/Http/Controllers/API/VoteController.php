@@ -15,6 +15,11 @@ class VoteController extends Controller
 		$this->actionServices = new ActionServices();
 		$this->getDataServices = new GetDataServices();
 	}
+	public function topics(Request $request){
+        $getUser = $getUser = $this->getDataServices->getUserbyToken($request);
+		$data = $this->getDataServices->getTopics();
+        return $this->actionServices->response(200, "All Topics", $data, $action);
+    }
 	public function showCandidates(Request $request){
 		$getUser = $this->getDataServices->getUserbyToken($request);
 		if(!$getUser){
