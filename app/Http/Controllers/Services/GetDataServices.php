@@ -1151,6 +1151,14 @@ class GetDataServices extends BaseController
 		$pecahkan = explode('-', $tanggal);
 		return $pecahkan[0] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[2];
 	}
+
+	public function getTopics(){
+		$data = VoteTopicModel::select('*')->get();
+		foreach($data as $datas){
+			$datas['banner_url'] = url('/')."/uploads/topic_banner/".$datas['banner'];
+		}
+		return $data;
+	}
 	
 //================================Dashboard=======================================//
 	public function getAdminbyToken(Request $request){
@@ -1228,12 +1236,6 @@ class GetDataServices extends BaseController
 		$data = array('topic_id' => $topic_id, 'topic_name' => $topic->name, 'topic_title' => $topic->title, 'choice' => $result);
 		return $data;
 	}
-	public function getTopics(){
-		$data = VoteTopicModel::select('*')->get();
-		foreach($data as $datas){
-			$datas['banner_url'] = url('/')."/uploads/topic_banner/".$datas['banner'];
-		}
-		return $data;
-	}
+	
 
 }

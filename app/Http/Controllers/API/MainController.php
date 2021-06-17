@@ -34,6 +34,7 @@ class MainController extends Controller
 		$data['friend_list']['data'] = array(); //not done
 		$data['friend_request']['data']  = array(); //not done
 		$data['flyer_banner'] = array('is_active'=>true,'url_banner'=> url('/')."/uploads/event/hackathon/general/flyer_hackathon.png");
+		$data['voting-topic'] = $this->getDataServices->getTopics();
 		if($checkUser->user_id != 0){
 			$data['user']->makeHidden(['qualification','history','project','certification','work_experience','mutual_friends','total_achievement']);
 
