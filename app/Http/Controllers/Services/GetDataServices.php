@@ -773,6 +773,7 @@ class GetDataServices extends BaseController
 					->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
 					->where('xin_friendship.uid1',$user_id)
 					->groupBy('xin_friendship.uid2')
+					// ->limit(5)
 					->get();
 		$friendIdList = array();
 		$friendList = array();
