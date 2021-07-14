@@ -96,6 +96,9 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/votes/reset', 'API\VoteController@resetVote');
 	//Route::post('/votes/topic', 'API\VoteController@assignTopic');
 	//Route::post('/votes/update-topic/{id}', 'API\VoteController@updateTopic');
+
+	//connection||friends
+	Route::get('/connection', 'API\ConnectionController@index');
 	
 
 	//Challenge
