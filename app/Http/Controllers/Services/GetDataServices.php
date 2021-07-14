@@ -91,7 +91,7 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
-	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null){
+	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null,$pagination=null, $pageNumber = null){
 		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
 		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp');
 		if($array != null){
@@ -100,8 +100,11 @@ class GetDataServices extends BaseController
 		if($keyword != null){
 			$query->where('fullname','LIKE','%'.$keyword.'%');
 		}
-		if($offset != null && $limit != null){
+		if($offset != null || $limit != null){
 			$query->offset($offset)->limit($limit);
+		}
+		if($pagination != null){
+			$query->paginate($pagination, ['*'], 'page', $pageNumber);
 		}
 		$data = $query->get();
 		$data  = $data->map(function($key) use($array){
@@ -784,6 +787,25 @@ class GetDataServices extends BaseController
 		$friendList = $this->userDatainArray($friendIdList);
 		return $friendList;
 	}
+
+	public function get_all_connection($user_id, $page=null){
+		$data = EmployeeFriendshipModel::select('xin_friendship.uid2','xin_friendship.uid1')
+					->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
+					->where('xin_friendship.uid1',$user_id)
+					->groupBy('xin_friendship.uid2')
+					->get();
+		$friendIdList = array();
+		$friendList = array();
+
+		foreach ($data as $row){
+			$friendIdList[] = $row['uid2'];
+		}
+
+		$friendList = $this->userDatainArray($friendIdList,null , null, null, 5, $page);
+		return $friendList;
+	}
+
+
 	
 	public function getMutualFriend($friend_id,$user_id){
 		$list2 = ($this->userDatainArray($friend_id))['data'];
