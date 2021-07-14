@@ -91,9 +91,33 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
-	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null,$pagination=null, $pageNumber = null){
+	function userDatainArray($array=null,$keyword=null,$offset=null,$limit=null){
 		$query = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no',
 		'address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp');
+		if($array != null){
+			$query->whereIn('user_id',$array);
+		}
+		if($keyword != null){
+			$query->where('fullname','LIKE','%'.$keyword.'%');
+		}
+		if($offset != null || $limit != null){
+			$query->offset($offset)->limit($limit);
+		}
+		$data = $query->get();
+		$data  = $data->map(function($key) use($array){
+			$key['profile_picture_url'] ="";
+			$key['pic']  ="";
+			if($key['profile_picture']!="" || $key['profile_picture']!=null){
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+				$key['pic']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			}
+			// $key['mutual_friends']  = $this->getMutualFriend($key['user_id'],$array);
+			return $key;
+		});
+		return $data;
+	}
+	function userDatainArray_simplify($array=null,$keyword=null,$offset=null,$limit=null,$pagination=null, $pageNumber = null){
+		$query = UserModels::select('user_id','fullname', 'job_title', 'profile_picture');
 		if($array != null){
 			$query->whereIn('user_id',$array);
 		}
@@ -789,6 +813,9 @@ class GetDataServices extends BaseController
 	}
 
 	public function get_all_connection($user_id, $page=null){
+		$offset = 0;
+		$limit = 5;
+
 		$data = EmployeeFriendshipModel::select('xin_friendship.uid2','xin_friendship.uid1')
 					->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
 					->where('xin_friendship.uid1',$user_id)
@@ -801,7 +828,15 @@ class GetDataServices extends BaseController
 			$friendIdList[] = $row['uid2'];
 		}
 
-		$friendList = $this->userDatainArray($friendIdList,null , null, null, 5, $page);
+		if($page == null){
+			$offset = 0;
+		}else{
+			for($i = 1; $i < $page; $i++){
+				$offset += 5;
+			}
+		}
+		// $friendList = $this->userDatainArray($friendIdList,null , $offset, $limit);
+		$friendList = $this->userDatainArray_simplify($friendIdList,null , null, null, 5);
 		return $friendList;
 	}
 
