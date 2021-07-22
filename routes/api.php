@@ -99,6 +99,10 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 
 	//connection||friends
 	Route::get('/connection', 'API\ConnectionController@index');
+	Route::post('/connection/request', 'API\ConnectionController@requestConnection');
+	Route::post('/connection/accept-request', 'API\ConnectionController@acceptConnectionRequest');
+	Route::post('/connection/unconnect', 'API\ConnectionController@unconnect');
+	Route::post('/connection/reject-request', 'API\ConnectionController@rejectConnection');
 	
 
 	//Challenge
