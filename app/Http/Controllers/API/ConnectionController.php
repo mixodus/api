@@ -35,11 +35,11 @@ class ConnectionController extends Controller
 		
 		$checkStatus = $this->getDataServices->checkConnectionStatus($request->to,$checkUser->user_id);
 		if(!empty($checkStatus)){
-			return $this->services->response(400,"User sudah menjadi teman / sedang menunggu persetujuan!");
+			return $this->services->response(400,"User yang anda tambahkan sedang menunggu persetujuan!");
 		}
 		$save = $this->actionServices->addConnection($request->to,$checkUser->user_id);
 		if(!$save){
-			return $this->services->response(400,"Server Error!");
+			return $this->services->response(400,"User yang anda tambahkan tidak tersedia / Server Error!");
 		}
 		return $this->services->response(200,"Permintaan pertemanan terkirim!", $save);        
 	}

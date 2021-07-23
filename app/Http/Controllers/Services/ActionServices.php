@@ -342,6 +342,10 @@ class ActionServices extends BaseController
 	}
 	//connection
 	public function addConnection($target_id, $source_id){
+		$target = UserModels::where('user_id', $target_id)->first();
+		if(!$target){
+			return $target;
+		}
 		$postParam=array(
 			'source_id' => $source_id,
 			'target_id' => $target_id,
