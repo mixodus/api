@@ -42,6 +42,8 @@ use App\Models\UserWithdrawHistoryModel;
 use App\Models\VoteChoiceModel;
 use App\Models\VoteChoiceSubmitModel;
 use App\Models\VoteTopicModel;
+use App\Models\ConnectionRequestModel;
+use App\Models\UserConnectionModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -865,9 +867,13 @@ class GetDataServices extends BaseController
 		CONCAT("'.url('/').'/uploads/profile/'.'" ,xin_employees.profile_picture) AS profile_picture_url
 							FROM xin_friendship t1 
 							LEFT JOIN xin_employees ON t1.uid1 = xin_employees.user_id WHERE t1.uid2 = 9106');
-	
-		
 	}
+
+	//===CONNECTION(FRIEND) MOBILE===
+	public function checkConnectionStatus($target_id, $source_id){
+		return ConnectionRequestModel::select('*')->where('source_id',$source_id)->where('target_id',$target_id)->first();
+	}
+
 	// =========================================CHALLENGE MODULE ==============================================================
 	public function getChallengebyUser($user_id,$type=null){
 		$query = ChallengeModel::select('*')->LeftJoin('xin_challenge_participant', 'xin_challenge_participant.challenge_id', '=', 'xin_challenge.challenge_id')
