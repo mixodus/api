@@ -863,6 +863,14 @@ class GetDataServices extends BaseController
 			else{
 				$list->is_friend = false;
 			}
+			if($list->user_id == $user_id){
+				$list = null;
+			}
+		}
+		foreach($friendList as $key => $list){
+			if($list->user_id == $user_id){
+				unset($friendList[$key]);
+			}
 		}
 
 		return $friendList;
