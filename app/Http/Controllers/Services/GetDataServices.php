@@ -813,37 +813,6 @@ class GetDataServices extends BaseController
 		$friendList = $this->userDatainArray($friendIdList);
 		return $friendList;
 	}
-
-	public function get_all_connection($user_id, $page=null){
-		$offset = 0;
-		$limit = 5;
-
-		$data = EmployeeFriendshipModel::select('xin_friendship.uid2','xin_friendship.uid1')
-					->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
-					->where('xin_friendship.uid1',$user_id)
-					->groupBy('xin_friendship.uid2')
-					->get();
-		$friendIdList = array();
-		$friendList = array();
-
-		foreach ($data as $row){
-			$friendIdList[] = $row['uid2'];
-		}
-
-		if($page == null){
-			$offset = 0;
-		}else{
-			for($i = 1; $i < $page; $i++){
-				$offset += 5;
-			}
-		}
-		// $friendList = $this->userDatainArray($friendIdList,null , $offset, $limit);
-		$friendList = $this->userDatainArray_simplify($friendIdList,null , null, null, 5);
-		return $friendList;
-	}
-
-
-	
 	public function getMutualFriend($friend_id,$user_id){
 		$list2 = ($this->userDatainArray($friend_id))['data'];
 		$list2 = $this->remove_element($user_id, $list2);
@@ -870,8 +839,47 @@ class GetDataServices extends BaseController
 	}
 
 	//===CONNECTION(FRIEND) MOBILE===
+	public function get_all_connection($user_id, $page=null){
+		// $data = EmployeeFriendshipModel::select('xin_friendship.uid2','xin_friendship.uid1')
+		// 			->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
+		// 			->where('xin_friendship.uid1',$user_id)
+		// 			->groupBy('xin_friendship.uid2')
+		// 			->get();
+		// $friendIdList = array();
+		$friendList = array();
+
+		// foreach ($data as $row){
+		// 	$friendIdList[] = $row['uid2'];
+		// }
+
+		// $friendList = $this->userDatainArray($friendIdList,null , $offset, $limit);
+		$friendList = $this->userDatainArray_simplify(null, null , null, null, 10);
+
+		foreach($friendList as $list){
+			$is_friend = UserConnectionModel::where('user_id', $user_id)->where('user_connection_id', $list->user_id)->first();
+			if(!empty($is_friend)){
+				$list->is_friend = true;
+			}
+			else{
+				$list->is_friend = false;
+			}
+		}
+
+		return $friendList;
+	}
 	public function checkConnectionStatus($target_id, $source_id){
 		return ConnectionRequestModel::select('*')->where('source_id',$source_id)->where('target_id',$target_id)->first();
+	}
+	public function requests($target_id){
+		$source_id = ConnectionRequestModel::select('source_id')->where('target_id', $target_id)->get();
+		$requests = array();
+		foreach($source_id as $id){
+			array_push($requests, UserModels::select('user_id', 'fullname', 'job_title','profile_picture')->where('user_id', $id->source_id)->first());
+		}
+		foreach($requests as $request){
+			$request->profile_picture_url = url('/')."/uploads/profile/".$request->profile_picture;
+		}
+		return $requests;
 	}
 
 	// =========================================CHALLENGE MODULE ==============================================================
