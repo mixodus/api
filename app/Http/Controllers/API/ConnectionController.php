@@ -19,6 +19,7 @@ class ConnectionController extends Controller
 	public function index(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$data = $this->getDataServices->get_all_connection($checkUser->user_id, $request->page);
+
 		
 		return $this->services->response(200,"success" ,$data);
 	}
@@ -89,10 +90,10 @@ class ConnectionController extends Controller
 	}
 
 	//listing section
-	public function friendRequestList(Request $request){
+	public function requestsList(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
-
-		$data = $this->getDataServices->friendRequestList($checkUser->user_id);
+		
+		$data = $this->getDataServices->requests($checkUser->user_id);
 		
 		return $this->services->response(200,"Daftar Permintaan Pertemanan!", $data);        
 	}
