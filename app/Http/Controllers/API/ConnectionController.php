@@ -56,7 +56,7 @@ class ConnectionController extends Controller
 		
 		$save = $this->actionServices->acceptConnection($request->from,$checkUser->user_id);
 		if(!$save){
-			return $this->services->response(400,"Server Error!");
+			return $this->services->response(400,"Sudah menjadi teman! / Server Error!");
 		}
 		return $this->services->response(200,"Permintaan pertemanan disetujui!", $save);        
 	}

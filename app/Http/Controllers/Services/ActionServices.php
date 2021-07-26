@@ -353,7 +353,12 @@ class ActionServices extends BaseController
 		return ConnectionRequestModel::create($postParam);
 	}
 	public function acceptConnection($source_id,$target_id){
-		ConnectionRequestModel::where('source_id',$source_id)->where('target_id', $target_id)->delete();
+		$get = ConnectionRequestModel::where('source_id',$source_id)->where('target_id', $target_id)->first();
+		if(!empty($get)){
+			ConnectionRequestModel::where('source_id',$source_id)->where('target_id', $target_id)->delete();
+		}else{
+			return null;
+		}
 		$postParam = array(
 			'user_id' => $target_id,
 			'user_connection_id' => $source_id
