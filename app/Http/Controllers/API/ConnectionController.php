@@ -44,6 +44,22 @@ class ConnectionController extends Controller
 		}
 		return $this->services->response(200,"Permintaan pertemanan terkirim!", $save);        
 	}
+	public function cancelConnectionRequest(Request $request){
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+		$rules = [
+			'to' => "required",
+		];
+		$checkValidate = $this->services->validate($request->all(),$rules);
+
+		if(!empty($checkValidate))
+			return $checkValidate;
+		
+		$data = $this->actionServices->cancelConnectionRequest($request->to,$checkUser->user_id);
+		if($data==false){
+			return $this->services->response(406,"Data tidak ditemukan!", $data);        
+		}
+		return $this->services->response(200,"Pembatalaan permintaan pertemanan berhasil!", $data);        
+	}
 	public function acceptConnectionRequest(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
