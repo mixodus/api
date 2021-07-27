@@ -857,11 +857,18 @@ class GetDataServices extends BaseController
 
 		foreach($friendList as $list){
 			$is_friend = UserConnectionModel::where('user_id', $user_id)->where('user_connection_id', $list->user_id)->first();
+			$requested = ConnectionRequestModel::where('source_id', $user_id)->where('target_id', $list->user_id)->first();
 			if(!empty($is_friend)){
 				$list->is_friend = true;
+				$list->requested = true;
 			}
 			else{
 				$list->is_friend = false;
+				if(!empty($requested)){
+					$list->requested = true;
+				}else{
+					$list->requested = false;
+				}
 			}
 			if($list->user_id == $user_id){
 				$list = null;
