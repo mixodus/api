@@ -855,30 +855,35 @@ class GetDataServices extends BaseController
 		// $friendList = $this->userDatainArray($friendIdList,null , $offset, $limit);
 		$friendList = $this->userDatainArray_simplify(null, null , null, null, 10);
 
-		foreach($friendList as $list){
-			$is_friend = UserConnectionModel::where('user_id', $user_id)->where('user_connection_id', $list->user_id)->first();
-			$requested = ConnectionRequestModel::where('source_id', $user_id)->where('target_id', $list->user_id)->first();
-			if(!empty($is_friend)){
-				$list->is_friend = true;
-				$list->requested = true;
-			}
-			else{
-				$list->is_friend = false;
-				if(!empty($requested)){
-					$list->requested = true;
-				}else{
-					$list->requested = false;
+		foreach($friendList as $list => $value){
+			$is_friend = UserConnectionModel::where('user_id', $user_id)->where('user_connection_id', $value->user_id)->first();
+			$requested = ConnectionRequestModel::where('source_id', $user_id)->where('target_id', $value->user_id)->first();
+			if($value->user_id == $user_id){
+				unset($friendList[$list]);
+			}else{
+				if(!empty($is_friend)){
+					$value->is_friend = true;
+					$value->requested = true; 
+				}
+				else{
+					$value->is_friend = false;
+					if(!empty($requested)){
+						$value->requested = true;
+					}else{
+						$value->requested = false;
+					}
 				}
 			}
-			if($list->user_id == $user_id){
-				$list = null;
-			}
+			// if($list->user_id == $user_id){
+			// 	$list = null;
+			// }
 		}
-		foreach($friendList as $key){
-			if($list->user_id == $user_id){
-				unset($friendList[$key]);
-			}
-		}
+		// foreach($friendList as $key){
+		// 	dd($list);
+		// 	if($list->user_id == $user_id){
+		// 		unset($friendList[$key]);
+		// 	}
+		// }
 
 		return $friendList;
 	}
