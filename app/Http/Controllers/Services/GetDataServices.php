@@ -118,7 +118,7 @@ class GetDataServices extends BaseController
 		});
 		return $data;
 	}
-	function userDatainArray_simplify($array=null,$keyword=null,$offset=null,$limit=null,$pagination=null, $pageNumber = null){
+	function userDatainArray_simplify($array=null,$keyword=null,$offset=null,$limit=null){
 		$query = UserModels::select('user_id','fullname', 'job_title', 'profile_picture');
 		if($array != null){
 			$query->whereIn('user_id',$array);
@@ -128,9 +128,6 @@ class GetDataServices extends BaseController
 		}
 		if($offset != null || $limit != null){
 			$query->offset($offset)->limit($limit);
-		}
-		if($pagination != null){
-			$query->paginate($pagination, ['*'], 'page', $pageNumber);
 		}
 		$data = $query->get();
 		$data  = $data->map(function($key) use($array){
@@ -840,22 +837,31 @@ class GetDataServices extends BaseController
 
 	//===CONNECTION(FRIEND) MOBILE===
 	public function get_all_connection($user_id, $page=null){
-		// $data = EmployeeFriendshipModel::select('xin_friendship.uid2','xin_friendship.uid1')
-		// 			->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
-		// 			->where('xin_friendship.uid1',$user_id)
-		// 			->groupBy('xin_friendship.uid2')
-		// 			->get();
-		// $friendIdList = array();
-		$friendList = array();
 
-		// foreach ($data as $row){
-		// 	$friendIdList[] = $row['uid2'];
-		// }
+		$requests = ConnectionRequestModel::select('target_id')->where('source_id', $user_id)->get();
+		$requests_targetId = array();
+		array_push($requests_targetId, $user_id);
+		foreach($requests as $list){
+			array_push($requests_targetId, $list->target_id);
+		}
 
-		// $friendList = $this->userDatainArray($friendIdList,null , $offset, $limit);
-		$friendList = $this->userDatainArray_simplify(null, null , null, null, 10);
+		$query = UserModels::select('user_id','fullname', 'job_title', 'profile_picture')
+		// ->inRandomOrder('user_id')
+		->whereNotIn('user_id', $requests_targetId);
+		$query->paginate(10, ['*'], 'page', $page);
 
-		foreach($friendList as $list){
+		$data = $query->get();
+		$data = $data->map(function($key){
+			$key['profile_picture_url'] ="";
+			if($key['profile_picture']!="" || $key['profile_picture']!=null){
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			}
+			return $key;
+		});
+
+		
+
+		foreach($data as $list){
 			$is_friend = UserConnectionModel::where('user_id', $user_id)->where('user_connection_id', $list->user_id)->first();
 			$requested = ConnectionRequestModel::where('source_id', $user_id)->where('target_id', $list->user_id)->first();
 			if(!empty($is_friend)){
@@ -872,7 +878,8 @@ class GetDataServices extends BaseController
 			}
 		}
 
-		return $friendList;
+
+		return $data;
 	}
 	public function checkConnectionStatus($target_id, $source_id){
 		return ConnectionRequestModel::select('*')->where('source_id',$source_id)->where('target_id',$target_id)->first();
