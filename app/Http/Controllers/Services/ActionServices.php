@@ -381,11 +381,11 @@ class ActionServices extends BaseController
 		return $data;
 	}
 	public function unconnectConnection($user_connection_id,$user_id){
-		UserConnectionModel::where('user_connection_id',$user_connection_id)->where('user_id', $user_id)->delete();
 		UserConnectionModel::where('user_connection_id',$user_id)->where('user_id', $user_connection_id)->delete();
+		UserConnectionModel::where('user_connection_id',$user_connection_id)->where('user_id', $user_id)->delete();
 	}
 	public function rejectConnection($target_id,$source_id){
-		return ConnectionRequestModel::where('target_id',$target_id)->where('source_id',$source_id)->delete();
+		ConnectionRequestModel::where('target_id',$target_id)->where('source_id',$source_id)->delete();
 	}
 	//bank account
 	public function saveUserBankAccount($data_input,$user_id){

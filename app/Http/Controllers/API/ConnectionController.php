@@ -15,15 +15,18 @@ class ConnectionController extends Controller
 		$this->getDataServices = new GetDataServices();
 		$this->actionServices = new ActionServices();
 	}
-	//listing friend
-	public function index(Request $request){
+	//listing connection
+	public function getConnected(Request $request){
+		$checkUser = $this->getDataServices->getUserbyToken($request);
+		$data = $this->getDataServices->getConnected($checkUser->user_id, $request->page);
+		return $this->services->response(200,"Connected connections!" ,$data);
+	}
+	public function discover(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$data = $this->getDataServices->get_all_connection($checkUser->user_id, $request->page);
-
-		
-		return $this->services->response(200,"success" ,$data);
+		return $this->services->response(200,"Discover connections!" ,$data);
 	}
-	//friend on action
+	//connection on action
 	public function requestConnection(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$rules = [
@@ -74,7 +77,7 @@ class ConnectionController extends Controller
 		if(!$save){
 			return $this->services->response(400,"Sudah menjadi teman! / Server Error!");
 		}
-		return $this->services->response(200,"Permintaan pertemanan disetujui!", $save);        
+		return $this->services->response(200,"Permintaan pertemanan disetujui!");        
 	}
 	public function unconnect(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
@@ -88,7 +91,7 @@ class ConnectionController extends Controller
 		}
 		$save = $this->actionServices->unconnectConnection($request->who,$checkUser->user_id);
 		
-		return $this->services->response(200,"Pertemanan dibatalkan/dihapus!", $save);        
+		return $this->services->response(200,"Pertemanan berhasil dihapus!");        
 	}
 	public function rejectConnection(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
@@ -100,9 +103,9 @@ class ConnectionController extends Controller
 		if(!empty($checkValidate)){
 			return $checkValidate;
 		}
-		$save = $this->actionServices->reject($request->who,$checkUser->user_id);
+		$this->actionServices->rejectConnection($checkUser->user_id,$request->who);
 		
-		return $this->services->response(200,"Pertemanan ditolak!", $save);        
+		return $this->services->response(200,"Pertemanan berhasil ditolak!");        
 	}
 
 	//listing section

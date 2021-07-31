@@ -881,6 +881,20 @@ class GetDataServices extends BaseController
 
 		return $data;
 	}
+
+	public function getConnected($user_id, $page){
+		$connected = UserConnectionModel::select('user_connection_id')->where('user_id', $user_id)->get()->toArray();
+		$users = UserModels::select('user_id','fullname', 'job_title', 'profile_picture')->whereIn('user_id',$connected)->get();
+		$users = $users->map(function($key){
+			$key['profile_picture_url'] ="";
+			if($key['profile_picture']!="" || $key['profile_picture']!=null){
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			}
+			return $key;
+		});
+		return $users;
+	}
+
 	public function checkConnectionStatus($target_id, $source_id){
 		return ConnectionRequestModel::select('*')->where('source_id',$source_id)->where('target_id',$target_id)->first();
 	}

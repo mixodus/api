@@ -98,13 +98,15 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	//Route::post('/votes/update-topic/{id}', 'API\VoteController@updateTopic');
 
 	//connection||friends
-	Route::get('/connection', 'API\ConnectionController@index');
+	Route::get('/connection', 'API\ConnectionController@getConnected');
+	Route::get('/connection/discover', 'API\ConnectionController@discover');
 	Route::post('/connection/request', 'API\ConnectionController@requestConnection');
 	Route::post('/connection/request-cancel', 'API\ConnectionController@cancelConnectionRequest');
 	Route::post('/connection/accept-request', 'API\ConnectionController@acceptConnectionRequest');
 	Route::post('/connection/unconnect', 'API\ConnectionController@unconnect');
 	Route::post('/connection/reject-request', 'API\ConnectionController@rejectConnection');
 	Route::get('/connection/requests', 'API\ConnectionController@requestsList');
+
 	
 	
 
