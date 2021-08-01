@@ -21,6 +21,11 @@ class ConnectionController extends Controller
 		$data = $this->getDataServices->getConnected($checkUser->user_id, $request->page);
 		return $this->services->response(200,"Connected connections!" ,$data);
 	}
+	public function getConnectedDetails(Request $request){
+		$data = $this->getDataServices->getUserDetailsById($request->user_id);
+		if(!$data) return $this->services->response(406,"Not Found!");
+		return $this->services->response(200,"Connected connection details!" ,$data);
+	}
 	public function discover(Request $request){
 		$checkUser = $this->getDataServices->getUserbyToken($request);
 		$data = $this->getDataServices->get_all_connection($checkUser->user_id, $request->page);

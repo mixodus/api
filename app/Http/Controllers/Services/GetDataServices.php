@@ -160,6 +160,48 @@ class GetDataServices extends BaseController
 		}
 		return $checkAuth;
 	}
+	public function getUserDetailsById($id){
+		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp','is_mail_verified')->with('work_experience','certification')->where('user_id',$id)->first();
+		if(!empty($profile)){
+			$collect = collect($profile->certifications);
+			$profile->certification  = $collect->map(function($key) use($collect){
+				$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+				return $key;
+			});
+		}else{
+			return $profile;
+		}
+		//point
+		$point = $this->totalTrxPointbyUserId($id);
+		$profile->points = isset($point)?$point:0;
+		//friend
+		$profile->friendship_status = 0;
+		$profile->mutual_friends = [
+			'count' => 0,
+			'data' => array(),
+		];
+		//level
+		$level = LevelModel::select('*')->where('level_min_point','<=',$profile->points)->where('level_max_point','>=',$profile->points)->first();
+		$profile->level_icon_url = url('/')."/uploads/level/".$level->level_icon;
+		
+		$profile->profile_picture_url = "";
+		if(!empty($profile->profile_picture) && $profile->profile_picture != null){
+			$profile->profile_picture_url = url('/')."/uploads/profile/".$profile->profile_picture;
+		}
+		
+		$profile->level_name = $level->level_name;
+
+		$profile->total_achievement =  $this->totalAwardsbyUserId($id);
+		$profile->qualification  =  $this->employeeQualification($id);
+		$profile->history = array([
+								'event_done' =>$this->getEvent(1,$id),
+								'bootcamp_done' =>$this->getEvent(2,$id),
+								'challenge_done' =>$this->getChallengebyUser($id,"count")
+							]);
+		$profile->project = $this->getWorkExperience($id);
+		return $profile;
+	}
 	public function userDetail($id){
 		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp','is_mail_verified')->with('work_experience','certification')->where('user_id',$id)->first();
 		if(!empty($profile)){

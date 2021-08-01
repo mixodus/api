@@ -99,6 +99,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 
 	//connection||friends
 	Route::get('/connection', 'API\ConnectionController@getConnected');
+	Route::get('/connection/details', 'API\ConnectionController@getConnectedDetails');
 	Route::get('/connection/discover', 'API\ConnectionController@discover');
 	Route::post('/connection/request', 'API\ConnectionController@requestConnection');
 	Route::post('/connection/request-cancel', 'API\ConnectionController@cancelConnectionRequest');
