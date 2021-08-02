@@ -202,7 +202,7 @@ class ReferralController extends Controller
 		$checkUser = $this->getDataServices->getAdminbyToken($request);
 		$rules = [
 			'referral_name' 	=> "required|string",
-			'referral_email' 	=> "required|string|email|unique:xin_employees,email",
+			'referral_email' 	=> "required|string|email",
 			'referral_contact_no' 	=> "required|string",
 			'job_position' 		=> "nullable|string",
 			'referral_employee_id' 	=> "required"
