@@ -86,6 +86,7 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/event/history/{id}', 'API\EventController@HistoryEvent'); //belum ditest dummy data
 
 	//Voting
+	Route::get('/votes/topics', 'API\VoteController@topics');
 	Route::get('/votes/candidates', 'API\VoteController@showCandidates');
 	//Route::post('/votes/assign-candidate', 'API\VoteController@assignCandidate');
 	//Route::post('/votes/update-candidate/{id}', 'API\VoteController@updateCandidate');
@@ -95,6 +96,19 @@ Route::group(['middleware' => ['user.token', 'cors','log.route']], function ($ro
 	Route::get('/votes/reset', 'API\VoteController@resetVote');
 	//Route::post('/votes/topic', 'API\VoteController@assignTopic');
 	//Route::post('/votes/update-topic/{id}', 'API\VoteController@updateTopic');
+
+	//connection||friends
+	Route::get('/connection', 'API\ConnectionController@getConnected');
+	Route::get('/connection/details', 'API\ConnectionController@getConnectedDetails');
+	Route::get('/connection/discover', 'API\ConnectionController@discover');
+	Route::post('/connection/request', 'API\ConnectionController@requestConnection');
+	Route::post('/connection/request-cancel', 'API\ConnectionController@cancelConnectionRequest');
+	Route::post('/connection/accept-request', 'API\ConnectionController@acceptConnectionRequest');
+	Route::post('/connection/unconnect', 'API\ConnectionController@unconnect');
+	Route::post('/connection/reject-request', 'API\ConnectionController@rejectConnection');
+	Route::get('/connection/requests', 'API\ConnectionController@requestsList');
+
+	
 	
 
 	//Challenge

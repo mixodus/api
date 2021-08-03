@@ -30,6 +30,8 @@ use App\Models\UserWithdrawHistoryModel;
 use App\Models\VoteChoiceModel;
 use App\Models\VoteChoiceSubmitModel;
 use App\Models\VoteTopicModel;
+use App\Models\ConnectionRequestModel;
+use App\Models\UserConnectionModel;
 use Firebase\JWT\JWT;
 //fase2
 use App\Models\Fase2\NewsCommentModel;
@@ -337,6 +339,53 @@ class ActionServices extends BaseController
 	}
 	public function reject($user_id,$friend_id){
 		return FriendModel::where('uid1',$friend_id)->where('uid2',$user_id)->delete();
+	}
+	//connection
+	public function addConnection($target_id, $source_id){
+		$target = UserModels::where('user_id', $target_id)->first();
+		if(!$target){
+			return $target;
+		}
+		$postParam=array(
+			'source_id' => $source_id,
+			'target_id' => $target_id,
+		);
+		return ConnectionRequestModel::create($postParam);
+	}
+	public function cancelConnectionRequest($target_id, $source_id){
+		$data =  ConnectionRequestModel::where('target_id', $target_id)->where('source_id', $source_id)->first();
+		if(!empty($data)){
+			ConnectionRequestModel::where('target_id', $target_id)->where('source_id', $source_id)->delete();
+			return true;
+		}else{
+			return false;
+		}
+	}
+	public function acceptConnection($source_id,$target_id){
+		$get = ConnectionRequestModel::where('source_id',$source_id)->where('target_id', $target_id)->first();
+		if(!empty($get)){
+			ConnectionRequestModel::where('source_id',$source_id)->where('target_id', $target_id)->delete();
+		}else{
+			return null;
+		}
+		$postParam = array(
+			'user_id' => $target_id,
+			'user_connection_id' => $source_id
+		);
+		$data['0'] = UserConnectionModel::create($postParam);
+		$postParam = array(
+			'user_connection_id' => $target_id,
+			'user_id' => $source_id
+		);
+		$data['1'] = UserConnectionModel::create($postParam);
+		return $data;
+	}
+	public function unconnectConnection($user_connection_id,$user_id){
+		UserConnectionModel::where('user_connection_id',$user_id)->where('user_id', $user_connection_id)->delete();
+		UserConnectionModel::where('user_connection_id',$user_connection_id)->where('user_id', $user_id)->delete();
+	}
+	public function rejectConnection($target_id,$source_id){
+		ConnectionRequestModel::where('target_id',$target_id)->where('source_id',$source_id)->delete();
 	}
 	//bank account
 	public function saveUserBankAccount($data_input,$user_id){
