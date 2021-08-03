@@ -12,7 +12,7 @@ class AppVersionController extends Controller
 		$this->services = new GeneralServices();
 	}
     public function version(){
-        $version = "20505";
+        $version = "20601";
         return $this->services->response(200, "App Version!", $version);
     }
 }

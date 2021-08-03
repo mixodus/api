@@ -42,7 +42,8 @@ use App\Models\UserWithdrawHistoryModel;
 use App\Models\VoteChoiceModel;
 use App\Models\VoteChoiceSubmitModel;
 use App\Models\VoteTopicModel;
-use Carbon\Carbon;   
+use App\Models\ConnectionRequestModel;
+use App\Models\UserConnectionModel;
 use Firebase\JWT\JWT;
 use DateTime;
 use DB;
@@ -101,7 +102,31 @@ class GetDataServices extends BaseController
 		if($keyword != null){
 			$query->where('fullname','LIKE','%'.$keyword.'%');
 		}
-		if($offset != null && $limit != null){
+		if($offset != null || $limit != null){
+			$query->offset($offset)->limit($limit);
+		}
+		$data = $query->get();
+		$data  = $data->map(function($key) use($array){
+			$key['profile_picture_url'] ="";
+			$key['pic']  ="";
+			if($key['profile_picture']!="" || $key['profile_picture']!=null){
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+				$key['pic']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			}
+			// $key['mutual_friends']  = $this->getMutualFriend($key['user_id'],$array);
+			return $key;
+		});
+		return $data;
+	}
+	function userDatainArray_simplify($array=null,$keyword=null,$offset=null,$limit=null){
+		$query = UserModels::select('user_id','fullname', 'job_title', 'profile_picture');
+		if($array != null){
+			$query->whereIn('user_id',$array);
+		}
+		if($keyword != null){
+			$query->where('fullname','LIKE','%'.$keyword.'%');
+		}
+		if($offset != null || $limit != null){
 			$query->offset($offset)->limit($limit);
 		}
 		$data = $query->get();
@@ -134,6 +159,48 @@ class GetDataServices extends BaseController
 			$checkAuth->user_id = 0;
 		}
 		return $checkAuth;
+	}
+	public function getUserDetailsById($id){
+		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp','is_mail_verified')->with('work_experience','certification')->where('user_id',$id)->first();
+		if(!empty($profile)){
+			$collect = collect($profile->certifications);
+			$profile->certification  = $collect->map(function($key) use($collect){
+				$key['certification_file']  = url('/')."/uploads/certification/".$key['certification_file'];
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+				return $key;
+			});
+		}else{
+			return $profile;
+		}
+		//point
+		$point = $this->totalTrxPointbyUserId($id);
+		$profile->points = isset($point)?$point:0;
+		//friend
+		$profile->friendship_status = 0;
+		$profile->mutual_friends = [
+			'count' => 0,
+			'data' => array(),
+		];
+		//level
+		$level = LevelModel::select('*')->where('level_min_point','<=',$profile->points)->where('level_max_point','>=',$profile->points)->first();
+		$profile->level_icon_url = url('/')."/uploads/level/".$level->level_icon;
+		
+		$profile->profile_picture_url = "";
+		if(!empty($profile->profile_picture) && $profile->profile_picture != null){
+			$profile->profile_picture_url = url('/')."/uploads/profile/".$profile->profile_picture;
+		}
+		
+		$profile->level_name = $level->level_name;
+
+		$profile->total_achievement =  $this->totalAwardsbyUserId($id);
+		$profile->qualification  =  $this->employeeQualification($id);
+		$profile->history = array([
+								'event_done' =>$this->getEvent(1,$id),
+								'bootcamp_done' =>$this->getEvent(2,$id),
+								'challenge_done' =>$this->getChallengebyUser($id,"count")
+							]);
+		$profile->project = $this->getWorkExperience($id);
+		return $profile;
 	}
 	public function userDetail($id){
 		$profile = UserModels::select('user_id','email','fullname', 'date_of_birth', 'gender', 'contact_no','address', 'marital_status', 'country', 'province','summary', 'job_title', 'profile_picture', 'zip_code','cash','points','skill_text','npwp','is_mail_verified')->with('work_experience','certification')->where('user_id',$id)->first();
@@ -449,6 +516,12 @@ class GetDataServices extends BaseController
 			}
 			return $key;
 		});
+		return $data;
+	}
+	public function usersByJobID($id){
+		$data = JobsApplicationModel::select('xin_employees.fullname','xin_job_applications.*')
+		->join('xin_employees', 'xin_employees.user_id', '=', 'xin_job_applications.user_id')
+		->where('job_id', $id)->get();
 		return $data;
 	}
 	///====Jobs Fase 2
@@ -768,6 +841,7 @@ class GetDataServices extends BaseController
 					->join('xin_friendship as b', 'b.uid1', '=', 'xin_friendship.uid2')
 					->where('xin_friendship.uid1',$user_id)
 					->groupBy('xin_friendship.uid2')
+					// ->limit(5)
 					->get();
 		$friendIdList = array();
 		$friendList = array();
@@ -778,7 +852,6 @@ class GetDataServices extends BaseController
 		$friendList = $this->userDatainArray($friendIdList);
 		return $friendList;
 	}
-	
 	public function getMutualFriend($friend_id,$user_id){
 		$list2 = ($this->userDatainArray($friend_id))['data'];
 		$list2 = $this->remove_element($user_id, $list2);
@@ -802,9 +875,85 @@ class GetDataServices extends BaseController
 		CONCAT("'.url('/').'/uploads/profile/'.'" ,xin_employees.profile_picture) AS profile_picture_url
 							FROM xin_friendship t1 
 							LEFT JOIN xin_employees ON t1.uid1 = xin_employees.user_id WHERE t1.uid2 = 9106');
-	
-		
 	}
+
+	//===CONNECTION(FRIEND) MOBILE===
+	public function get_all_connection($user_id, $page=null){
+
+		$requests = ConnectionRequestModel::select('target_id')->where('source_id', $user_id)->get();
+		$requests_targetId = array();
+		array_push($requests_targetId, $user_id);
+		foreach($requests as $list){
+			array_push($requests_targetId, $list->target_id);
+		}
+
+		$query = UserModels::select('user_id','fullname', 'job_title', 'profile_picture')
+		// ->inRandomOrder('user_id')
+		->whereNotIn('user_id', $requests_targetId);
+		$query->paginate(10, ['*'], 'page', $page);
+
+		$data = $query->get();
+		$data = $data->map(function($key){
+			$key['profile_picture_url'] ="";
+			if($key['profile_picture']!="" || $key['profile_picture']!=null){
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			}
+			return $key;
+		});
+
+		
+
+		foreach($data as $list){
+			$is_friend = UserConnectionModel::where('user_id', $user_id)->where('user_connection_id', $list->user_id)->first();
+			$requested = ConnectionRequestModel::where('source_id', $user_id)->where('target_id', $list->user_id)->first();
+			if(!empty($is_friend)){
+				$list->is_friend = true;
+				$list->requested = true;
+			}
+			else{
+				$list->is_friend = false;
+				if(!empty($requested)){
+					$list->requested = true;
+				}else{
+					$list->requested = false;
+				}
+			}
+		}
+
+
+		return $data;
+	}
+
+	public function getConnected($user_id, $page=null){
+		$connected = UserConnectionModel::select('user_connection_id')->where('user_id', $user_id)->get()->toArray();
+		$users = UserModels::select('user_id','fullname', 'job_title', 'profile_picture')->whereIn('user_id',$connected);
+		$users->paginate(10, ['*'], 'page', $page);
+		$data = $users->get();
+		$data = $data->map(function($key){
+			$key['profile_picture_url'] ="";
+			if($key['profile_picture']!="" || $key['profile_picture']!=null){
+				$key['profile_picture_url']  = url('/')."/uploads/profile/".$key['profile_picture'];
+			}
+			return $key;
+		});
+		return $data;
+	}
+
+	public function checkConnectionStatus($target_id, $source_id){
+		return ConnectionRequestModel::select('*')->where('source_id',$source_id)->where('target_id',$target_id)->first();
+	}
+	public function requests($target_id){
+		$source_id = ConnectionRequestModel::select('source_id')->where('target_id', $target_id)->get();
+		$requests = array();
+		foreach($source_id as $id){
+			array_push($requests, UserModels::select('user_id', 'fullname', 'job_title','profile_picture')->where('user_id', $id->source_id)->first());
+		}
+		foreach($requests as $request){
+			$request->profile_picture_url = url('/')."/uploads/profile/".$request->profile_picture;
+		}
+		return $requests;
+	}
+
 	// =========================================CHALLENGE MODULE ==============================================================
 	public function getChallengebyUser($user_id,$type=null){
 		$query = ChallengeModel::select('*')->LeftJoin('xin_challenge_participant', 'xin_challenge_participant.challenge_id', '=', 'xin_challenge.challenge_id')
@@ -1146,6 +1295,14 @@ class GetDataServices extends BaseController
 		$pecahkan = explode('-', $tanggal);
 		return $pecahkan[0] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[2];
 	}
+
+	public function getTopics(){
+		$data = VoteTopicModel::select('*')->get();
+		foreach($data as $datas){
+			$datas['banner_url'] = url('/')."/uploads/topic_banner/".$datas['banner'];
+		}
+		return $data;
+	}
 	
 //================================Dashboard=======================================//
 	public function getAdminbyToken(Request $request){
@@ -1156,15 +1313,31 @@ class GetDataServices extends BaseController
 		return $checkAuth;
 	}
 //Voting//
-	public function getCandidate($request){
+	public function getCandidate($request, $user){
 		$topic = VoteTopicModel::where('topic_id', $request->topic_id)->first();
+		if($topic == null || $topic == ''){
+			return null;
+		}
 		$topic['banner_url'] = url('/')."/uploads/topic_banner/".$topic['banner'];
 		$choice = VoteChoiceModel::select('*')->where('vote_topic_id', $request->topic_id)->get();
 		$choice = $choice->map(function($key){
 			$key['icon_url']  = url('/')."/uploads/candidate_icon/".$key['icon'];
 			return $key;
 		});
+		if(sizeof($choice) == 0){
+			$choice = null;
+		}
+
+		$temp = VoteChoiceSubmitModel::select('*')->where('vote_topic_id', $request->topic_id)->where('employee_id', $user->user_id)->first();
+		$status = true;
+		if(!empty($temp)){
+			$status = true;
+		}else{
+			$status = false;
+		}
+		$topic->is_already_vote = $status;
 		$topic->choices = $choice;
+		
 		return $topic;
 	}
 	public function getVoteResult($topic_id){
@@ -1172,21 +1345,41 @@ class GetDataServices extends BaseController
 			return null;
 		}
 		$topic = VoteTopicModel::select('*')->where('topic_id', $topic_id)->first();
-		$choice = VoteChoiceModel::select('choice_id', 'name')->where('vote_topic_id', $topic_id)->get();
-		
-		foreach($choice as $choices){
-				dd($choices);
-				$choices['count_result'] = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $choices->choice_id)->count();
-		}
-		$data = array('topic_id' => $topic_id, 'topic_name' => $topic->name, 'topic_title' => $topic->title, 'choice' => $choice);
+		$str_query = "
+			SELECT vc.name, count(vcs.vote_choice_id) AS 'total_vote' 
+			FROM vote_choices vc 
+			LEFT OUTER JOIN vote_choice_submit vcs ON vcs.vote_choice_id = vc.choice_id WHERE vc.vote_topic_id = ".$topic_id." 
+			GROUP by vc.name ORDER BY vc.created_at
+		";
+
+		// $arr_choice = array();
+
+		// foreach($choice as $choices){
+		// 	array_push($arr_choice, $choices->name);
+		// 	//$choices['count_result'] = VoteChoiceSubmitModel::select('*')->where('vote_choice_id', $choices->choice_id)->count();
+		// }
+
+		// $count = count($arr_choice);
+		// $temp_count = 1;
+
+		// $str_query = "SELECT vote_choices.name, vote_choice_submit.vote_choice_id, vote_choice_submit.created_at,\n";
+		// foreach ($arr_choice as $choice) {
+		// 	if($temp_count == $count){
+		// 		$str_query .= "SUM(CASE WHEN `name` = '".$choice."' THEN 1 ELSE 0 END)\n";
+		// 	}else{
+		// 		$str_query .= "SUM(CASE WHEN `name` = '".$choice."' THEN 1 ELSE 0 END)+\n";
+		// 	}
+		// 	$temp_count++;
+		// }
+		// $str_query .= "AS 'total_vote'\n";
+		// $str_query .= "FROM vote_choice_submit\nINNER JOIN vote_choices ON vote_choice_submit.vote_choice_id=vote_choices.choice_id\n";
+		// $str_query .= "GROUP by name\nORDER by created_at DESC;";
+
+		$result = DB::select($str_query);
+
+		$data = array('topic_id' => $topic_id, 'topic_name' => $topic->name, 'topic_title' => $topic->title, 'choice' => $result);
 		return $data;
 	}
-	public function getTopics(){
-		$data = VoteTopicModel::select('*')->get();
-		foreach($data as $datas){
-			$datas['banner_url'] = url('/')."/uploads/topic_banner/".$datas['banner'];
-		}
-		return $data;
-	}
+	
 
 }

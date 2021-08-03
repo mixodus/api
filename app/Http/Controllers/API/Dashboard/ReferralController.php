@@ -133,7 +133,7 @@ class ReferralController extends Controller
 		$rules = [
 			'source' => "required|in:web,mobile",
 			'referral_name' => "required|string",
-			'referral_email' => "required|string|email|unique:xin_employees,email",
+			'referral_email' => "required|string|email",
 			'referral_contact_no' => "required|string",
 			'referral_status' => "required|string|in:Success,Pending,InReview,Failed",
 			'file' => "required",
@@ -152,10 +152,10 @@ class ReferralController extends Controller
 
 		$request['file_name'] = $fileName;
 
-		$checkReferral = $this->getDataServices->checkMemberReferral(null,$request->referral_email);
-		if (!$checkReferral->isEmpty()) {
-			return $this->services->response(401,"Sorry, Your friend is already registered in referral! Or registered at other Hunters!");
-		}
+		// $checkReferral = $this->getDataServices->checkMemberReferral(null,$request->referral_email);
+		// if (!$checkReferral->isEmpty()) {
+		// 	return $this->services->response(401,"Sorry, Your friend is already registered in referral! Or registered at other Hunters!");
+		// }
 
 		if($checkUser->role_id == 3){
 			$postParam =
@@ -202,7 +202,7 @@ class ReferralController extends Controller
 		$checkUser = $this->getDataServices->getAdminbyToken($request);
 		$rules = [
 			'referral_name' 	=> "required|string",
-			'referral_email' 	=> "required|string|email|unique:xin_employees,email",
+			'referral_email' 	=> "required|string|email",
 			'referral_contact_no' 	=> "required|string",
 			'job_position' 		=> "nullable|string",
 			'referral_employee_id' 	=> "required"

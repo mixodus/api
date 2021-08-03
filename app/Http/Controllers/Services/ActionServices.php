@@ -30,6 +30,8 @@ use App\Models\UserWithdrawHistoryModel;
 use App\Models\VoteChoiceModel;
 use App\Models\VoteChoiceSubmitModel;
 use App\Models\VoteTopicModel;
+use App\Models\ConnectionRequestModel;
+use App\Models\UserConnectionModel;
 use Firebase\JWT\JWT;
 //fase2
 use App\Models\Fase2\NewsCommentModel;
@@ -338,6 +340,53 @@ class ActionServices extends BaseController
 	public function reject($user_id,$friend_id){
 		return FriendModel::where('uid1',$friend_id)->where('uid2',$user_id)->delete();
 	}
+	//connection
+	public function addConnection($target_id, $source_id){
+		$target = UserModels::where('user_id', $target_id)->first();
+		if(!$target){
+			return $target;
+		}
+		$postParam=array(
+			'source_id' => $source_id,
+			'target_id' => $target_id,
+		);
+		return ConnectionRequestModel::create($postParam);
+	}
+	public function cancelConnectionRequest($target_id, $source_id){
+		$data =  ConnectionRequestModel::where('target_id', $target_id)->where('source_id', $source_id)->first();
+		if(!empty($data)){
+			ConnectionRequestModel::where('target_id', $target_id)->where('source_id', $source_id)->delete();
+			return true;
+		}else{
+			return false;
+		}
+	}
+	public function acceptConnection($source_id,$target_id){
+		$get = ConnectionRequestModel::where('source_id',$source_id)->where('target_id', $target_id)->first();
+		if(!empty($get)){
+			ConnectionRequestModel::where('source_id',$source_id)->where('target_id', $target_id)->delete();
+		}else{
+			return null;
+		}
+		$postParam = array(
+			'user_id' => $target_id,
+			'user_connection_id' => $source_id
+		);
+		$data['0'] = UserConnectionModel::create($postParam);
+		$postParam = array(
+			'user_connection_id' => $target_id,
+			'user_id' => $source_id
+		);
+		$data['1'] = UserConnectionModel::create($postParam);
+		return $data;
+	}
+	public function unconnectConnection($user_connection_id,$user_id){
+		UserConnectionModel::where('user_connection_id',$user_id)->where('user_id', $user_connection_id)->delete();
+		UserConnectionModel::where('user_connection_id',$user_connection_id)->where('user_id', $user_id)->delete();
+	}
+	public function rejectConnection($target_id,$source_id){
+		ConnectionRequestModel::where('target_id',$target_id)->where('source_id',$source_id)->delete();
+	}
 	//bank account
 	public function saveUserBankAccount($data_input,$user_id){
 		$postParam = array(
@@ -444,38 +493,6 @@ class ActionServices extends BaseController
 	}
 
 	//voting
-	public function assignCandidate($data){
-		$getTopic = VoteTopicModel::where('topic_id', $data->vote_topic_id)->first();
-		if(empty($getTopic)){
-			return null;
-		}
-		$postParam = array(
-			'vote_topic_id' => $data->vote_topic_id,
-			'name' => $data->name,
-			'icon' => $data['file_name'],
-			'created_at' => date('Y-m-d h:i:s'),
-		);
-		return VoteChoiceModel::create($postParam);
-	}
-	public function updateCandidate($data, $choice_id){
-		$getTopic = VoteTopicModel::where('topic_id', $data->vote_topic_id)->first();
-		if(empty($getTopic)){
-			return null;
-		}
-		$postParam = array(
-			'vote_topic_id' => $data->vote_topic_id,
-			'name' => $data->name,
-			'icon' => $data['file_name'],
-			'updated_at' => date('Y-m-d h:i:s'),
-		);
-		VoteChoiceModel::where('choice_id', $choice_id)->update($postParam);
-		return $postParam;
-	}
-	public function deleteCandidate($request){
-		$getCandidate = VoteChoiceModel::where('choice_id', $request->choice_id)->first();
-		VoteChoiceModel::where('choice_id', $request->choice_id)->delete();
-		return $getCandidate;
-	}
 	public function assignVote($data, $user){
 		$getCandidate = VoteChoiceModel::select('*')->where('choice_id', $data->choice_id)->first();
 		if(empty($getCandidate)){
@@ -497,34 +514,7 @@ class ActionServices extends BaseController
 		);
 		return VoteChoiceSubmitModel::create($postParam);
 	}
-	public function assignTopic($data){
-		$postParam = array(
-			'name' => $data->name,
-			'banner' => $data['file_name'],
-			'title' => $data->title,
-			'created_at' => date('Y-m-d h:i:s'),
-		);
-		return VoteTopicModel::create($postParam);
+	public function resetVote(){
+		VoteChoiceSubmitModel::truncate();
 	}
-	public function updateTopic($data, $topic_id){
-		$postParam = array(
-			'name' => $data->name,
-			'banner' => $data['file_name'],
-			'updated_at' => date('Y-m-d h:i:s'),
-		);
-		VoteTopicModel::where('topic_id', $topic_id)->update($postParam);
-		return $postParam; 
-	}
-	public function checkVote($request, $user){
-		$choice = VoteChoiceSubmitModel::select('*')->where('vote_topic_id', $request->topic_id)->where('employee_id', $user->user_id)->first();
-		if(!empty($choice)){
-			return true;
-		}else{
-			return false;
-		}
-	}
-	
-	
-	
-
 }

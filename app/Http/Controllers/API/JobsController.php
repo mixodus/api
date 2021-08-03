@@ -66,6 +66,12 @@ class JobsController extends Controller
 			return $this->services->response(404,"Data tidak ditemukan",array());
 		}
 	}
+
+	public function getUsersByJobID($id){
+		$getUsers = $this->getDataServices->usersByJobID($id);
+		return $this->services->response(200,"Users",$getUsers);
+	}
+
 	public function applyJobsApplication(Request $request){
 	   
 		$checkUser = $this->getDataServices->getUserbyToken($request);
